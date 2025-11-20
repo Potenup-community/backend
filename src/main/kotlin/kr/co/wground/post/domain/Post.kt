@@ -1,4 +1,4 @@
-package kr.co.wground.board.domain
+package kr.co.wground.post.domain
 
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
