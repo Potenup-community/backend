@@ -1,6 +1,6 @@
 package kr.co.wground.like.exception
 
-import kr.co.wground.api.exception.ErrorCode
+import kr.co.wground.exception.ErrorCode
 import org.springframework.http.HttpStatus
 
 enum class LikeErrorCode(
