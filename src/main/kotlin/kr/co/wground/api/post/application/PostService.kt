@@ -11,4 +11,9 @@ class PostService(
     fun createPost(dto: PostCreateDto): Long {
         return postRepository.save(dto.toDomain()).id
     }
+
+    fun deletePost(id: Long) {
+        //TODO(user 자신의 포스트인지 검증 로직 필요)
+        postRepository.deleteById(id)
+    }
 }
