@@ -1,4 +1,4 @@
-package kr.co.wground.api.config
+package kr.co.wground.api.global.config
 
 import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.EntityManager
