@@ -3,8 +3,8 @@ package kr.co.wground.api.post.presentaton.request
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
 import kr.co.wground.api.post.application.dto.PostCreateDto
-import kr.co.wground.api.post.domain.HighlightType
-import kr.co.wground.api.post.domain.Topic
+import kr.co.wground.api.post.domain.enums.HighlightType
+import kr.co.wground.api.post.domain.enums.Topic
 
 data class PostCreateRequest(
     @field:NotNull(message = "작성할 토픽을 선택해주세요.")
