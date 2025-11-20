@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import kr.co.wground.api.post.domain.enums.HighlightType
 
 @Entity
 class PostStatus(

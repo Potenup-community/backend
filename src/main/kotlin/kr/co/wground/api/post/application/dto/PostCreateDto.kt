@@ -1,8 +1,8 @@
 package kr.co.wground.api.post.application.dto
 
-import kr.co.wground.api.post.domain.HighlightType
+import kr.co.wground.api.post.domain.enums.HighlightType
 import kr.co.wground.api.post.domain.Post
-import kr.co.wground.api.post.domain.Topic
+import kr.co.wground.api.post.domain.enums.Topic
 
 data class PostCreateDto(
     val writerId: Long,

@@ -11,6 +11,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
+import kr.co.wground.api.post.domain.enums.HighlightType
+import kr.co.wground.api.post.domain.enums.Topic
 import java.time.LocalDateTime
 
 @Entity
