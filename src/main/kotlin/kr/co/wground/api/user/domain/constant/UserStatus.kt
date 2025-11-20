@@ -8,13 +8,13 @@ enum class UserStatus {
     BLOCKED;
 
     companion object{
-        fun from(status: UserSignupStatus): UserStatus {
+        fun from(status: String): UserStatus {
             return when(status) {
-                UserSignupStatus.ACCEPTED_ADMIN -> ADMIN
-                UserSignupStatus.ACCEPTED_ENROLLED -> ENROLLED
-                UserSignupStatus.ACCEPTED_GRADUATED -> GRADUATED
-                UserSignupStatus.REJECTED -> EXPIRED
-                else -> BLOCKED
+                UserSignupStatus.ACCEPTED_ADMIN.name -> ADMIN
+                UserSignupStatus.ACCEPTED_ENROLLED.name -> ENROLLED
+                UserSignupStatus.ACCEPTED_GRADUATED.name -> GRADUATED
+                UserSignupStatus.REJECTED.name -> BLOCKED
+                else -> EXPIRED
             }
         }
     }

@@ -30,7 +30,7 @@ class GoogleOAuthService(private val userRepository: UserRepository) : DefaultOA
         return DefaultOAuth2User(
             authorities,
             attributes,
-            "email" // nameAttributeKey
+            "email"
         )
     }
 }

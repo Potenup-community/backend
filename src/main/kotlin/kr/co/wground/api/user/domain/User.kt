@@ -2,6 +2,7 @@ package kr.co.wground.api.user.domain
 
 import jakarta.persistence.*
 import kr.co.wground.api.user.domain.constant.UserSignupStatus
+import kr.co.wground.api.user.domain.constant.UserStatus
 import java.time.LocalDateTime
 
 @Entity
@@ -23,10 +24,10 @@ class User(
     val name: String,
 
     @Column(nullable = false)
-    val status: UserSignupStatus = UserSignupStatus.PENDING,
+    val status: UserStatus,
 
-    @Column(nullable = true)
-    val phoneNumber: String?,
+    @Column(nullable = false)
+    val phoneNumber: String,
 
     @Column(nullable = true)
     val deletedAt: LocalDateTime? = null
@@ -37,15 +38,18 @@ class User(
         role: String,
         email: String,
         name: String,
-        phoneNumber: String?
+        status: UserStatus,
+        phoneNumber: String
     ) : this(
-        id = null, // 새로운 객체이므로 id는 null
+        id = null,
         affiliationId = affiliationId,
         role = role,
         email = email,
         name = name,
-        status = UserSignupStatus.PENDING, // 기본 상태
-        phoneNumber = phoneNumber, // 기본 전화번호
-        deletedAt = null // 기본 deletedAt
+        status = status,
+        phoneNumber = phoneNumber,
+        deletedAt = null
     )
+
+    fun decisionStatus(role : String) = UserStatus.from(role)
 }

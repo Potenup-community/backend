@@ -23,8 +23,8 @@ class SecurityConfig(
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
             .oauth2Login { oauth ->
-                oauth.userInfoEndpoint { it.userService(customOAuth2UserService) }
-                oauth.successHandler(oAuth2LoginSuccessHandler)
+                oauth.userInfoEndpoint { it.userService(googleOAuthService) }
+                oauth.successHandler(googleOAuthSuccessHandler)
             }
 
         return http.build()
