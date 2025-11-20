@@ -2,6 +2,8 @@ package kr.co.wground.like.application
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.like.domain.Like
+import kr.co.wground.like.domain.PostId
+import kr.co.wground.like.domain.UserId
 import kr.co.wground.like.exception.LikeErrorCode
 import kr.co.wground.like.infra.LikeJpaRepository
 import org.springframework.stereotype.Service
@@ -13,7 +15,7 @@ class LikeService(
 ) {
 
     @Transactional
-    fun likePost(userId: Long, postId: Long) {
+    fun likePost(userId: UserId, postId: PostId) {
         validateAlreadyLiked(userId, postId)
 
         val like = Like(
@@ -24,9 +26,8 @@ class LikeService(
         likeRepository.save(like)
     }
 
-    private fun validateAlreadyLiked(userId: Long, postId: Long) {
-        if (likeRepository.existsByUserIdAndPostId(userId, postId)) {
-            throw BusinessException(LikeErrorCode.ALREADY_LIKED)
-        }
+    private fun validateAlreadyLiked(userId: UserId, postId: PostId) {
+        likeRepository.existsByUserIdAndPostId(userId, postId)
+            .takeIf { it }?.let { throw BusinessException(LikeErrorCode.ALREADY_LIKED) }
     }
 }

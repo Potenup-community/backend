@@ -1,6 +1,7 @@
 package kr.co.wground.like.presentation
 
 import kr.co.wground.like.application.LikeService
+import kr.co.wground.like.domain.PostId
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -14,7 +15,7 @@ class LikeController(
 ) {
 
     @PostMapping
-    fun likePost(@PathVariable postId: Long): ResponseEntity<Unit> {
+    fun likePost(@PathVariable postId: PostId): ResponseEntity<Unit> {
         // TODO: Get userId from security context
         val userId = 1L
         likeService.likePost(userId, postId)
