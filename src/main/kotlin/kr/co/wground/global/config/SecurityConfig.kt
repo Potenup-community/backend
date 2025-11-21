@@ -1,4 +1,4 @@
-package kr.co.wground.api.global.config
+package kr.co.wground.global.config
 
 import kr.co.wground.api.user.service.GoogleOAuthService
 import kr.co.wground.api.user.service.GoogleOAuthSuccessHandler

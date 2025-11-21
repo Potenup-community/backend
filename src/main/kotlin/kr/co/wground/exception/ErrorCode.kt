@@ -1,4 +1,4 @@
-package kr.co.wground.api.exception
+package kr.co.wground.exception
 
 import org.springframework.http.HttpStatus
 

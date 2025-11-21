@@ -3,23 +3,21 @@ package kr.co.wground.post.domain
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
+import kr.co.wground.post.domain.enums.HighlightType
 
 @Entity
 class PostStatus(
     @Id
-    val id: Long? = null,
-    val viewCount: Int,
-    val commentCount: Int,
-    val likeCount: Int,
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long = 0,
+    val viewCount: Int = 0,
+    val commentCount: Int = 0,
+    val likeCount: Int = 0,
     @Enumerated(EnumType.STRING)
-    val highlightType: HighlightType,
-    val isDeleted: Boolean,
-
-    @ManyToOne
-    @JoinColumn(name = "post_id")
-    val post: Post
+    val highlightType: HighlightType? = null,
+    val isDeleted: Boolean = false,
 ) {
 }
