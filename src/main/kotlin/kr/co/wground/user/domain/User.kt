@@ -1,15 +1,14 @@
-package kr.co.wground.api.user.domain
+package kr.co.wground.user.domain
 
 import jakarta.persistence.*
-import kr.co.wground.api.user.domain.constant.UserSignupStatus
-import kr.co.wground.api.user.domain.constant.UserStatus
+import kr.co.wground.user.domain.constant.UserStatus
 import java.time.LocalDateTime
 
 @Entity
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
+    val id: Long? = null,
 
     @Column(name = "affiliation_id", nullable = false)
     val affiliationId: Long,
@@ -24,10 +23,14 @@ class User(
     val name: String,
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     val status: UserStatus,
 
     @Column(nullable = false)
     val phoneNumber: String,
+
+    @Column(nullable = false)
+    val provider: String,
 
     @Column(nullable = true)
     val deletedAt: LocalDateTime? = null
@@ -39,7 +42,8 @@ class User(
         email: String,
         name: String,
         status: UserStatus,
-        phoneNumber: String
+        phoneNumber: String,
+        provider: String
     ) : this(
         id = null,
         affiliationId = affiliationId,
@@ -48,7 +52,8 @@ class User(
         name = name,
         status = status,
         phoneNumber = phoneNumber,
-        deletedAt = null
+        deletedAt = null,
+        provider = provider
     )
 
     fun decisionStatus(role : String) = UserStatus.from(role)

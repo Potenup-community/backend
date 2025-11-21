@@ -1,4 +1,4 @@
-package kr.co.wground.api.user.domain
+package kr.co.wground.user.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass

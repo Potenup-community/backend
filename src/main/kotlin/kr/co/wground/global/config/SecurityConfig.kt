@@ -1,7 +1,5 @@
 package kr.co.wground.global.config
 
-import kr.co.wground.api.user.service.GoogleOAuthService
-import kr.co.wground.api.user.service.GoogleOAuthSuccessHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
