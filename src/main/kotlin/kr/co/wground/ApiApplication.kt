@@ -1,4 +1,4 @@
-package kr.co.wground.api
+package kr.co.wground
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class ApiApplication
 
 fun main(args: Array<String>) {
-	runApplication<ApiApplication>(*args)
+    runApplication<ApiApplication>(*args)
 }

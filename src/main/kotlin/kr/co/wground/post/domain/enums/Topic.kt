@@ -1,4 +1,4 @@
-package kr.co.wground.api.post.domain.enums
+package kr.co.wground.post.domain.enums
 
 enum class Topic(
     val description: String

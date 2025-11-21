@@ -1,8 +1,8 @@
-package kr.co.wground.api.post.presentaton
+package kr.co.wground.post.presentaton
 
 import jakarta.validation.Valid
-import kr.co.wground.api.post.application.PostService
-import kr.co.wground.api.post.presentaton.request.PostCreateRequest
+import kr.co.wground.post.application.PostService
+import kr.co.wground.post.presentaton.request.PostCreateRequest
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping

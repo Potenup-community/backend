@@ -1,7 +1,7 @@
-package kr.co.wground.api.post.domain
+package kr.co.wground.post.domain
 
-import jakarta.persistence.CascadeType.PERSIST
 import jakarta.persistence.CascadeType.MERGE
+import jakarta.persistence.CascadeType.PERSIST
 import jakarta.persistence.CascadeType.REMOVE
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -11,8 +11,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
-import kr.co.wground.api.post.domain.enums.HighlightType
-import kr.co.wground.api.post.domain.enums.Topic
+import kr.co.wground.post.domain.enums.HighlightType
+import kr.co.wground.post.domain.enums.Topic
 import java.time.LocalDateTime
 
 @Entity

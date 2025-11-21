@@ -7,8 +7,6 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import lombok.AccessLevel
-import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 
 @Entity
@@ -21,13 +19,12 @@ import java.time.LocalDateTime
         )
     ]
 )
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 class Like(
     @Column(name = "user_id", nullable = false, updatable = false)
-    val userId: Long,
+    val userId: UserId,
 
     @Column(name = "post_id", nullable = false, updatable = false)
-    val postId: Long,
+    val postId: PostId,
 ) {
 
     @Id
@@ -35,5 +32,7 @@ class Like(
     val id: Long? = null
 
     @Column(nullable = false, updatable = false)
-    var createdAt: LocalDateTime = LocalDateTime.now()
+    val createdAt: LocalDateTime = LocalDateTime.now()
+
+    private constructor() : this(0, 0)
 }

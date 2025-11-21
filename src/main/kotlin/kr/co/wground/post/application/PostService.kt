@@ -1,7 +1,7 @@
-package kr.co.wground.api.post.application
+package kr.co.wground.post.application
 
-import kr.co.wground.api.post.application.dto.PostCreateDto
-import kr.co.wground.api.post.infra.PostRepository
+import kr.co.wground.post.application.dto.PostCreateDto
+import kr.co.wground.post.infra.PostRepository
 import org.springframework.stereotype.Service
 
 @Service
