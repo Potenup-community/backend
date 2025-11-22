@@ -43,4 +43,4 @@ out/
 .DS_Store
 
 ### yml ###
-*.yml
+*-test.yml
