@@ -5,7 +5,9 @@ import kr.co.wground.like.domain.PostId
 import kr.co.wground.like.domain.UserId
 import kr.co.wground.post.application.PostService
 import kr.co.wground.post.presentation.request.PostCreateRequest
+import kr.co.wground.post.presentation.request.PostUpdateRequest
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -23,7 +25,16 @@ class PostController(
     }
 
     @DeleteMapping("/{id}")
-    fun deletePost(@PathVariable id: Long) {
-        postService.deletePost(id);
+    fun deletePost(@PathVariable id: PostId) {
+        postService.deletePost(id)
+    }
+
+    @PatchMapping("/{id}")
+    fun updatePost(
+        @PathVariable id: PostId,
+        @Valid@RequestBody request: PostUpdateRequest,
+        writerId: UserId = 1
+    ) {
+        postService.updatePost(request.toDto(id, writerId))
     }
 }
