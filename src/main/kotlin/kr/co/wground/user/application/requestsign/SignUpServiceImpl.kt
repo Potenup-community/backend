@@ -1,17 +1,17 @@
-package kr.co.wground.user.service.requestsign
+package kr.co.wground.user.application.requestsign
 
 import jakarta.transaction.Transactional
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
-import kr.co.wground.user.controller.dto.request.DecisionStatusRequest
-import kr.co.wground.user.controller.dto.request.SignUpRequest
+import kr.co.wground.user.presentation.request.DecisionStatusRequest
+import kr.co.wground.user.presentation.request.SignUpRequest
 import kr.co.wground.user.domain.RequestSignup
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
-import kr.co.wground.user.repository.RequestSignupRepository
-import kr.co.wground.user.repository.UserRepository
-import kr.co.wground.user.service.exception.UserServiceErrorCode
+import kr.co.wground.user.infra.RequestSignupRepository
+import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.application.exception.UserServiceErrorCode
 import org.springframework.stereotype.Service
 
 @Service

@@ -1,4 +1,4 @@
-package kr.co.wground.user.service.exception
+package kr.co.wground.user.application.exception
 
 import kr.co.wground.exception.ErrorCode
 import org.springframework.http.HttpStatus

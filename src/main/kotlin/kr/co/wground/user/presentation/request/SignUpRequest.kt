@@ -1,4 +1,4 @@
-package kr.co.wground.user.controller.dto.request
+package kr.co.wground.user.presentation.request
 
 import kr.co.wground.user.domain.constant.UserRole
 

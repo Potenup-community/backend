@@ -1,4 +1,4 @@
-package kr.co.wground.user.repository
+package kr.co.wground.user.infra
 
 import kr.co.wground.user.domain.User
 import org.springframework.data.jpa.repository.JpaRepository

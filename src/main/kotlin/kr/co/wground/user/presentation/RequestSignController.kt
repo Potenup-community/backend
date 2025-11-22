@@ -1,7 +1,7 @@
-package kr.co.wground.user.controller
+package kr.co.wground.user.presentation
 
-import kr.co.wground.user.controller.dto.request.SignUpRequest
-import kr.co.wground.user.service.requestsign.SignUpService
+import kr.co.wground.user.presentation.request.SignUpRequest
+import kr.co.wground.user.application.requestsign.SignUpService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
