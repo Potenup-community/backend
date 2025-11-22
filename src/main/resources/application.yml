@@ -35,6 +35,8 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET_TOKEN}
+  expiration-ms: ${ACCESS_TOKEN_EXPIRED}
+  refresh-expiration-ms: ${REFRESH_TOKEN_EXPIRED}
 
 google:
   auth:
