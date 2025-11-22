@@ -5,62 +5,42 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.SignUpRequest
-import kr.co.wground.user.domain.RequestSignup
-import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserSignupStatus
-import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.application.requestsign.event.UserAddEvent
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
 @Service
+@Transactional
 class SignUpServiceImpl(
     private val userRepository: UserRepository,
     private val signupRepository: RequestSignupRepository,
-    private val googleTokenVerifier: GoogleTokenVerifier
+    private val googleTokenVerifier: GoogleTokenVerifier,
+    private val eventPublisher: ApplicationEventPublisher
 ) : SignUpService {
 
-    @Transactional
-    override fun addRequestSignUp(requestSignup: SignUpRequest) {
-        val email = googleTokenVerifier.verify(requestSignup.idToken)
+    override fun addUser(request: SignUpRequest){
+        val email = googleTokenVerifier.verify(request.idToken)
 
         checkAlreadyExists(email)
 
-        val newUser = User(
-            userId = null,
-            email = email,
-            name = requestSignup.name,
-            phoneNumber = requestSignup.phoneNumber,
-            provider = requestSignup.provider,
-            affiliationId = requestSignup.affiliationId,
-            role = requestSignup.role,
-            status = UserStatus.BLOCKED
-        ).let { userRepository.save(it) }
-
-        val newRequest = RequestSignup(
-            requestSignupId = null,
-            email = email,
-            affiliationId = requestSignup.affiliationId,
-            name = requestSignup.name,
-            phoneNumber = requestSignup.phoneNumber,
-            provider = requestSignup.provider,
-            role = requestSignup.role,
-        )
-        signupRepository.save(newRequest)
+        eventPublisher.publishEvent(UserAddEvent(request,email))
     }
 
-    @Transactional
     override fun decisionSignup(request: DecisionStatusRequest) {
-        val requestSignUp = signupRepository.findById(request.userId)
-            .orElseThrow { BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND) }
+        val requestSignUp = signupRepository.findByIdOrNull(request.userId)
+            ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
 
-        val user = userRepository.findByEmail(requestSignUp.email)
+        val user = userRepository.findByIdOrNull(request.userId)
             ?: throw BusinessException(
                 UserServiceErrorCode.INVALID_INPUT_VALUE,
             )
 
-        if(request.requestStatus != UserSignupStatus.ACCEPTED){
+        if (request.requestStatus != UserSignupStatus.ACCEPTED) {
             requestSignUp.reject()
             return
         }

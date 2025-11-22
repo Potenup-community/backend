@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/v1/users/signup")
+@RequestMapping("/api/v1/users")
 class RequestSignController(
     private val signUpService: SignUpService,
 ) {
 
-    @PostMapping
+    @PostMapping("/signup")
     fun requestSignUp(@RequestBody requestSignup: SignUpRequest) : ResponseEntity<Unit> {
-        signUpService.addRequestSignUp(requestSignup)
+        signUpService.addUser(requestSignup)
         return ResponseEntity.ok().build()
     }
 }
