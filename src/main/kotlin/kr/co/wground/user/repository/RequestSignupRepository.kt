@@ -8,4 +8,5 @@ interface RequestSignupRepository : JpaRepository<RequestSignup, Long> {
     fun findByEmail(email: String): RequestSignup?
     fun existsUserByEmail(email: String): Boolean
     fun findAllByRequestStatus(requestStatus : UserSignupStatus) : List<RequestSignup>
+    fun existsByEmailAndRequestStatus(email: String, status : UserSignupStatus): Boolean
 }

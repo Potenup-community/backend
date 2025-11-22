@@ -5,7 +5,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.exception.ErrorCode
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.Collections
@@ -23,9 +22,9 @@ class GoogleTokenVerifier(
         val googleIdToken: GoogleIdToken? = try {
             verifier.verify(idToken)
         } catch (e: Exception) {
-            throw BusinessException(ErrorCode.INVALID_TOKEN)
+            throw BusinessException(AuthErrorCode.INVALID_TOKEN)
         }
 
-        return googleIdToken?.payload?.email ?: throw BusinessException(ErrorCode.INVALID_TOKEN)
+        return googleIdToken?.payload?.email ?: throw BusinessException(AuthErrorCode.INVALID_TOKEN)
     }
 }

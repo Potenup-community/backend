@@ -3,12 +3,12 @@ package kr.co.wground.global.config
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 
 @Configuration
 class SecurityConfig(
-    private val googleOAuthService: GoogleOAuthService,
-    private val googleOAuthSuccessHandler: GoogleOAuthSuccessHandler
+
 ) {
 
     @Bean
@@ -20,10 +20,8 @@ class SecurityConfig(
             }
             .formLogin { it.disable() }
             .httpBasic { it.disable() }
-            .oauth2Login { oauth ->
-                oauth.userInfoEndpoint { it.userService(googleOAuthService) }
-                oauth.successHandler(googleOAuthSuccessHandler)
-            }
+            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
+
 
         return http.build()
     }
