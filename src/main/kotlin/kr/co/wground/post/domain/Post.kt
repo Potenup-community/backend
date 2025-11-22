@@ -3,6 +3,7 @@ package kr.co.wground.post.domain
 import jakarta.persistence.CascadeType.MERGE
 import jakarta.persistence.CascadeType.PERSIST
 import jakarta.persistence.CascadeType.REMOVE
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -20,18 +21,24 @@ class Post(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
+    @Column(nullable = false)
     val writerId: Long,
+    @Column(nullable = false)
     val title: String,
-    val content: String,
+    val content: String? = null,
+    @Column(updatable = false, nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
+    @Column(nullable = false)
     val modifiedAt: LocalDateTime = LocalDateTime.now(),
     val deletedAt: LocalDateTime? = null,
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     val topic: Topic,
 
     @OneToOne(cascade = [PERSIST, MERGE, REMOVE], orphanRemoval = true)
     @JoinColumn(name = "post_status_id")
+    @Column(nullable = false)
     val postStatus: PostStatus,
 ) {
     companion object {
