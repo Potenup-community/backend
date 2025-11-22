@@ -4,7 +4,6 @@ import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.SignUpRequest
 
 interface SignUpService {
-    fun addRequestSignUp(requestSignup: SignUpRequest)
+    fun addUser(request: SignUpRequest)
     fun decisionSignup(request: DecisionStatusRequest)
-
 }

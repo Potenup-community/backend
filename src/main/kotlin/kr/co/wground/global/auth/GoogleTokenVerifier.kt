@@ -25,6 +25,6 @@ class GoogleTokenVerifier(
             throw BusinessException(AuthErrorCode.INVALID_TOKEN)
         }
 
-        return googleIdToken?.payload?.email ?: throw BusinessException(AuthErrorCode.INVALID_TOKEN)
+        return googleIdToken?.payload?.email ?: throw BusinessException(AuthErrorCode.TOKEN_HAS_NOT_VALID_EMAIL)
     }
 }

@@ -20,10 +20,10 @@ import java.time.LocalDateTime
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id", nullable = false)
+    @Column(nullable = false)
     val userId: Long?,
 
-    @Column(name = "affiliation_id", nullable = false)
+    @Column(nullable = false)
     val affiliationId: Long,
 
     @Column(unique = true)
@@ -42,14 +42,13 @@ class User(
     @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @Column(nullable = true)
     val deletedAt: LocalDateTime? = null,
 
     role: UserRole = UserRole.BLOCKED,
 
     status: UserStatus = UserStatus.BLOCKED
 
-)  {
+) {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var role: UserRole = role
@@ -69,11 +68,11 @@ class User(
         this.role = UserRole.ADMIN
     }
 
-    fun toInstructor(){
+    fun toInstructor() {
         this.role = UserRole.INSTRUCTOR
     }
 
-    fun toMember(){
+    fun toMember() {
         this.role = UserRole.MEMBER
     }
 
@@ -83,17 +82,5 @@ class User(
 
     fun blocked() {
         this.status = UserStatus.BLOCKED
-    }
-
-    fun toRequestSignUp() : RequestSignup{
-        return RequestSignup(
-            requestSignupId = null,
-            affiliationId = this.affiliationId,
-            email = this.email,
-            name = this.name,
-            phoneNumber = this.phoneNumber,
-            provider = this.provider,
-
-        )
     }
 }

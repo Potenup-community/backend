@@ -35,7 +35,6 @@ springdoc:
 
 jwt:
   secret: ${JWT_SECRET_TOKEN}
-  expiration-ms: 86400000
 
 google:
   auth:
