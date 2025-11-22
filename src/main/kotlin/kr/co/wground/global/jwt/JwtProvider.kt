@@ -9,7 +9,7 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 
 
-@Component
+
 class JwtProvider(@Value("\${jwt.secret}") secret: String) {
     private val secretKey: SecretKey?
 
