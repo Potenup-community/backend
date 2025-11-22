@@ -3,8 +3,10 @@ package kr.co.wground.post.application
 import kr.co.wground.post.application.dto.PostCreateDto
 import kr.co.wground.post.infra.PostRepository
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional
 class PostService(
     private val postRepository: PostRepository,
 ) {
