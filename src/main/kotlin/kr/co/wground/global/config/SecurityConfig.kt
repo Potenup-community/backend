@@ -17,6 +17,12 @@ class SecurityConfig(
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it.anyRequest().permitAll()
+//                it.requestMatchers(
+//                    "/api/v1/users/signup",
+//                    "/api/v1/auth/login",
+//                    "/swagger-ui/**"
+//                    ).permitAll()
+//                    .anyRequest().authenticated()
             }
             .formLogin { it.disable() }
             .httpBasic { it.disable() }

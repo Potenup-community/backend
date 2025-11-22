@@ -12,7 +12,9 @@ enum class UserServiceErrorCode(
     REQUEST_SIGNUP_ALREADY_EXISTED("Request signup already exists",HttpStatus.UNPROCESSABLE_ENTITY,"400 Bad Request"),
     INVALID_INPUT_VALUE("Invalid Input",HttpStatus.NOT_FOUND,"400 Bad Request"),
     NOT_PENDING_USER("Not pending user",HttpStatus.BAD_REQUEST,"400 Bad Request"),
-    ALREADY_SIGNED_USER("Already signed user",HttpStatus.BAD_REQUEST,"400 Bad Request")
+    ALREADY_SIGNED_USER("Already signed user",HttpStatus.BAD_REQUEST,"400 Bad Request"),
+    USER_NOT_FOUND("User not found", HttpStatus.NOT_FOUND, "404 Not Found"),
+    INACTIVE_USER("User is not active", HttpStatus.FORBIDDEN, "403 Forbidden")
     ;
 
 }
