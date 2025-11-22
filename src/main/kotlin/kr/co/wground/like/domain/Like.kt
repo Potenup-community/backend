@@ -20,19 +20,17 @@ import java.time.LocalDateTime
     ]
 )
 class Like(
-    @Column(name = "user_id", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     val userId: UserId,
 
-    @Column(name = "post_id", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     val postId: PostId,
 ) {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null
+    val id: Long = 0
 
     @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
-
-    private constructor() : this(0, 0)
 }
