@@ -4,6 +4,5 @@ enum class UserRole {
     ADMIN,
     MEMBER,
     INSTRUCTOR,
-    EXPIRED,
-    BLOCKED;
+    BLOCKED,
 }
