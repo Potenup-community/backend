@@ -20,7 +20,8 @@ import java.time.LocalDateTime
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long?,
+    @Column(name = "user_id", nullable = false)
+    val userId: Long?,
 
     @Column(name = "affiliation_id", nullable = false)
     val affiliationId: Long,
@@ -82,5 +83,17 @@ class User(
 
     fun blocked() {
         this.status = UserStatus.BLOCKED
+    }
+
+    fun toRequestSignUp() : RequestSignup{
+        return RequestSignup(
+            requestSignupId = null,
+            affiliationId = this.affiliationId,
+            email = this.email,
+            name = this.name,
+            phoneNumber = this.phoneNumber,
+            provider = this.provider,
+
+        )
     }
 }

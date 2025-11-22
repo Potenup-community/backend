@@ -36,3 +36,7 @@ springdoc:
 jwt:
   secret: ${JWT_SECRET_KEY}
   expiration-ms: 86400000
+
+google:
+  auth:
+    client-id: ${GOOGLE_CLIENT_KEY}

@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import kr.co.wground.user.controller.dto.request.SignUpRequest
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import org.springframework.data.annotation.CreatedDate
@@ -20,19 +21,17 @@ import java.time.LocalDateTime
 class RequestSignup(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long?,
+    @Column(name = "request_signup_id", nullable = false)
+    val requestSignupId: Long?,
 
     @Column(nullable = false)
     var affiliationId: Long,
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     val email: String,
 
     @Column(nullable = false)
     val name: String,
-
-    @Column(nullable = false)
-    val role: UserRole,
 
     @Column(nullable = false)
     val phoneNumber: String,
@@ -47,11 +46,19 @@ class RequestSignup(
     @Column(nullable = true)
     var deletedAt: LocalDateTime? = null,
 
+    role: UserRole = UserRole.BLOCKED,
+
+    status: UserSignupStatus = UserSignupStatus.PENDING,
+
     ) {
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    var role: UserRole = role
+        protected set
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    var requestStatus: UserSignupStatus = UserSignupStatus.PENDING
+    var requestStatus: UserSignupStatus = status
         protected set
 
     @LastModifiedDate
