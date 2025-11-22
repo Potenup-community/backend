@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.Lob
 import jakarta.persistence.OneToOne
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
@@ -21,24 +22,20 @@ class Post(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    @Column(nullable = false)
     val writerId: Long,
-    @Column(nullable = false)
     val title: String,
-    val content: String? = null,
-    @Column(updatable = false, nullable = false)
+    @Lob
+    val content: String,
+    @Column(updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    @Column(nullable = false)
     val modifiedAt: LocalDateTime = LocalDateTime.now(),
     val deletedAt: LocalDateTime? = null,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     val topic: Topic,
 
     @OneToOne(cascade = [PERSIST, MERGE, REMOVE], orphanRemoval = true)
     @JoinColumn(name = "post_status_id")
-    @Column(nullable = false)
     val postStatus: PostStatus,
 ) {
     companion object {
