@@ -11,10 +11,10 @@ data class PostCreateRequest(
     @field:NotNull(message = "작성할 토픽을 선택해주세요.")
     val topic: Topic,
     @field:NotEmpty(message = "제목을 작성해주세요.")
-    @field:Size(max = 50)
+    @field:Size(max = 50, message = "제목은 50자까지 작성할 수 있습니다.")
     val title: String,
     @field:NotEmpty(message = "본문을 작성해주세요.")
-    @field:Size(max = 5000)
+    @field:Size(max = 5000, message = "본문은 5000자까지 작성할 수 있습니다.")
     val content: String,
     val highlightType: HighlightType? = null,
 ) {

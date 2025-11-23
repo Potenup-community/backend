@@ -23,9 +23,8 @@ class Post(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     val writerId: Long,
-    val title: String,
-    @Lob
-    val content: String,
+    title: String,
+    content: String,
     @Column(updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val modifiedAt: LocalDateTime = LocalDateTime.now(),
@@ -38,6 +37,13 @@ class Post(
     @JoinColumn(name = "post_status_id")
     val postStatus: PostStatus,
 ) {
+    var title: String = title
+        protected set
+
+    @Lob
+    var content: String = content
+        protected set
+
     companion object {
         fun from(
             writerId: Long,
@@ -54,5 +60,10 @@ class Post(
                 postStatus = PostStatus(highlightType = highlightType),
             )
         }
+    }
+
+    fun update(title: String?, content: String?) {
+        title?.let { this.title = it }
+        content?.let { this.content = it }
     }
 }
