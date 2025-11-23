@@ -13,6 +13,8 @@ enum class UserServiceErrorCode(
     INVALID_INPUT_VALUE("Invalid Input",HttpStatus.NOT_FOUND,"400 Bad Request"),
     NOT_PENDING_USER("Not pending user",HttpStatus.BAD_REQUEST,"400 Bad Request"),
     ALREADY_SIGNED_USER("Already signed user",HttpStatus.BAD_REQUEST,"400 Bad Request"),
+    USER_NOT_FOUND("User not found",HttpStatus.NOT_FOUND,"400 Not Found"),
+    ROLE_ADMIN_CANT_REQUEST("Admin 권한은 요청 될 수 없습니다.", HttpStatus.BAD_REQUEST,"400 Bad Request"),
     ;
 
 }

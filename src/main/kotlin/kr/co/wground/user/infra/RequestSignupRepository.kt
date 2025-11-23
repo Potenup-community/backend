@@ -5,8 +5,7 @@ import kr.co.wground.user.domain.constant.UserSignupStatus
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface RequestSignupRepository : JpaRepository<RequestSignup, Long> {
-    fun findByEmail(email: String): RequestSignup?
+    fun findByUserId(userId: Long): RequestSignup?
     fun existsByUserId(userId: Long): Boolean
     fun findAllByRequestStatus(requestStatus : UserSignupStatus) : List<RequestSignup>
-    fun existsByEmailAndRequestStatus(email: String, status : UserSignupStatus): Boolean
 }

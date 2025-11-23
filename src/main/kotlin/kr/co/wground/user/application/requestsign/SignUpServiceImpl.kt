@@ -30,11 +30,16 @@ class SignUpServiceImpl(
     }
 
     override fun decisionSignup(request: DecisionStatusRequest) {
-        val requestSignUp = signupRepository.findByIdOrNull(request.userId)
+        val requestSignUp = signupRepository.findByIdOrNull(request.id)
             ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
 
-        val user = userRepository.findByIdOrNull(request.userId)
-            ?: throw BusinessException(UserServiceErrorCode.INVALID_INPUT_VALUE)
+        if(requestSignUp.requestStatus == UserSignupStatus.ACCEPTED){
+            throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
+        }
+
+        val user = userRepository.findByIdOrNull(requestSignUp.userId)
+            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+
 
         if (request.requestStatus != UserSignupStatus.ACCEPTED) {
             requestSignUp.reject()

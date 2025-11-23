@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.PreUpdate
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserStatus
 import org.springframework.data.annotation.CreatedDate
@@ -38,7 +39,6 @@ class User(
     @Column(nullable = false)
     val provider: String,
 
-    @CreatedDate
     @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
@@ -59,10 +59,14 @@ class User(
     var status: UserStatus = status
         protected set
 
-    @LastModifiedDate
-    @Column(nullable = false)
+    @Column
     var modifiedAt: LocalDateTime = LocalDateTime.now()
         protected set
+
+    @PreUpdate
+    fun onPreUpdate() {
+        modifiedAt = LocalDateTime.now()
+    }
 
     fun toAdmin() {
         this.role = UserRole.ADMIN

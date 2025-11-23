@@ -1,3 +1,5 @@
+package kr.co.wground.user.application.requestsign.event
+
 import kr.co.wground.user.domain.RequestSignup
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.presentation.request.SignUpRequest
