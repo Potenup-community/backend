@@ -18,9 +18,11 @@ class LoginServiceImpl(
     val userRepository: UserRepository,
     private val googleTokenVerifier: GoogleTokenVerifier,
     private val jwtProvider: JwtProvider,
+    @Value("\${jwt.expiration-ms}")
+    private val accessTokenExpiredMs: Long,
+    @Value("\${jwt.refresh-expiration-ms}")
+    private val refreshTokenExpiredMs: Long
 ) : LoginService {
-    private val accessTokenExpiredMs: Long = 86400000
-    private val refreshTokenExpiredMs: Long = 3155760000000
 
     @Transactional
     override fun login(loginRequest: LoginRequest): LoginResponse {
