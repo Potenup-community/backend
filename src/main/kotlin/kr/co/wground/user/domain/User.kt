@@ -64,6 +64,13 @@ class User(
     var modifiedAt: LocalDateTime = LocalDateTime.now()
         protected set
 
+    var refreshToken: String? = null
+        protected set
+
+    fun updateRefreshToken(refreshToken: String?) {
+        this.refreshToken = refreshToken
+    }
+
     fun toAdmin() {
         this.role = UserRole.ADMIN
     }

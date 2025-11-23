@@ -14,7 +14,9 @@ enum class UserServiceErrorCode(
     NOT_PENDING_USER("Not pending user",HttpStatus.BAD_REQUEST,"400 Bad Request"),
     ALREADY_SIGNED_USER("Already signed user",HttpStatus.BAD_REQUEST,"400 Bad Request"),
     USER_NOT_FOUND("User not found", HttpStatus.NOT_FOUND, "404 Not Found"),
-    INACTIVE_USER("User is not active", HttpStatus.FORBIDDEN, "403 Forbidden")
+    INACTIVE_USER("User is not active", HttpStatus.FORBIDDEN, "403 Forbidden"),
+    INVALID_REFRESH_TOKEN("Invalid refresh token",HttpStatus.BAD_REQUEST,"Invalid refresh token"),
+    TOKEN_EXPIRED("Token expired",HttpStatus.FORBIDDEN, "Token Expired"),
     ;
 
 }
