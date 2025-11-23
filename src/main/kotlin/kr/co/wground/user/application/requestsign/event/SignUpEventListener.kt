@@ -1,5 +1,7 @@
 package kr.co.wground.user.application.requestsign.event
 
+import kr.co.wground.exception.BusinessException
+import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.context.ApplicationEventPublisher
@@ -31,7 +33,27 @@ class SignUpEventListener(
     @EventListener
     @Transactional
     fun saveSignupLog(event: SignUpEvent) {
+        checkAlreadyExists(event.user.userId!!)
+
         val newRequest = event.user.toRequestSignup()
+
         signupRepository.save(newRequest)
+    }
+
+    private fun checkAlreadyExists(userId: Long) {
+        validateExistRequestSign(userId)
+        validateExistUser(userId)
+    }
+
+    private fun validateExistUser(userId: Long) {
+        if (userRepository.existsUserById(userId)) {
+            throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_ALREADY_EXISTED)
+        }
+    }
+
+    private fun validateExistRequestSign(userId: Long) {
+        if (signupRepository.existsByUserId(userId)) {
+            throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_ALREADY_EXISTED)
+        }
     }
 }

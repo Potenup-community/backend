@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface RequestSignupRepository : JpaRepository<RequestSignup, Long> {
     fun findByEmail(email: String): RequestSignup?
-    fun existsUserByEmail(email: String): Boolean
+    fun existsByUserId(userId: Long): Boolean
     fun findAllByRequestStatus(requestStatus : UserSignupStatus) : List<RequestSignup>
     fun existsByEmailAndRequestStatus(email: String, status : UserSignupStatus): Boolean
 }
