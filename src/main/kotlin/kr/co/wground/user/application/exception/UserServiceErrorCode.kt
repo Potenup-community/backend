@@ -15,6 +15,6 @@ enum class UserServiceErrorCode(
     ALREADY_SIGNED_USER("Already signed user",HttpStatus.BAD_REQUEST,"400 Bad Request"),
     USER_NOT_FOUND("User not found",HttpStatus.NOT_FOUND,"400 Not Found"),
     ROLE_ADMIN_CANT_REQUEST("Admin 권한은 요청 될 수 없습니다.", HttpStatus.BAD_REQUEST,"400 Bad Request"),
-    ;
+    INACTIVE_USER("유저가 활성화 되지않았습니다.",HttpStatus.BAD_REQUEST,"400 Bad Request"),
 
 }

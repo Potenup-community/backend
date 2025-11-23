@@ -49,6 +49,4 @@ class SignUpServiceImpl(
         requestSignUp.approve()
         user.approve()
     }
-
-
 }

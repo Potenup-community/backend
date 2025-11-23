@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController
 class AdminController(
     private val signUpService: SignUpService
 ) {
-
     @PutMapping("/users/decision")
     fun decisionSignUp(@RequestBody request: DecisionStatusRequest): ResponseEntity<Unit> {
         signUpService.decisionSignup(request)

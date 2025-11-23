@@ -18,7 +18,6 @@ class SignUpEventListener(
     private val signupRepository: RequestSignupRepository,
     private val applicationEventPublisher: ApplicationEventPublisher
 ) {
-
     @TransactionalEventListener
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun saveUser(event: UserAddEvent) {
