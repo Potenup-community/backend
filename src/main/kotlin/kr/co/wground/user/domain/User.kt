@@ -62,6 +62,13 @@ class User(
     var modifiedAt: LocalDateTime = LocalDateTime.now()
         protected set
 
+    var refreshToken: String? = null
+        protected set
+
+    fun updateRefreshToken(refreshToken: String?) {
+        this.refreshToken = refreshToken
+    }
+
     @PreUpdate
     fun onPreUpdate() {
         modifiedAt = LocalDateTime.now()
