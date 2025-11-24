@@ -1,3 +1,5 @@
 package kr.co.wground.user.application.requestsign.event
 
-data class SignUpEvent(val eventPublishedUserId: Long)
+import kr.co.wground.like.domain.UserId
+
+data class SignUpEvent(val eventPublishedUserId: UserId)

@@ -30,7 +30,7 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
     }
 
     fun createToken(
-        userId: Long?,
+        userId: Long,
         expiredMs: Long
     ): String {
         return Jwts.builder()

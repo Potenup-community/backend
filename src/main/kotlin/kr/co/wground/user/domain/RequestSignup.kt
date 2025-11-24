@@ -8,12 +8,13 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.PreUpdate
+import kr.co.wground.like.domain.UserId
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import java.time.LocalDateTime
 
 @Entity
 class RequestSignup(
-    val userId: Long,
+    val userId: UserId,
     status: UserSignupStatus = UserSignupStatus.PENDING,
     ) {
     @Id
