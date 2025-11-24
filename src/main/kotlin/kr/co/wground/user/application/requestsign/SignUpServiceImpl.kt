@@ -9,7 +9,10 @@ import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.application.requestsign.event.UserAddEvent
+import kr.co.wground.user.application.requestsign.event.SignUpEvent
+import kr.co.wground.user.application.requestsign.event.toReturnUserId
+import kr.co.wground.user.application.requestsign.event.toUserEntity
+import kr.co.wground.user.domain.constant.UserRole
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -25,28 +28,53 @@ class SignUpServiceImpl(
 
     override fun addUser(request: SignUpRequest){
         val email = googleTokenVerifier.verify(request.idToken)
+        val newUser = request.toUserEntity(email)
 
-        eventPublisher.publishEvent(UserAddEvent(request,email))
+        validateExistUser(newUser.email)
+        validateUserRole(newUser.role)
+
+        val savedUser = userRepository.save(newUser)
+
+        eventPublisher.publishEvent(SignUpEvent(savedUser.toReturnUserId()))
     }
 
     override fun decisionSignup(request: DecisionStatusRequest) {
         val requestSignUp = signupRepository.findByIdOrNull(request.id)
             ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
 
-        if(requestSignUp.requestStatus == UserSignupStatus.ACCEPTED){
-            throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
-        }
+        validateUserStatus(requestSignUp.requestStatus)
 
         val user = userRepository.findByIdOrNull(requestSignUp.userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-
-        if (request.requestStatus != UserSignupStatus.ACCEPTED) {
+        if (!isAcceptedStatus(requestSignUp.requestStatus)) {
             requestSignUp.reject()
             return
         }
 
         requestSignUp.approve()
         user.approve()
+    }
+
+    private fun validateExistUser(email: String) {
+        if (userRepository.existsUserByEmail(email)) {
+            throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_ALREADY_EXISTED)
+        }
+    }
+
+    private fun validateUserRole(role: UserRole){
+        if(role == UserRole.ADMIN){
+            throw BusinessException(UserServiceErrorCode.ROLE_ADMIN_CANT_REQUEST)
+        }
+    }
+
+    private fun validateUserStatus(requestSignUp: UserSignupStatus){
+        if(isAcceptedStatus(requestSignUp)){
+            throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
+        }
+    }
+
+    private fun isAcceptedStatus(requestSignUp: UserSignupStatus) : Boolean{
+        return requestSignUp == UserSignupStatus.ACCEPTED
     }
 }

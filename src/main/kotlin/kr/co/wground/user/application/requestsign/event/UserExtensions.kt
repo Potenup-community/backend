@@ -1,6 +1,7 @@
 package kr.co.wground.user.application.requestsign.event
 
-import kr.co.wground.user.domain.RequestSignup
+import kr.co.wground.exception.BusinessException
+import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.presentation.request.SignUpRequest
 
@@ -16,9 +17,8 @@ fun SignUpRequest.toUserEntity(email: String): User{
     )
 }
 
-fun User.toRequestSignup() : RequestSignup {
-    return RequestSignup(
-        requestSignupId = null,
-        userId = this.userId!!
-    )
+fun User.toReturnUserId() : Long {
+    val userId = this.userId ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+
+    return userId
 }
