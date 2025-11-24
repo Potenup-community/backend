@@ -1,8 +1,8 @@
 package kr.co.wground.user.presentation
 
-import com.google.api.client.auth.oauth2.RefreshTokenRequest
 import kr.co.wground.user.application.login.LoginService
 import kr.co.wground.user.presentation.request.LoginRequest
+import kr.co.wground.user.presentation.request.RefreshTokenRequest
 import kr.co.wground.user.presentation.response.AccessTokenResponse
 import kr.co.wground.user.presentation.response.LoginResponse
 import org.springframework.http.ResponseEntity
@@ -22,7 +22,7 @@ class AuthController(private val memberService: LoginService) {
     }
 
     @PostMapping("/refresh")
-    fun refreshAccessToken(@RequestBody request: RefreshTokenRequest): ResponseEntity<Unit> {
+    fun refreshAccessToken(@RequestBody request: RefreshTokenRequest): ResponseEntity<AccessTokenResponse> {
         val response = memberService.refreshAccessToken(request)
         return ResponseEntity.ok(response)
     }

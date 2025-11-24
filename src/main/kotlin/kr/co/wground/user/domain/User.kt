@@ -24,7 +24,7 @@ class User(
     val userId: UserId = 0,
 
     @Column(nullable = false)
-    val affiliationId: Long,
+    val trackId: Long,
 
     @Column(unique = true)
     val email: String,
@@ -86,8 +86,9 @@ class User(
         this.role = UserRole.MEMBER
     }
 
-    fun approve() {
+    fun approve(role: UserRole) {
         this.status = UserStatus.ACTIVE
+        this.role = role
     }
 
     fun blocked() {

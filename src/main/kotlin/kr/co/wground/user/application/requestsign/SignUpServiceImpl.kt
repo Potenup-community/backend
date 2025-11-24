@@ -47,13 +47,12 @@ class SignUpServiceImpl(
         val user = userRepository.findByIdOrNull(requestSignUp.userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        if (!isAcceptedStatus(requestSignUp.requestStatus)) {
+        if (request.requestStatus== UserSignupStatus.REJECTED) {
             requestSignUp.reject()
             return
         }
-
         requestSignUp.approve()
-        user.approve()
+        user.approve(request.role)
     }
 
     private fun validateExistUser(email: String) {

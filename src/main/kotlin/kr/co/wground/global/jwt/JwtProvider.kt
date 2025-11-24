@@ -25,7 +25,7 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
             .build()
             .parseSignedClaims(token)
             .payload
-            .get("id", Long::class.java)
+            .get("id", Number::class.java).toLong()
     }
 
     fun isExpired(token: String?): Boolean {
