@@ -9,7 +9,7 @@ import kr.co.wground.exception.BusinessException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.security.GeneralSecurityException
-import java.util.*
+import java.util.Collections
 
 @Component
 class GoogleTokenVerifier(
