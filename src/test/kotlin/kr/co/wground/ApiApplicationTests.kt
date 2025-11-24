@@ -1,4 +1,4 @@
-package kr.co.wground.api
+package kr.co.wground
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
