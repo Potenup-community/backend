@@ -3,6 +3,7 @@ package kr.co.wground.post.domain
 import jakarta.persistence.CascadeType.MERGE
 import jakarta.persistence.CascadeType.PERSIST
 import jakarta.persistence.CascadeType.REMOVE
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -10,6 +11,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
+import jakarta.persistence.Lob
 import jakarta.persistence.OneToOne
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
@@ -21,8 +23,9 @@ class Post(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
     val writerId: Long,
-    val title: String,
-    val content: String,
+    title: String,
+    content: String,
+    @Column(updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val modifiedAt: LocalDateTime = LocalDateTime.now(),
     val deletedAt: LocalDateTime? = null,
@@ -34,6 +37,13 @@ class Post(
     @JoinColumn(name = "post_status_id")
     val postStatus: PostStatus,
 ) {
+    var title: String = title
+        protected set
+
+    @Lob
+    var content: String = content
+        protected set
+
     companion object {
         fun from(
             writerId: Long,
@@ -50,5 +60,10 @@ class Post(
                 postStatus = PostStatus(highlightType = highlightType),
             )
         }
+    }
+
+    fun update(title: String?, content: String?) {
+        title?.let { this.title = it }
+        content?.let { this.content = it }
     }
 }
