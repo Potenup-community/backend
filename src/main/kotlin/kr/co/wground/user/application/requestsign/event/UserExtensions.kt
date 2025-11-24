@@ -8,7 +8,6 @@ import kr.co.wground.user.presentation.request.SignUpRequest
 
 fun SignUpRequest.toUserEntity(email: String): User{
     return User(
-        userId = null,
         affiliationId = this.affiliationId,
         email = email,
         name = this.name,
