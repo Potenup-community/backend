@@ -1,5 +1,5 @@
 package kr.co.wground.global.config.resolver
 
-data class UserId(
+data class CurrentUserId(
     val value : Long?
 )

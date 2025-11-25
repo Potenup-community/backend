@@ -1,6 +1,6 @@
 package kr.co.wground.user.presentation
 
-import kr.co.wground.global.config.resolver.UserId
+import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.user.application.login.LoginService
 import kr.co.wground.user.presentation.request.LoginRequest
 import kr.co.wground.user.presentation.request.RefreshTokenRequest
@@ -31,9 +31,8 @@ class AuthController(private val memberService: LoginService) {
     }
     //테스트용 정보 조회
     @GetMapping("/info")
-    fun userInfo(userId : UserId): ResponseEntity<UserInfoResponse> {
-        println("qweqweqwe: ${userId}")
-        val response = memberService.userInfo(userId.value)
+    fun userInfo(currentUserId : CurrentUserId): ResponseEntity<UserInfoResponse> {
+        val response = memberService.userInfo(currentUserId.value)
         return ResponseEntity.ok(response)
     }
 }

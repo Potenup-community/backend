@@ -14,7 +14,7 @@ import org.springframework.web.method.support.ModelAndViewContainer
 @Component
 class UserIdArgumentResolver : HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean {
-        return parameter.parameterType == UserId::class.java
+        return parameter.parameterType == CurrentUserId::class.java
     }
 
     override fun resolveArgument(
@@ -29,6 +29,6 @@ class UserIdArgumentResolver : HandlerMethodArgumentResolver {
         )
         val principal  = authentication.principal as? UserPrincipal
             ?: throw BusinessException(UserServiceErrorCode.AUTHENTICATION_NOT_FOUND)
-        return UserId(principal.userId)
+        return CurrentUserId(principal.userId)
     }
 }

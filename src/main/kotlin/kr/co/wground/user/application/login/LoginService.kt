@@ -1,6 +1,6 @@
 package kr.co.wground.user.application.login
 
-import kr.co.wground.like.domain.UserId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.user.presentation.request.RefreshTokenRequest
 import kr.co.wground.user.presentation.request.LoginRequest
 import kr.co.wground.user.presentation.response.AccessTokenResponse
