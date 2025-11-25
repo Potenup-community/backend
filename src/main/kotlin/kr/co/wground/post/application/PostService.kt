@@ -29,7 +29,7 @@ class PostService(
         //TODO(user 자신의 포스트인지 검증 로직 필요)
         val foundPost = findPostByIdOrThrow(dto.id)
 
-        foundPost.update(dto.title, dto.content)
+        foundPost.update(dto.topic,dto.title, dto.content)
     }
 
     private fun findPostByIdOrThrow(id: PostId): Post {

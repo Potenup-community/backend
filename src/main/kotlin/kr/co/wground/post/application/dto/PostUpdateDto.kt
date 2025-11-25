@@ -2,6 +2,7 @@ package kr.co.wground.post.application.dto
 
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.post.domain.enums.Topic
 
 data class PostUpdateDto(
     val id: PostId,
