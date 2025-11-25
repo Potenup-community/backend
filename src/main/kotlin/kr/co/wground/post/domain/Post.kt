@@ -25,18 +25,21 @@ class Post(
     val writerId: Long,
     title: String,
     content: String,
+    topic: Topic,
+
     @Column(updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val modifiedAt: LocalDateTime = LocalDateTime.now(),
     val deletedAt: LocalDateTime? = null,
 
-    @Enumerated(EnumType.STRING)
-    val topic: Topic,
-
     @OneToOne(cascade = [PERSIST, MERGE, REMOVE], orphanRemoval = true)
     @JoinColumn(name = "post_status_id")
     val postStatus: PostStatus,
 ) {
+    @Enumerated(EnumType.STRING)
+    var topic: Topic = topic
+        protected set
+
     var title: String = title
         protected set
 
@@ -62,7 +65,8 @@ class Post(
         }
     }
 
-    fun update(title: String?, content: String?) {
+    fun update(topic: Topic?, title: String?, content: String?) {
+        topic?.let { this.topic = it}
         title?.let { this.title = it }
         content?.let { this.content = it }
     }
