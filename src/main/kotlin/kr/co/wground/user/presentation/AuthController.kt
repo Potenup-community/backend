@@ -29,10 +29,4 @@ class AuthController(private val memberService: LoginService) {
         val response = memberService.refreshAccessToken(request)
         return ResponseEntity.ok(response)
     }
-    //테스트용 정보 조회
-    @GetMapping("/info")
-    fun userInfo(currentUserId : CurrentUserId): ResponseEntity<UserInfoResponse> {
-        val response = memberService.userInfo(currentUserId.value)
-        return ResponseEntity.ok(response)
-    }
 }

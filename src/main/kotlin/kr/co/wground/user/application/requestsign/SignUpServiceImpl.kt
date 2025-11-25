@@ -9,6 +9,7 @@ import kr.co.wground.user.application.requestsign.event.toReturnUserId
 import kr.co.wground.user.application.requestsign.event.toUserEntity
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
+import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
@@ -39,6 +40,8 @@ class SignUpServiceImpl(
     }
 
     override fun decisionSignup(request: DecisionStatusRequest) {
+        val userStatus = request.requestStatus
+
         val requestSignUp = signupRepository.findByIdOrNull(request.id)
             ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
 
@@ -47,12 +50,14 @@ class SignUpServiceImpl(
         val user = userRepository.findByIdOrNull(requestSignUp.userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        if (request.requestStatus== UserSignupStatus.REJECTED) {
+        if (userStatus == UserSignupStatus.REJECTED) {
             requestSignUp.reject()
             return
         }
+
+
         requestSignUp.approve()
-        user.approve(request.role)
+        user.approve(UserStatus.ACTIVE,request.role)
     }
 
     private fun validateExistUser(email: String) {

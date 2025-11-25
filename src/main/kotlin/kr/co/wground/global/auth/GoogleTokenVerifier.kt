@@ -20,7 +20,6 @@ class GoogleTokenVerifier(
         val verifier = GoogleIdTokenVerifier.Builder(NetHttpTransport(), GsonFactory())
             .setAudience(Collections.singletonList(clientId))
             .build()
-        print(idToken)
         val googleIdToken: GoogleIdToken? = try {
             verifier.verify(idToken)
         } catch (e: IllegalArgumentException) {

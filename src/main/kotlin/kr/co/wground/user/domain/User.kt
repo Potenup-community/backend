@@ -86,9 +86,11 @@ class User(
         this.role = UserRole.MEMBER
     }
 
-    fun approve(role: UserRole) {
-        this.status = UserStatus.ACTIVE
-        this.role = role
+    fun approve(userStatus : UserStatus, role: UserRole) {
+        if(userStatus == UserStatus.ACTIVE) {
+            this.status = UserStatus.ACTIVE
+            this.role = role
+        }
     }
 
     fun blocked() {

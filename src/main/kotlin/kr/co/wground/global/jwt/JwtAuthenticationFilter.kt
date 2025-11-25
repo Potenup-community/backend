@@ -21,8 +21,6 @@ class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
     private val userRepository: UserRepository,
 ) : OncePerRequestFilter() {
-    private val log = LoggerFactory.getLogger(this.javaClass)!!
-
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -42,19 +40,13 @@ class JwtAuthenticationFilter(
             }
 
         } catch (e: SignatureException) {
-            log.warn("Invalid JWT signature.")
         } catch (e: MalformedJwtException) {
-            log.warn("Invalid JWT token.")
         } catch (e: ExpiredJwtException) {
-            log.warn("Expired JWT token.")
             filterChain.doFilter(request, response)
             return
         } catch (e: UnsupportedJwtException) {
-            log.warn("Unsupported JWT token.")
         } catch (e: IllegalArgumentException) {
-            log.warn("JWT claims string is empty.")
         } catch (e: Exception) {
-            log.error("An unexpected error occurred during JWT validation.", e)
         }
 
         filterChain.doFilter(request, response)

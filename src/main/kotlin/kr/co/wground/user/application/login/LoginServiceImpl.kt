@@ -3,7 +3,6 @@ package kr.co.wground.user.application.login
 import io.jsonwebtoken.ExpiredJwtException
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
-import kr.co.wground.global.common.UserId
 import kr.co.wground.global.jwt.JwtProvider
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserStatus
@@ -12,7 +11,6 @@ import kr.co.wground.user.presentation.request.LoginRequest
 import kr.co.wground.user.presentation.request.RefreshTokenRequest
 import kr.co.wground.user.presentation.response.AccessTokenResponse
 import kr.co.wground.user.presentation.response.LoginResponse
-import kr.co.wground.user.presentation.response.UserInfoResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -77,13 +75,5 @@ class LoginServiceImpl(
         val newAccessToken = jwtProvider.createToken(user.userId, accessTokenExpiredMs)
 
         return AccessTokenResponse(newAccessToken)
-    }
-
-    @Transactional
-    override fun userInfo(userId: UserId?): UserInfoResponse {
-        print(userId)
-        userId ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
-        val user = userRepository.findByIdOrNull(userId) ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
-        return UserInfoResponse.from(user)
     }
 }
