@@ -2,6 +2,7 @@ package kr.co.wground.like.application
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.like.application.dto.LikeDto
+import kr.co.wground.like.domain.enums.LikeAction
 import kr.co.wground.like.infra.LikeJpaRepository
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
@@ -20,12 +21,12 @@ class LikeService(
     private val transactionTemplate = TransactionTemplate(transactionManager)
 
     fun changeLike(dto: LikeDto) {
-        postRepository.findByIdOrNull(dto.postId) ?: throw BusinessException(PostErrorCode.NOT_FOUND_POST)
+        postRepository.findByIdOrNull(dto.postId)
+            ?: throw BusinessException(PostErrorCode.NOT_FOUND_POST)
 
-        if (dto.liked) {
-            like(dto)
-        } else {
-            unlike(dto)
+        when (dto.action) {
+            LikeAction.LIKED -> like(dto)
+            LikeAction.UNLIKED -> unlike(dto)
         }
     }
 
