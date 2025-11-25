@@ -1,6 +1,6 @@
 package kr.co.wground.user.infra
 
-import kr.co.wground.like.domain.UserId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.user.domain.RequestSignup
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import org.springframework.data.jpa.repository.JpaRepository
