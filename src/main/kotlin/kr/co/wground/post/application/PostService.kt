@@ -1,7 +1,7 @@
 package kr.co.wground.post.application
 
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.like.domain.PostId
+import kr.co.wground.global.common.PostId
 import kr.co.wground.post.application.dto.PostCreateDto
 import kr.co.wground.post.application.dto.PostUpdateDto
 import kr.co.wground.post.domain.Post

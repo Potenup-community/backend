@@ -1,8 +1,8 @@
 package kr.co.wground.like.presentation.request
 
 import kr.co.wground.like.application.dto.LikeDto
-import kr.co.wground.like.domain.PostId
-import kr.co.wground.like.domain.UserId
+import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.like.domain.enums.LikeAction
 
 data class LikeRequest(

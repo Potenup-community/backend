@@ -1,8 +1,8 @@
 package kr.co.wground.like.infra
 
 import kr.co.wground.like.domain.Like
-import kr.co.wground.like.domain.PostId
-import kr.co.wground.like.domain.UserId
+import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.UserId
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface LikeJpaRepository : JpaRepository<Like, Long> {

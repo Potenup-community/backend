@@ -1,7 +1,7 @@
 package kr.co.wground.user.application.requestsign.event
 
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.like.domain.UserId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.RequestSignup
 import kr.co.wground.user.infra.RequestSignupRepository

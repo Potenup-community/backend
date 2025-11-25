@@ -1,8 +1,8 @@
 package kr.co.wground.post.presentation.request
 
 import jakarta.validation.constraints.Size
-import kr.co.wground.like.domain.PostId
-import kr.co.wground.like.domain.UserId
+import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.post.application.dto.PostUpdateDto
 
 data class PostUpdateRequest(
