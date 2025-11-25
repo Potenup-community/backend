@@ -1,6 +1,6 @@
 package kr.co.wground.user.application.requestsign.event
 
-import kr.co.wground.like.domain.UserId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.presentation.request.SignUpRequest
 

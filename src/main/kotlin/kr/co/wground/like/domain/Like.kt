@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.UserId
 import java.time.LocalDateTime
 
 @Entity

@@ -9,7 +9,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.PreUpdate
-import kr.co.wground.like.domain.UserId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserStatus
 import org.springframework.data.jpa.domain.support.AuditingEntityListener

@@ -1,8 +1,8 @@
 package kr.co.wground.post.presentation
 
 import jakarta.validation.Valid
-import kr.co.wground.like.domain.PostId
-import kr.co.wground.like.domain.UserId
+import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.post.application.PostService
 import kr.co.wground.post.presentation.request.PostCreateRequest
 import kr.co.wground.post.presentation.request.PostUpdateRequest

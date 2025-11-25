@@ -1,7 +1,7 @@
 package kr.co.wground.like.presentation
 
 import kr.co.wground.like.application.LikeService
-import kr.co.wground.like.presentation.request.LikeCreateRequest
+import kr.co.wground.like.presentation.request.LikeRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -15,10 +15,13 @@ class LikeController(
 ) {
 
     @PostMapping
-    fun likePost(@RequestBody request: LikeCreateRequest): ResponseEntity<Unit> {
+    fun toggleLike(
+//        @AuthenticationPrincipal userId: UserId,
+        @RequestBody request: LikeRequest,
+    ): ResponseEntity<Unit> {
         // TODO: Get userId from security context
         val userId = 1L
-        likeService.likePost(request.toDto(userId))
+        likeService.changeLike(request.toDto(userId))
         return ResponseEntity.noContent().build()
     }
 }
