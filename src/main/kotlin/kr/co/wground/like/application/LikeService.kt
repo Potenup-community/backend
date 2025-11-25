@@ -6,6 +6,7 @@ import kr.co.wground.like.domain.enums.LikeAction
 import kr.co.wground.like.infra.LikeJpaRepository
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
+import org.hibernate.exception.ConstraintViolationException
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -21,13 +22,16 @@ class LikeService(
     private val transactionTemplate = TransactionTemplate(transactionManager)
 
     fun changeLike(dto: LikeDto) {
-        postRepository.findByIdOrNull(dto.postId)
-            ?: throw BusinessException(PostErrorCode.NOT_FOUND_POST)
-
+        validatePostExists(dto)
         when (dto.action) {
             LikeAction.LIKED -> like(dto)
             LikeAction.UNLIKED -> unlike(dto)
         }
+    }
+
+    private fun validatePostExists(dto: LikeDto) {
+        postRepository.findByIdOrNull(dto.postId)
+            ?: throw BusinessException(PostErrorCode.NOT_FOUND_POST)
     }
 
     private fun like(dto: LikeDto) {
@@ -45,8 +49,15 @@ class LikeService(
     private fun runIdempotently(action: () -> Unit) {
         try {
             transactionTemplate.execute { action() }
-        } catch (_: DataIntegrityViolationException) {
-            // no-op
+        } catch (e: DataIntegrityViolationException) {
+            if (!e.isDuplicateLikeViolation()) {
+                throw e
+            }
         }
+    }
+
+    private fun DataIntegrityViolationException.isDuplicateLikeViolation(): Boolean {
+        val constraint = cause as? ConstraintViolationException
+        return constraint?.constraintName == "like_uk"
     }
 }
