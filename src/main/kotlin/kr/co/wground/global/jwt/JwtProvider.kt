@@ -25,7 +25,7 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
             .build()
             .parseSignedClaims(token)
             .payload
-            .get("id", Number::class.java).toLong()
+            .get("userId", Number::class.java).toLong()
     }
 
     fun isExpired(token: String?): Boolean {
@@ -43,7 +43,7 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
         expiredMs: Long
     ): String {
         return Jwts.builder()
-            .claim("id", userId)
+            .claim("userId", userId)
             .issuedAt(Date(System.currentTimeMillis()))
             .expiration(Date(System.currentTimeMillis() + expiredMs))
             .signWith(secretKey)

@@ -18,5 +18,6 @@ enum class UserServiceErrorCode(
     INACTIVE_USER("유저가 활성화 되지않았습니다.",HttpStatus.BAD_REQUEST,"400 Bad Request"),
     INVALID_REFRESH_TOKEN("Invalid refresh token",HttpStatus.BAD_REQUEST,"Invalid refresh token"),
     TOKEN_EXPIRED("Token expired",HttpStatus.FORBIDDEN, "Token Expired"),
+    AUTHENTICATION_NOT_FOUND("Authentication not found",HttpStatus.BAD_REQUEST, "Authentication not found"),
     ;
 }

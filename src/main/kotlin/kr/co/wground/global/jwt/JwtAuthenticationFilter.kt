@@ -28,34 +28,35 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val token = resolveToken(request)
+        val token = resolveToken(request) ?: return filterChain.doFilter(request, response)
 
-        if (token != null) {
-            try {
-                val userId = jwtProvider.getUserId(token)
-                val user = userRepository.findByIdOrNull(userId)
+        try {
+            val userId = jwtProvider.getUserId(token)
+            val user = userRepository.findByIdOrNull(userId)
+            val principle = UserPrincipal(userId)
+            if (user != null) {
+                val authorities = listOf(SimpleGrantedAuthority("ROLE_${user.role.name}"))
+                val authentication = UsernamePasswordAuthenticationToken(principle, null, authorities)
 
-                if (user != null) {
-                    val authorities = listOf(SimpleGrantedAuthority("ROLE_${user.role.name}"))
-                    val authentication = UsernamePasswordAuthenticationToken(userId.toString(), null, authorities)
-
-                    SecurityContextHolder.getContext().authentication = authentication
-                }
-
-            } catch (e: SignatureException) {
-                log.warn("Invalid JWT signature.")
-            } catch (e: MalformedJwtException) {
-                log.warn("Invalid JWT token.")
-            } catch (e: ExpiredJwtException) {
-                log.warn("Expired JWT token.")
-            } catch (e: UnsupportedJwtException) {
-                log.warn("Unsupported JWT token.")
-            } catch (e: IllegalArgumentException) {
-                log.warn("JWT claims string is empty.")
-            } catch (e: Exception) {
-                log.error("An unexpected error occurred during JWT validation.", e)
+                SecurityContextHolder.getContext().authentication = authentication
             }
+
+        } catch (e: SignatureException) {
+            log.warn("Invalid JWT signature.")
+        } catch (e: MalformedJwtException) {
+            log.warn("Invalid JWT token.")
+        } catch (e: ExpiredJwtException) {
+            log.warn("Expired JWT token.")
+            filterChain.doFilter(request, response)
+            return
+        } catch (e: UnsupportedJwtException) {
+            log.warn("Unsupported JWT token.")
+        } catch (e: IllegalArgumentException) {
+            log.warn("JWT claims string is empty.")
+        } catch (e: Exception) {
+            log.error("An unexpected error occurred during JWT validation.", e)
         }
+
         filterChain.doFilter(request, response)
     }
 
