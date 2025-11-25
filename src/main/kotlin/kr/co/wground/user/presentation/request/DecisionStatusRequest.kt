@@ -5,6 +5,6 @@ import kr.co.wground.user.domain.constant.UserSignupStatus
 
 data class DecisionStatusRequest(
     val id : Long,
-    val role : UserRole,
+    val role : UserRole?,
     val requestStatus : UserSignupStatus
 )

@@ -19,5 +19,6 @@ enum class UserServiceErrorCode(
     INVALID_REFRESH_TOKEN("Invalid refresh token",HttpStatus.BAD_REQUEST,"Invalid refresh token"),
     TOKEN_EXPIRED("Token expired",HttpStatus.FORBIDDEN, "Token Expired"),
     AUTHENTICATION_NOT_FOUND("Authentication not found",HttpStatus.BAD_REQUEST, "Authentication not found"),
+    APPROVE_NECESSARY_ROLE("Approve is Necessary role",HttpStatus.BAD_REQUEST,"400 Bad Request"),
     ;
 }

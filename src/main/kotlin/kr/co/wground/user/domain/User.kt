@@ -9,8 +9,11 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.PreUpdate
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
+import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserRole
+import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
@@ -86,14 +89,15 @@ class User(
         this.role = UserRole.MEMBER
     }
 
-    fun approve(userStatus : UserStatus, role: UserRole) {
-        if(userStatus == UserStatus.ACTIVE) {
-            this.status = UserStatus.ACTIVE
-            this.role = role
+    fun decide(status: UserSignupStatus, role: UserRole?) {
+        when (status) {
+            UserSignupStatus.ACCEPTED -> {
+                val decidedRole = role ?: throw BusinessException(UserServiceErrorCode.APPROVE_NECESSARY_ROLE)
+                this.status = UserStatus.ACTIVE
+                this.role = decidedRole
+            }
+            UserSignupStatus.REJECTED,
+            UserSignupStatus.PENDING -> this.status = UserStatus.BLOCKED
         }
-    }
-
-    fun blocked() {
-        this.status = UserStatus.BLOCKED
     }
 }
