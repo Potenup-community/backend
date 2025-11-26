@@ -36,15 +36,15 @@ class Post(
     @JoinColumn(name = "post_status_id")
     val postStatus: PostStatus,
 ) {
+    @Embedded
+    var postBody: PostBody = PostBody(title, content)
+        protected set
+
     @Enumerated(EnumType.STRING)
     var topic: Topic = topic
         protected set
 
-    var title: String = title
-        protected set
-
-    @Lob
-    var content: String = content
+    var modifiedAt: LocalDateTime = LocalDateTime.now()
         protected set
 
     companion object {
