@@ -9,4 +9,7 @@ enum class PostErrorCode(
     override val errorCode: String,
 ): ErrorCode {
     NOT_FOUND_POST("해당 게시글을 찾을 수 없습니다.", HttpStatus.NOT_FOUND, "P-0001"),
+    TITLE_TOO_LONG("게시글의 제목은 50자를 넘을 수 없습니다.", HttpStatus.BAD_REQUEST, "P-0002"),
+    CONTENT_TOO_LONG("게시글의 본문은 5000자를 넘을 수 없습니다.", HttpStatus.BAD_REQUEST, "P-0003"),
+    TITLE_IS_EMPTY("게시글의 제목을 넣어주세요.", HttpStatus.BAD_REQUEST, "P-0004"),
 }
