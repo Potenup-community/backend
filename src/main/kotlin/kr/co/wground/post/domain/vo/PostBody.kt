@@ -11,13 +11,18 @@ data class PostBody(
     @Lob
     val content: String
 ) {
+    companion object {
+        const val MAX_TITLE_LENGTH = 50
+        const val MAX_CONTENT_LENGTH = 5000
+    }
+
     init {
         validateTitle()
         validateContent()
     }
 
     private fun validateTitle() {
-        require(title.length <= 50) {
+        require(title.length <= MAX_TITLE_LENGTH) {
             throw BusinessException(PostErrorCode.TITLE_TOO_LONG)
         }
 
@@ -25,7 +30,9 @@ data class PostBody(
     }
 
     private fun validateContent() {
-        require(content.length <= 5000) { throw BusinessException(PostErrorCode.CONTENT_TOO_LONG) }
+        require(content.length <= MAX_CONTENT_LENGTH) {
+            throw BusinessException(PostErrorCode.CONTENT_TOO_LONG)
+        }
     }
 
     fun updatePostBody(title: String?, content: String?): PostBody {
