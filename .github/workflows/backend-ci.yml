@@ -42,7 +42,7 @@ jobs:
         run: ./gradlew build --no-daemon
 
       - name: Register the test results as comments in the PR
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files: '**/build/test-results/test/TEST-*.xml'
