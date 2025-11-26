@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import kr.co.wground.post.domain.enums.HighlightType
+import kr.co.wground.post.domain.enums.HighlightType.NONE
 
 @Entity
 class PostStatus(
@@ -16,13 +17,13 @@ class PostStatus(
     val viewCount: Int = 0,
     val commentCount: Int = 0,
     val likeCount: Int = 0,
-    highlightType: HighlightType? = null,
+    highlightType: HighlightType?,
     val isDeleted: Boolean = false,
 ) {
     @Enumerated(EnumType.STRING)
-    var highlightType: HighlightType? = highlightType
+    var highlightType: HighlightType = highlightType ?: NONE
         protected set
     fun highlight(type: HighlightType?) {
-        highlightType = type
+        type?.let { this.highlightType = it }
     }
 }
