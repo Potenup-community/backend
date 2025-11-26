@@ -1,12 +1,12 @@
-package kr.co.wground.user.application.requestsign
+package kr.co.wground.user.application.common
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.application.requestsign.event.SignUpEvent
-import kr.co.wground.user.application.requestsign.event.DecideUserStatusEvent
-import kr.co.wground.user.application.requestsign.event.toReturnUserId
-import kr.co.wground.user.application.requestsign.event.toUserEntity
+import kr.co.wground.user.application.common.event.SignUpEvent
+import kr.co.wground.user.application.common.event.DecideUserStatusEvent
+import kr.co.wground.user.application.common.event.toReturnUserId
+import kr.co.wground.user.application.common.event.toUserEntity
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.infra.RequestSignupRepository

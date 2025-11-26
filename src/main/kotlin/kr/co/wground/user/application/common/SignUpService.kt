@@ -1,4 +1,4 @@
-package kr.co.wground.user.application.requestsign
+package kr.co.wground.user.application.common
 
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.SignUpRequest

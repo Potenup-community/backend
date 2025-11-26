@@ -1,6 +1,6 @@
 package kr.co.wground.user.presentation
 
-import kr.co.wground.user.application.requestsign.SignUpService
+import kr.co.wground.user.application.common.SignUpService
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PutMapping

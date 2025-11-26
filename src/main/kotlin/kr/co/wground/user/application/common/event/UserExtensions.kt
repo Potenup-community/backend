@@ -1,4 +1,4 @@
-package kr.co.wground.user.application.requestsign.event
+package kr.co.wground.user.application.common.event
 
 import kr.co.wground.global.common.UserId
 import kr.co.wground.user.domain.User
