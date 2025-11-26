@@ -1,4 +1,4 @@
-package kr.co.wground.user.application.login
+package kr.co.wground.user.application.common
 
 import kr.co.wground.user.presentation.request.RefreshTokenRequest
 import kr.co.wground.user.presentation.request.LoginRequest

@@ -1,4 +1,4 @@
-package kr.co.wground.user.application.login
+package kr.co.wground.user.application.common
 
 import io.jsonwebtoken.ExpiredJwtException
 import kr.co.wground.exception.BusinessException

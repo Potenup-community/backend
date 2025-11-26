@@ -1,7 +1,7 @@
 package kr.co.wground.user.presentation
 
 import jakarta.validation.Valid
-import kr.co.wground.user.application.login.LoginService
+import kr.co.wground.user.application.common.LoginService
 import kr.co.wground.user.presentation.request.LoginRequest
 import kr.co.wground.user.presentation.request.RefreshTokenRequest
 import kr.co.wground.user.presentation.response.AccessTokenResponse
