@@ -12,7 +12,6 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.Lob
 import jakarta.persistence.OneToOne
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
@@ -72,7 +71,7 @@ class Post(
         content: String?,
         type: HighlightType?
     ) {
-        topic?.let { this.topic = it}
+        topic?.let { this.topic = it }
         this.postBody = this.postBody.updatePostBody(title, content)
         postStatus.highlight(type)
 
