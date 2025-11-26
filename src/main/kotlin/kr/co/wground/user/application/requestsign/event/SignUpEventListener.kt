@@ -29,3 +29,7 @@ class SignUpEventListener(
         }
     }
 }
+
+data class SignUpEvent(
+    val eventPublishedUserId: UserId
+)

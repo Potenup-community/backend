@@ -19,7 +19,7 @@ class RequestSignup(
     ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val requestSignupId: Long? = null
+    val requestSignupId: Long = 0
 
     @Enumerated(EnumType.STRING)
     var requestStatus: UserSignupStatus = status
@@ -35,11 +35,8 @@ class RequestSignup(
     fun onPreUpdate() {
         modifiedAt = LocalDateTime.now()
     }
-    fun approve() {
-        this.requestStatus = UserSignupStatus.ACCEPTED
-    }
 
-    fun reject() {
-        this.requestStatus = UserSignupStatus.REJECTED
+    fun decide(status: UserSignupStatus) {
+        requestStatus = status
     }
 }

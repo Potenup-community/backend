@@ -1,10 +1,10 @@
 package kr.co.wground.user.application.requestsign
 
-import jakarta.transaction.Transactional
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.requestsign.event.SignUpEvent
+import kr.co.wground.user.application.requestsign.event.DecideUserStatusEvent
 import kr.co.wground.user.application.requestsign.event.toReturnUserId
 import kr.co.wground.user.application.requestsign.event.toUserEntity
 import kr.co.wground.user.domain.constant.UserRole
@@ -16,6 +16,7 @@ import kr.co.wground.user.presentation.request.SignUpRequest
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional
@@ -39,21 +40,14 @@ class SignUpServiceImpl(
     }
 
     override fun decisionSignup(request: DecisionStatusRequest) {
-        val requestSignUp = signupRepository.findByIdOrNull(request.id)
+        val requestSign = signupRepository.findByIdOrNull(request.id)
             ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
 
-        validateUserStatus(requestSignUp.requestStatus)
+        validateUserStatus(requestSign.requestStatus)
+        requestSign.decide(request.requestStatus)
 
-        val user = userRepository.findByIdOrNull(requestSignUp.userId)
-            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
-
-        if (!isAcceptedStatus(requestSignUp.requestStatus)) {
-            requestSignUp.reject()
-            return
-        }
-
-        requestSignUp.approve()
-        user.approve()
+        val event = DecideUserStatusEvent.from(requestSign.userId, request)
+        eventPublisher.publishEvent(event)
     }
 
     private fun validateExistUser(email: String) {
@@ -68,8 +62,8 @@ class SignUpServiceImpl(
         }
     }
 
-    private fun validateUserStatus(requestSignUp: UserSignupStatus) {
-        if (isAcceptedStatus(requestSignUp)) {
+    private fun validateUserStatus(requestStatus: UserSignupStatus) {
+        if (isAcceptedStatus(requestStatus)) {
             throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
         }
     }

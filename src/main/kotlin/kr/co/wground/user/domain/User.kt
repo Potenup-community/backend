@@ -9,8 +9,11 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.PreUpdate
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
+import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserRole
+import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
@@ -24,7 +27,7 @@ class User(
     val userId: UserId = 0,
 
     @Column(nullable = false)
-    val affiliationId: Long,
+    val trackId: Long,
 
     @Column(unique = true)
     val email: String,
@@ -62,6 +65,13 @@ class User(
     var modifiedAt: LocalDateTime = LocalDateTime.now()
         protected set
 
+    var refreshToken: String? = null
+        protected set
+
+    fun updateRefreshToken(refreshToken: String?) {
+        this.refreshToken = refreshToken
+    }
+
     @PreUpdate
     fun onPreUpdate() {
         modifiedAt = LocalDateTime.now()
@@ -79,11 +89,15 @@ class User(
         this.role = UserRole.MEMBER
     }
 
-    fun approve() {
-        this.status = UserStatus.ACTIVE
-    }
-
-    fun blocked() {
-        this.status = UserStatus.BLOCKED
+    fun decide(status: UserSignupStatus, role: UserRole?) {
+        when (status) {
+            UserSignupStatus.ACCEPTED -> {
+                val decidedRole = role ?: throw BusinessException(UserServiceErrorCode.APPROVE_NECESSARY_ROLE)
+                this.status = UserStatus.ACTIVE
+                this.role = decidedRole
+            }
+            UserSignupStatus.REJECTED,
+            UserSignupStatus.PENDING -> this.status = UserStatus.BLOCKED
+        }
     }
 }

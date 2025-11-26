@@ -10,7 +10,7 @@ import javax.crypto.spec.SecretKeySpec
 
 @Component
 class JwtProvider(@Value("\${jwt.secret}") secret: String) {
-    private val secretKey: SecretKey= SecretKeySpec(
+    private val secretKey: SecretKey = SecretKeySpec(
         secret.toByteArray(), Jwts
             .SIG
             .HS256
@@ -18,6 +18,15 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
             .build()
             .getAlgorithm()
     )
+
+    fun getUserId(token: String): Long {
+        return Jwts.parser()
+            .verifyWith(secretKey)
+            .build()
+            .parseSignedClaims(token)
+            .payload
+            .get("userId", Number::class.java).toLong()
+    }
 
     fun isExpired(token: String?): Boolean {
         return Jwts.parser()
@@ -34,7 +43,7 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
         expiredMs: Long
     ): String {
         return Jwts.builder()
-            .claim("id", userId)
+            .claim("userId", userId)
             .issuedAt(Date(System.currentTimeMillis()))
             .expiration(Date(System.currentTimeMillis() + expiredMs))
             .signWith(secretKey)
