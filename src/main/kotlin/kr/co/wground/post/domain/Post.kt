@@ -4,6 +4,7 @@ import jakarta.persistence.CascadeType.MERGE
 import jakarta.persistence.CascadeType.PERSIST
 import jakarta.persistence.CascadeType.REMOVE
 import jakarta.persistence.Column
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -15,6 +16,7 @@ import jakarta.persistence.Lob
 import jakarta.persistence.OneToOne
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
+import kr.co.wground.post.domain.vo.PostBody
 import java.time.LocalDateTime
 
 @Entity
@@ -29,7 +31,6 @@ class Post(
 
     @Column(updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    val modifiedAt: LocalDateTime = LocalDateTime.now(),
     val deletedAt: LocalDateTime? = null,
 
     @OneToOne(cascade = [PERSIST, MERGE, REMOVE], orphanRemoval = true)
@@ -65,9 +66,20 @@ class Post(
         }
     }
 
-    fun update(topic: Topic?, title: String?, content: String?) {
+    fun update(
+        topic: Topic?,
+        title: String?,
+        content: String?,
+        type: HighlightType?
+    ) {
         topic?.let { this.topic = it}
-        title?.let { this.title = it }
-        content?.let { this.content = it }
+        this.postBody = this.postBody.updatePostBody(title, content)
+        postStatus.highlight(type)
+
+        modified()
+    }
+
+    private fun modified() {
+        this.modifiedAt = LocalDateTime.now()
     }
 }

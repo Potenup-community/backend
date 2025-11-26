@@ -16,8 +16,13 @@ class PostStatus(
     val viewCount: Int = 0,
     val commentCount: Int = 0,
     val likeCount: Int = 0,
-    @Enumerated(EnumType.STRING)
-    val highlightType: HighlightType? = null,
+    highlightType: HighlightType? = null,
     val isDeleted: Boolean = false,
 ) {
+    @Enumerated(EnumType.STRING)
+    var highlightType: HighlightType? = highlightType
+        protected set
+    fun highlight(type: HighlightType?) {
+        highlightType = type
+    }
 }
