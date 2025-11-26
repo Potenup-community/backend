@@ -1,5 +1,6 @@
 package kr.co.wground.user.presentation
 
+import jakarta.validation.Valid
 import kr.co.wground.user.application.requestsign.SignUpService
 import kr.co.wground.user.presentation.request.SignUpRequest
 import org.springframework.http.ResponseEntity
@@ -14,7 +15,7 @@ class RequestSignController(
     private val signUpService: SignUpService,
 ) {
     @PostMapping("/signup")
-    fun requestSignUp(@RequestBody requestSignup: SignUpRequest) : ResponseEntity<Unit> {
+    fun requestSignUp(@Valid @RequestBody requestSignup: SignUpRequest) : ResponseEntity<Unit> {
         signUpService.addUser(requestSignup)
         return ResponseEntity.ok().build()
     }
