@@ -23,6 +23,7 @@ class PostStatus(
     @Enumerated(EnumType.STRING)
     var highlightType: HighlightType = highlightType ?: NONE
         protected set
+
     fun highlight(type: HighlightType?) {
         type?.let { this.highlightType = it }
     }
