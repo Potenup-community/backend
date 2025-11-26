@@ -35,10 +35,8 @@ class JwtAuthenticationFilter(
             if (user != null) {
                 val authorities = listOf(SimpleGrantedAuthority("ROLE_${user.role.name}"))
                 val authentication = UsernamePasswordAuthenticationToken(principle, null, authorities)
-
                 SecurityContextHolder.getContext().authentication = authentication
             }
-
         } catch (e: SignatureException) {
         } catch (e: MalformedJwtException) {
         } catch (e: ExpiredJwtException) {

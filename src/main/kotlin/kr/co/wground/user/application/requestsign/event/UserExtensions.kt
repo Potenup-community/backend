@@ -16,6 +16,5 @@ fun SignUpRequest.toUserEntity(email: String): User{
 
 fun User.toReturnUserId() : UserId {
     val userId = this.userId
-
     return userId
 }
