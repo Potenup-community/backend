@@ -79,6 +79,10 @@ class Comment private constructor(
             return
         }
         this.content = newContent
+        updateModifiedDateTime()
+    }
+
+    private fun updateModifiedDateTime() {
         this.modifiedAt = LocalDateTime.now()
     }
 }
