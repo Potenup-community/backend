@@ -31,11 +31,11 @@ data class DecideUserStatusEvent(
     val role: UserRole?
 ){
     companion object {
-        fun from(userId : UserId, request: DecisionStatusRequest): DecideUserStatusEvent{
+        fun from(userId : UserId, status : UserSignupStatus, role: UserRole?): DecideUserStatusEvent{
             return DecideUserStatusEvent(
                 userId = userId,
-                decision = request.requestStatus,
-                role = request.role
+                decision = status,
+                role = role
             )
         }
     }

@@ -28,7 +28,7 @@ class AdminOperation(
         validateUserStatus(requestSign.requestStatus)
         requestSign.decide(request.requestStatus)
 
-        val event = DecideUserStatusEvent.from(requestSign.userId, request)
+        val event = DecideUserStatusEvent.from(requestSign.userId, request.requestStatus,request.role)
         eventPublisher.publishEvent(event)
     }
 
