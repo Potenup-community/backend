@@ -44,12 +44,8 @@ class RequestSignup(
     }
 
     private fun validateUserStatus() {
-        if (isAcceptedStatus()) {
+        if (this.requestStatus.isAcceptedStatus()) {
             throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
         }
-    }
-
-    private fun isAcceptedStatus(): Boolean {
-        return this.requestStatus == UserSignupStatus.ACCEPTED
     }
 }

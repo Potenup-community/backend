@@ -14,7 +14,7 @@ data class UserInfoDto(
     val trackId: Long,
     val role: UserRole,
     val status: UserStatus,
-    val requestStatus: UserSignupStatus?,
+    val requestStatus: UserSignupStatus,
     val provider: String,
     val createdAt: LocalDateTime,
     val modifiedAt: LocalDateTime,
