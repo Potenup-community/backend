@@ -8,6 +8,7 @@ import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
 
 data class CommentCreateRequest(
+    @field:NotNull(message = "게시글 ID를 입력해주세요.")
     val postId: PostId,
     val parentId: CommentId? = null,
     @field:NotNull(message = "댓글 내용을 입력해주세요.")

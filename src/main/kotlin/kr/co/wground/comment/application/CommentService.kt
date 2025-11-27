@@ -29,7 +29,7 @@ class CommentService(
         dto.parentId?.let { parentId ->
             val parentComment = commentRepository.findById(parentId)
                 .orElseThrow { BusinessException(CommentErrorCode.COMMENT_PARENT_ID_NOT_FOUND) }
-            if (parentComment.parentId != null) {
+            if (!parentComment.isParent()) {
                 throw BusinessException(CommentErrorCode.COMMENT_REPLY_NOT_ALLOWED)
             }
         }

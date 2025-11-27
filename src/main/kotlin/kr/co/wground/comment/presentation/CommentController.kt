@@ -4,12 +4,12 @@ import jakarta.validation.Valid
 import kr.co.wground.comment.application.CommentService
 import kr.co.wground.comment.presentation.request.CommentCreateRequest
 import kr.co.wground.global.config.resolver.CurrentUserId
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.net.URI
 
 @RestController
 @RequestMapping("/api/v1/comments")
@@ -22,7 +22,7 @@ class CommentController(
         writerId: CurrentUserId
     ): ResponseEntity<Void> {
         val commentDto = request.toDto(writerId)
-        val commentId = commentService.write(commentDto)
-        return ResponseEntity.created(URI.create("/api/v1/comments$commentId")).build()
+        commentService.write(commentDto)
+        return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 }

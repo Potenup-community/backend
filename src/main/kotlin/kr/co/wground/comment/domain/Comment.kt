@@ -61,6 +61,10 @@ class Comment private constructor(
     var isDeleted: Boolean = false
         protected set
 
+    fun isParent(): Boolean {
+        return parentId == null
+    }
+
     fun update(content: String?) {
         content?.let { this.content = it }
         this.modifiedAt = LocalDateTime.now()
