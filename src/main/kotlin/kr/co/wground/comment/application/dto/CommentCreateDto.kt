@@ -4,7 +4,7 @@ import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
 
-data class CommentDto(
+data class CommentCreateDto(
     val writerId: CurrentUserId,
     val postId: PostId,
     val parentId: CommentId? = null,
