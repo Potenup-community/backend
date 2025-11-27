@@ -3,18 +3,13 @@ package kr.co.wground.user.application.common
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.application.common.event.SignUpEvent
-import kr.co.wground.user.application.common.event.DecideUserStatusEvent
-import kr.co.wground.user.application.common.event.toReturnUserId
-import kr.co.wground.user.application.common.event.toUserEntity
+import kr.co.wground.user.application.operations.event.SignUpEvent
+import kr.co.wground.user.application.operations.event.toReturnUserId
+import kr.co.wground.user.application.operations.event.toUserEntity
 import kr.co.wground.user.domain.constant.UserRole
-import kr.co.wground.user.domain.constant.UserSignupStatus
-import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
-import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.SignUpRequest
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -22,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class SignUpServiceImpl(
     private val userRepository: UserRepository,
-    private val signupRepository: RequestSignupRepository,
     private val googleTokenVerifier: GoogleTokenVerifier,
     private val eventPublisher: ApplicationEventPublisher
 ) : SignUpService {
@@ -39,17 +33,6 @@ class SignUpServiceImpl(
         eventPublisher.publishEvent(SignUpEvent(savedUser.toReturnUserId()))
     }
 
-    override fun decisionSignup(request: DecisionStatusRequest) {
-        val requestSign = signupRepository.findByIdOrNull(request.id)
-            ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
-
-        validateUserStatus(requestSign.requestStatus)
-        requestSign.decide(request.requestStatus)
-
-        val event = DecideUserStatusEvent.from(requestSign.userId, request)
-        eventPublisher.publishEvent(event)
-    }
-
     private fun validateExistUser(email: String) {
         if (userRepository.existsUserByEmail(email)) {
             throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
@@ -60,15 +43,5 @@ class SignUpServiceImpl(
         if (role == UserRole.ADMIN) {
             throw BusinessException(UserServiceErrorCode.ROLE_ADMIN_CANT_REQUEST)
         }
-    }
-
-    private fun validateUserStatus(requestStatus: UserSignupStatus) {
-        if (isAcceptedStatus(requestStatus)) {
-            throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
-        }
-    }
-
-    private fun isAcceptedStatus(requestSignUp: UserSignupStatus): Boolean {
-        return requestSignUp == UserSignupStatus.ACCEPTED
     }
 }

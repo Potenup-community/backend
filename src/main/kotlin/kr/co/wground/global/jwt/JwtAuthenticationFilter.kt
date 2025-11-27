@@ -6,8 +6,10 @@ import io.jsonwebtoken.UnsupportedJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import kr.co.wground.global.jwt.constant.HEADER_NAME
+import kr.co.wground.global.jwt.constant.SUBSTRING_INDEX
+import kr.co.wground.global.jwt.constant.TOKEN_START
 import kr.co.wground.user.infra.UserRepository
-import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
@@ -51,10 +53,10 @@ class JwtAuthenticationFilter(
     }
 
     private fun resolveToken(request: HttpServletRequest): String? {
-        val bearerToken = request.getHeader("Authorization")
+        val bearerToken = request.getHeader(HEADER_NAME)
 
-        return if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            bearerToken.substring(7)
+        return if (bearerToken != null && bearerToken.startsWith(TOKEN_START)) {
+            bearerToken.substring(SUBSTRING_INDEX)
         } else {
             null
         }
