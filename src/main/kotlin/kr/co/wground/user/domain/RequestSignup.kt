@@ -8,7 +8,9 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.PreUpdate
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
+import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import java.time.LocalDateTime
 
@@ -37,6 +39,17 @@ class RequestSignup(
     }
 
     fun decide(status: UserSignupStatus) {
+        validateUserStatus()
         requestStatus = status
+    }
+
+    private fun validateUserStatus() {
+        if (isAcceptedStatus()) {
+            throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
+        }
+    }
+
+    private fun isAcceptedStatus(): Boolean {
+        return this.requestStatus == UserSignupStatus.ACCEPTED
     }
 }

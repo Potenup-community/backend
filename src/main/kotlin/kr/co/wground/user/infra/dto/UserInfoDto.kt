@@ -1,4 +1,4 @@
-package kr.co.wground.user.presentation.response
+package kr.co.wground.user.infra.dto
 
 import kr.co.wground.global.common.UserId
 import kr.co.wground.user.domain.constant.UserRole
@@ -6,7 +6,7 @@ import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
 import java.time.LocalDateTime
 
-data class UserListResponse(
+data class UserInfoDto(
     val userId: UserId,
     val name: String,
     val email: String,
@@ -15,5 +15,7 @@ data class UserListResponse(
     val role: UserRole,
     val status: UserStatus,
     val requestStatus: UserSignupStatus?,
-    val createdAt: LocalDateTime
+    val provider: String,
+    val createdAt: LocalDateTime,
+    val modifiedAt: LocalDateTime,
 )

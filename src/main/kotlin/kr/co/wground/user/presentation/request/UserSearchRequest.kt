@@ -11,5 +11,6 @@ data class UserSearchRequest(
     val role: UserRole? = null,
     val status: UserStatus? = null,
     val requestStatus: UserSignupStatus? = null,
+    val provider : String? = null,
     val isGraduated: Boolean? = null,
 )

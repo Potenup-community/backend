@@ -2,14 +2,15 @@ package kr.co.wground.user.infra
 
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.jpa.impl.JPAQuery
 import com.querydsl.jpa.impl.JPAQueryFactory
+import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.domain.QRequestSignup.requestSignup
 import kr.co.wground.user.domain.QUser.user
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
-import kr.co.wground.user.presentation.request.UserSearchRequest
-import kr.co.wground.user.presentation.response.UserListResponse
+import kr.co.wground.user.infra.dto.UserInfoDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.support.PageableExecutionUtils
@@ -20,14 +21,14 @@ class CustomUserRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : CustomUserRepository {
     override fun searchUsers(
-        condition: UserSearchRequest,
+        condition: ConditionDto,
         pageable: Pageable
-    ): Page<UserListResponse> {
+    ): Page<UserInfoDto> {
 
         val content = queryFactory
             .select(
                 Projections.constructor(
-                    UserListResponse::class.java,
+                    UserInfoDto::class.java,
                     user.userId,
                     user.name,
                     user.email,
@@ -36,23 +37,37 @@ class CustomUserRepositoryImpl(
                     user.role,
                     user.status,
                     requestSignup.requestStatus,
-                    user.createdAt
+                    user.provider,
+                    user.createdAt,
+                    user.modifiedAt
                 )
             )
             .from(user)
             .leftJoin(requestSignup).on(user.userId.eq(requestSignup.userId)) // 항상 Left Join 걸어도 성능 문제 거의 없음
             .where(
                 nameContains(condition.name),
-                emailContains(condition.email),
+                emailEquals(condition.email),
                 trackIdEquals(condition.trackId),
                 roleEquals(condition.role),
                 statusEquals(condition.status),
-                requestStatusEquals(condition.requestStatus)
+                requestStatusEquals(condition.requestStatus),
+                providerEquals(condition.provider)
             )
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
             .orderBy(user.createdAt.desc())
             .fetch()
+
+        val predicatesArray = predicates(condition)
+        val countQuery = getUserCountQuery(condition,predicatesArray)
+
+        return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchOne() ?: 0L }
+    }
+
+    private fun getUserCountQuery(
+        condition: ConditionDto,
+        predicates: Array<BooleanExpression?>
+    ): JPAQuery<Long> {
 
         val countQuery = queryFactory
             .select(user.count())
@@ -62,23 +77,32 @@ class CustomUserRepositoryImpl(
             countQuery.leftJoin(requestSignup).on(user.userId.eq(requestSignup.userId))
         }
 
-        countQuery.where(
+        countQuery.where(*predicates)
+
+        return countQuery
+    }
+
+    private fun predicates(condition: ConditionDto): Array<BooleanExpression?> {
+        return arrayOf(
             nameContains(condition.name),
-            emailContains(condition.email),
+            emailEquals(condition.email),
             trackIdEquals(condition.trackId),
             roleEquals(condition.role),
             statusEquals(condition.status),
-            requestStatusEquals(condition.requestStatus),
+            providerEquals(condition.provider),
+            requestStatusEquals(condition.requestStatus)
         )
+    }
 
-        return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchOne() ?: 0L }
+    private fun providerEquals(provider: String?): BooleanExpression? {
+        return if(!provider.isNullOrBlank()) user.provider.contains(provider) else null
     }
 
     private fun nameContains(name: String?): BooleanExpression? {
         return if (!name.isNullOrBlank()) user.name.contains(name) else null
     }
 
-    private fun emailContains(email: String?): BooleanExpression? {
+    private fun emailEquals(email: String?): BooleanExpression? {
         return if (!email.isNullOrBlank()) user.email.contains(email) else null
     }
 
@@ -103,10 +127,4 @@ class CustomUserRepositoryImpl(
             requestSignup.requestStatus.eq(it)
         }
     }
-//
-//    private fun isGraduatedIs(isGraduated : Boolean?): BooleanExpression? {
-//        return isGraduated?.let{
-//            true //TODO
-//        }
-//    }
 }

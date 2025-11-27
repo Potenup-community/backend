@@ -3,9 +3,9 @@ package kr.co.wground.user.application.common
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.application.Operations.event.SignUpEvent
-import kr.co.wground.user.application.Operations.event.toReturnUserId
-import kr.co.wground.user.application.Operations.event.toUserEntity
+import kr.co.wground.user.application.operations.event.SignUpEvent
+import kr.co.wground.user.application.operations.event.toReturnUserId
+import kr.co.wground.user.application.operations.event.toUserEntity
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.SignUpRequest
