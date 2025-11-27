@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.PreUpdate
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserRole
@@ -27,7 +28,7 @@ class User(
     val userId: UserId = 0,
 
     @Column(nullable = false)
-    val trackId: Long,
+    val trackId: TrackId,
 
     @Column(unique = true)
     val email: String,
