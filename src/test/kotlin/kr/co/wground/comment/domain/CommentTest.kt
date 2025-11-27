@@ -17,7 +17,7 @@ class CommentTest {
     @DisplayName("댓글 작성 - 성공")
     fun shouldSuccessWriteComment_whenValidInput() {
         // given
-        val writerId = CurrentUserId(1)
+        val writerId = CurrentUserId(1).value
         val postId = 1L
         val content = "정상적인 댓글 내용입니다."
 
@@ -56,7 +56,7 @@ class CommentTest {
         // when & then
         assertThatThrownBy {
             Comment.create(
-                CurrentUserId(1),
+                CurrentUserId(1).value,
                 postId = 1,
                 parentId = null,
                 content = content,
@@ -74,7 +74,7 @@ class CommentTest {
         // when & then
         assertThatThrownBy {
             Comment.create(
-                writerId = CurrentUserId(1),
+                writerId = CurrentUserId(1).value,
                 postId = 1,
                 parentId = null,
                 content = longContent,
