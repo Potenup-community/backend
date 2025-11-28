@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Lob
+import jakarta.persistence.PreUpdate
 import kr.co.wground.comment.exception.CommentErrorCode
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
@@ -73,16 +74,13 @@ class Comment private constructor(
         return parentId == null
     }
 
-    fun updateContent(newContent: String) {
-        validateContent(newContent)
-        if (this.content == newContent) {
-            return
-        }
-        this.content = newContent
-        updateModifiedDateTime()
+    @PreUpdate
+    private fun onPreUpdate() {
+        this.modifiedAt = LocalDateTime.now()
     }
 
-    private fun updateModifiedDateTime() {
-        this.modifiedAt = LocalDateTime.now()
+    fun updateContent(newContent: String) {
+        validateContent(newContent)
+        this.content = newContent
     }
 }
