@@ -6,12 +6,12 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Lob
+import jakarta.persistence.PreUpdate
 import kr.co.wground.comment.exception.CommentErrorCode
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
-import kr.co.wground.global.config.resolver.CurrentUserId
 import java.time.LocalDateTime
 
 @Entity
@@ -37,10 +37,19 @@ class Comment private constructor(
     companion object {
         private const val MAX_CONTENT_LENGTH = 2000
 
-        fun create(writerId: CurrentUserId, postId: PostId, parentId: CommentId?, content: String): Comment {
-            require(content.isNotBlank()) { throw BusinessException(CommentErrorCode.CONTENT_IS_EMPTY) }
-            require(content.length < MAX_CONTENT_LENGTH) { throw BusinessException(CommentErrorCode.CONTENT_IS_TOO_LONG) }
-            return Comment(writerId.value, postId, parentId, content)
+        fun create(writerId: UserId, postId: PostId, parentId: CommentId?, content: String): Comment {
+            validateContent(content)
+            return Comment(writerId, postId, parentId, content)
+        }
+
+        private fun validateContent(content: String) {
+            when {
+                content.isBlank() ->
+                    throw BusinessException(CommentErrorCode.CONTENT_IS_EMPTY)
+
+                content.length > MAX_CONTENT_LENGTH ->
+                    throw BusinessException(CommentErrorCode.CONTENT_IS_TOO_LONG)
+            }
         }
     }
 
@@ -65,8 +74,13 @@ class Comment private constructor(
         return parentId == null
     }
 
-    fun update(content: String?) {
-        content?.let { this.content = it }
+    @PreUpdate
+    private fun onPreUpdate() {
         this.modifiedAt = LocalDateTime.now()
+    }
+
+    fun updateContent(newContent: String) {
+        validateContent(newContent)
+        this.content = newContent
     }
 }

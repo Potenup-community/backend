@@ -3,6 +3,7 @@ package kr.co.wground.post.presentation
 import jakarta.validation.Valid
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.global.common.WriterId
 import kr.co.wground.post.application.PostService
 import kr.co.wground.post.presentation.request.PostCreateRequest
 import kr.co.wground.post.presentation.request.PostUpdateRequest
@@ -20,7 +21,7 @@ class PostController(
     private val postService: PostService,
 ) {
     @PostMapping
-    fun writePost(@Valid@RequestBody request: PostCreateRequest, writerId: UserId = 1): Long {
+    fun writePost(@Valid@RequestBody request: PostCreateRequest, writerId: WriterId = 1): Long {
         return postService.createPost(request.toDto(writerId))
     }
 

@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
+import kr.co.wground.global.common.WriterId
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.post.domain.vo.PostBody
@@ -23,7 +24,7 @@ class Post(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    val writerId: Long,
+    val writerId: WriterId,
     title: String,
     content: String,
     topic: Topic,
