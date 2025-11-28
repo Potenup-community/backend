@@ -10,6 +10,7 @@ import org.mockito.Mockito.verify
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.scheduling.TaskScheduler
 import org.springframework.scheduling.Trigger
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Date
@@ -84,20 +85,50 @@ class TrackSchedulerManagerTest {
         override fun schedule(task: Runnable, startTime: Date): ScheduledFuture<*> =
             throw UnsupportedOperationException()
 
+        override fun scheduleAtFixedRate(
+            task: Runnable,
+            startTime: Instant,
+            period: Duration
+        ): ScheduledFuture<*> {
+            TODO("Not yet implemented")
+        }
+
         override fun schedule(task: Runnable, trigger: Trigger): ScheduledFuture<*> =
             throw UnsupportedOperationException()
 
         override fun scheduleAtFixedRate(task: Runnable, period: Long): ScheduledFuture<*> =
             throw UnsupportedOperationException()
 
+        override fun scheduleWithFixedDelay(
+            task: Runnable,
+            startTime: Instant,
+            delay: Duration
+        ): ScheduledFuture<*> {
+            TODO("Not yet implemented")
+        }
+
         override fun scheduleAtFixedRate(task: Runnable, startTime: Date, period: Long): ScheduledFuture<*> =
             throw UnsupportedOperationException()
+
+        override fun scheduleAtFixedRate(
+            task: Runnable,
+            period: Duration
+        ): ScheduledFuture<*> {
+            TODO("Not yet implemented")
+        }
 
         override fun scheduleWithFixedDelay(task: Runnable, delay: Long): ScheduledFuture<*> =
             throw UnsupportedOperationException()
 
         override fun scheduleWithFixedDelay(task: Runnable, startTime: Date, delay: Long): ScheduledFuture<*> =
             throw UnsupportedOperationException()
+
+        override fun scheduleWithFixedDelay(
+            task: Runnable,
+            delay: Duration
+        ): ScheduledFuture<*> {
+            TODO("Not yet implemented")
+        }
 
         private class TestScheduledFuture(
             private val task: Runnable,
