@@ -9,12 +9,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler
 @Configuration
 @EnableScheduling
 class SchedulerConfig {
-
+    private val POOL_SIZE = 5
     @Bean
     fun taskScheduler(): TaskScheduler {
         val scheduler = ThreadPoolTaskScheduler()
 
-        scheduler.poolSize = 5
+        scheduler.poolSize = POOL_SIZE
 
         scheduler.initialize()
         return scheduler

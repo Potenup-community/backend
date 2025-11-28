@@ -16,7 +16,7 @@ spring:
         format_sql: true
         use_sql_comments: true
         jdbc:
-          batch_size: 100
+          batch_size: ${BATCH_SIZE}
     database-platform: org.hibernate.dialect.MySQLDialect
 
 logging:

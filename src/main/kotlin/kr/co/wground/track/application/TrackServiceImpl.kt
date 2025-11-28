@@ -4,7 +4,6 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.track.application.dto.CreateTrackDto
 import kr.co.wground.track.application.dto.UpdateTrackDto
-import kr.co.wground.track.application.dto.toEntity
 import kr.co.wground.track.application.event.TrackChangedEvent
 import kr.co.wground.track.application.exception.TrackServiceErrorCode
 import kr.co.wground.track.domain.Track
