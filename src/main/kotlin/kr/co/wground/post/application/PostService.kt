@@ -2,11 +2,13 @@ package kr.co.wground.post.application
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.WriterId
 import kr.co.wground.post.application.dto.PostCreateDto
 import kr.co.wground.post.application.dto.PostUpdateDto
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,13 +23,12 @@ class PostService(
     }
 
     fun deletePost(id: Long) {
-        //TODO(user 자신의 포스트인지 검증 로직 필요)
         postRepository.deleteById(id)
     }
 
     fun updatePost(dto: PostUpdateDto) {
-        //TODO(user 자신의 포스트인지 검증 로직 필요)
         val foundPost = findPostByIdOrThrow(dto.id)
+        validatePostOwner(foundPost, dto.writerId)
 
         foundPost.update(
             topic = dto.topic,
@@ -40,5 +41,9 @@ class PostService(
     private fun findPostByIdOrThrow(id: PostId): Post {
         return postRepository.findByIdOrNull(id)
             ?: throw BusinessException(PostErrorCode.NOT_FOUND_POST)
+    }
+
+    private fun validatePostOwner(post: Post, writerId: WriterId) {
+        if (post.writerId != writerId) throw BusinessException(PostErrorCode.YOU_ARE_NOT_OWNER_THIS_POST)
     }
 }
