@@ -16,7 +16,7 @@ data class CommentCreateRequest(
     val content: String,
 ) {
     fun toDto(writerId: CurrentUserId) = CommentCreateDto(
-        writerId = writerId,
+        writerId = writerId.value,
         postId = postId,
         parentId = parentId,
         content = content,

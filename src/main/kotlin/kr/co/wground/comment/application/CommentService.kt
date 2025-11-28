@@ -6,6 +6,7 @@ import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.exception.CommentErrorCode
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,12 +20,28 @@ class CommentService(
     fun write(dto: CommentCreateDto): Long {
         validateParentId(dto)
         val comment = Comment.create(
-            dto.writerId.value,
+            dto.writerId,
             dto.postId,
             dto.parentId,
             dto.content,
         )
         return commentRepository.save(comment).id
+    }
+
+    @Transactional
+    fun update(dto: CommentUpdateDto, writerId: CurrentUserId) {
+        val comment = findByCommentId(dto.commentId)
+        validateWriter(comment, writerId)
+        dto.content?.let {
+            comment.updateContent(it)
+        }
+    }
+
+    @Transactional
+    fun delete(id: CommentId, writerId: CurrentUserId) {
+        val comment = findByCommentId(id)
+        validateWriter(comment, writerId)
+        comment.deleteContent();
     }
 
     private fun validateParentId(dto: CommentCreateDto) {
@@ -37,14 +54,9 @@ class CommentService(
         }
     }
 
-    @Transactional
-    fun update(dto: CommentUpdateDto, writerId: CurrentUserId) {
-        val comment = commentRepository.findById(dto.commentId)
+    private fun findByCommentId(id: CommentId): Comment {
+        return commentRepository.findById(id)
             .orElseThrow { BusinessException(CommentErrorCode.COMMENT_NOT_FOUND) }
-        validateWriter(comment, writerId)
-        dto.content?.let {
-            comment.updateContent(it)
-        }
     }
 
     private fun validateWriter(

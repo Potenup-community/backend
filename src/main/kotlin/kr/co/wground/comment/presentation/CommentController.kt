@@ -8,6 +8,7 @@ import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -39,5 +40,13 @@ class CommentController(
         val commentDto = request.toDto(commentId)
         commentService.update(commentDto, writerId)
         return ResponseEntity.ok().build()
+    }
+
+    @DeleteMapping("/{id}")
+    fun deleteComment(
+        @PathVariable id: CommentId,
+        writerId: CurrentUserId,
+    ) {
+        commentService.delete(id, writerId)
     }
 }
