@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import java.time.LocalDate
 
 class TrackTest {
@@ -30,10 +31,12 @@ class TrackTest {
         )
 
         // then
-        assertEquals("Backend Advanced", track.trackName)
-        assertEquals(LocalDate.of(2024, 3, 1), track.startDate)
-        assertEquals(LocalDate.of(2024, 9, 30), track.endDate)
-        assertEquals(TrackStatus.GRADUATED, track.trackStatus)
+        assertAll(
+            { assertEquals("Backend Advanced", track.trackName) },
+            { assertEquals(LocalDate.of(2024, 3, 1), track.startDate) },
+            { assertEquals(LocalDate.of(2024, 9, 30), track.endDate) },
+            { assertEquals(TrackStatus.GRADUATED, track.trackStatus) }
+        )
     }
 
     @Test

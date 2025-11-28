@@ -9,5 +9,4 @@ interface TrackService {
     fun createTrack(createTrack : CreateTrackDto)
     fun updateTrack(updateTrack: UpdateTrackDto)
     fun deleteTrack(trackId: TrackId)
-    fun expireOverdueTracks(now: LocalDate)
 }

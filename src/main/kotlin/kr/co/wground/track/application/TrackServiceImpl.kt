@@ -5,47 +5,62 @@ import kr.co.wground.global.common.TrackId
 import kr.co.wground.track.application.dto.CreateTrackDto
 import kr.co.wground.track.application.dto.UpdateTrackDto
 import kr.co.wground.track.application.dto.toEntity
+import kr.co.wground.track.application.event.TrackChangedEvent
 import kr.co.wground.track.application.exception.TrackServiceErrorCode
-import kr.co.wground.track.domain.constant.TrackStatus
+import kr.co.wground.track.domain.Track
 import kr.co.wground.track.infra.TrackRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
 
 @Service
 @Transactional
 class TrackServiceImpl(
-    val trackRepository: TrackRepository,
+    private val trackRepository: TrackRepository,
+    private val eventPublisher: ApplicationEventPublisher
 ) : TrackService {
     override fun createTrack(createTrack: CreateTrackDto) {
-        trackRepository.save(createTrack.toEntity())
+        val savedTrack = trackRepository.save(createTrack.toEntity())
+
+        eventPublisher.publishEvent(
+            TrackChangedEvent(
+                trackId = savedTrack.trackId, endDate = savedTrack.endDate, type = TrackChangedEvent.EventType.CREATED
+            )
+        )
     }
 
     override fun updateTrack(updateTrack: UpdateTrackDto) {
-        val track = trackRepository.findByIdOrNull(updateTrack.trackId)
-            ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
+        val track = findTrackById(updateTrack.trackId)
 
         track.updateTrack(
             trackName = updateTrack.trackName,
             startDate = updateTrack.startDate,
             endDate = updateTrack.endDate
         )
+        eventPublisher.publishEvent(
+            TrackChangedEvent(
+                trackId = track.trackId, endDate = track.endDate, type = TrackChangedEvent.EventType.UPDATED
+            )
+        )
     }
 
     override fun deleteTrack(trackId: TrackId) {
-        trackRepository.findByIdOrNull(trackId)
-            ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
+        val deletedTrack = findTrackById(trackId)
 
-        trackRepository.deleteById(trackId)
+        trackRepository.delete(deletedTrack)
+
+        eventPublisher.publishEvent(
+            TrackChangedEvent(
+                trackId = deletedTrack.trackId,
+                endDate = deletedTrack.endDate,
+                type = TrackChangedEvent.EventType.DELETED
+            )
+        )
     }
 
-    @Transactional
-    override fun expireOverdueTracks(now: LocalDate) {
-        trackRepository.expireTracks(
-            now = now,
-            enrolledStatus = TrackStatus.ENROLLED,
-            graduatedStatus = TrackStatus.GRADUATED
-        )
+    private fun findTrackById(id: TrackId): Track {
+        return trackRepository.findByIdOrNull(id)
+            ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
     }
 }

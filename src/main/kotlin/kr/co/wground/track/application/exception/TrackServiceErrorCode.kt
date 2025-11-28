@@ -8,5 +8,5 @@ enum class TrackServiceErrorCode(
     override val httpStatus: HttpStatus,
     override val errorCode: String
 ): ErrorCode {
-    TRACK_NOT_FOUND("Track not found", HttpStatus.NOT_FOUND,"404 Not Found"),
+    TRACK_NOT_FOUND("해당 과정을 찾을 수 없습니다.", HttpStatus.NOT_FOUND,"T-0001"),
 }

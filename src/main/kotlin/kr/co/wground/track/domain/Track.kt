@@ -6,7 +6,6 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.PrePersist
 import jakarta.persistence.PreUpdate
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.track.domain.constant.TrackStatus
@@ -40,9 +39,8 @@ class Track(
         validateTime(startDate, endDate)
     }
 
-    @PrePersist
     @PreUpdate
-    fun onPersist() {
+    fun onPreUpdate() {
         this.trackStatus = determineStatus(this.endDate, LocalDate.now())
     }
 
