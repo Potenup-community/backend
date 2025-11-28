@@ -11,13 +11,13 @@ import kr.co.wground.comment.exception.CommentErrorCode
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
-import kr.co.wground.global.common.UserId
+import kr.co.wground.global.common.WriterId
 import java.time.LocalDateTime
 
 @Entity
 class Comment private constructor(
     @Column(updatable = false)
-    val writerId: UserId,
+    val writerId: WriterId,
 
     @Column(updatable = false)
     val postId: PostId,
@@ -37,7 +37,7 @@ class Comment private constructor(
     companion object {
         private const val MAX_CONTENT_LENGTH = 2000
 
-        fun create(writerId: UserId, postId: PostId, parentId: CommentId?, content: String): Comment {
+        fun create(writerId: WriterId, postId: PostId, parentId: CommentId?, content: String): Comment {
             validateContent(content)
             return Comment(writerId, postId, parentId, content)
         }
@@ -82,5 +82,11 @@ class Comment private constructor(
     fun updateContent(newContent: String) {
         validateContent(newContent)
         this.content = newContent
+    }
+
+    fun deleteContent() {
+        if(isDeleted) return
+        this.deletedAt = LocalDateTime.now()
+        this.isDeleted = true
     }
 }
