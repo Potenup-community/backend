@@ -38,7 +38,7 @@ class TrackSchedulerManager(
         tasks[trackId] = future
     }
 
-    fun cancel(trackId: Long) {
+    fun cancel(trackId: TrackId) {
         tasks[trackId]?.let {
             it.cancel(false)
             tasks.remove(trackId)

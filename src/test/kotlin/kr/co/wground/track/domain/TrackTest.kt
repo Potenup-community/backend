@@ -3,8 +3,8 @@ package kr.co.wground.track.domain
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.track.domain.exception.TrackDomainErrorCode
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -40,7 +40,7 @@ class TrackTest {
     }
 
     @Test
-    @DisplayName("트랙 이름이 공백이면 BusinessException이 발생한다")
+    @DisplayName("트랙 이름이 공백이면 BusinessException.TRACK_NAME_IS_BLANK이 발생한다")
     fun updateTrack_shouldThrowWhenNameIsBlank() {
         // given
         val track = Track(
@@ -49,21 +49,18 @@ class TrackTest {
             endDate = LocalDate.of(2024, 6, 30),
         )
 
-        // when
-        val exception = assertThrows(BusinessException::class.java) {
+        // when & then
+        shouldThrowTrackNameIsBlankException({
             track.updateTrack(
                 trackName = " ",
                 startDate = null,
                 endDate = null,
             )
-        }
-
-        // then
-        assertEquals(TrackDomainErrorCode.TRACK_NAME_IS_BLANK.message, exception.message)
+        })
     }
 
     @Test
-    @DisplayName("트랙의 시작일이 종료일보다 늦으면 BusinessException이 발생한다")
+    @DisplayName("트랙의 시작일이 종료일보다 늦으면 BusinessException.INVALID_DATE_RANGE이 발생한다")
     fun updateTrack_shouldThrowWhenDateRangeInvalid() {
         // given
         val track = Track(
@@ -72,16 +69,25 @@ class TrackTest {
             endDate = LocalDate.of(2024, 6, 30),
         )
 
-        // when
-        val exception = assertThrows(BusinessException::class.java) {
+        // when & then
+        shouldThrowInvalidDateRangeException({
             track.updateTrack(
                 trackName = null,
                 startDate = LocalDate.of(2024, 7, 1),
                 endDate = LocalDate.of(2024, 6, 30),
             )
-        }
+        })
+    }
 
-        // then
-        assertEquals(TrackDomainErrorCode.INVALID_DATE_RANGE.message, exception.message)
+    private fun shouldThrowTrackNameIsBlankException(action: () -> Unit) {
+        assertThatThrownBy { action() }
+            .isInstanceOf(BusinessException::class.java)
+            .hasMessage(TrackDomainErrorCode.TRACK_NAME_IS_BLANK.message)
+    }
+
+    private fun shouldThrowInvalidDateRangeException(action: () -> Unit) {
+        assertThatThrownBy { action() }
+            .isInstanceOf(BusinessException::class.java)
+            .hasMessage(TrackDomainErrorCode.INVALID_DATE_RANGE.message)
     }
 }
