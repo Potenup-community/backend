@@ -43,7 +43,7 @@ class CustomUserRepositoryImpl(
                 )
             )
             .from(user)
-            .leftJoin(requestSignup).on(user.userId.eq(requestSignup.userId)) // 항상 Left Join 걸어도 성능 문제 거의 없음
+            .leftJoin(requestSignup).on(user.userId.eq(requestSignup.userId))
             .where(
                 nameContains(condition.name),
                 emailEquals(condition.email),

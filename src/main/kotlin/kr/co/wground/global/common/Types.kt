@@ -4,3 +4,4 @@ typealias UserId = Long
 typealias PostId = Long
 typealias CommentId = Long
 typealias WriterId = Long
+typealias TrackId = Long
