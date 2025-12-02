@@ -4,6 +4,7 @@ import jakarta.validation.Valid
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.global.common.WriterId
+import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.application.PostService
 import kr.co.wground.post.presentation.request.PostCreateRequest
 import kr.co.wground.post.presentation.request.PostUpdateRequest
@@ -21,21 +22,21 @@ class PostController(
     private val postService: PostService,
 ) {
     @PostMapping
-    fun writePost(@Valid@RequestBody request: PostCreateRequest, writerId: WriterId = 1): Long {
-        return postService.createPost(request.toDto(writerId))
+    fun writePost(@Valid@RequestBody request: PostCreateRequest, writer: CurrentUserId): Long {
+        return postService.createPost(request.toDto(writer.value))
     }
 
     @DeleteMapping("/{id}")
-    fun deletePost(@PathVariable id: PostId) {
-        postService.deletePost(id)
+    fun deletePost(@PathVariable id: PostId, writer: CurrentUserId) {
+        postService.deletePost(id, writer.value)
     }
 
     @PatchMapping("/{id}")
     fun updatePost(
         @PathVariable id: PostId,
         @Valid@RequestBody request: PostUpdateRequest,
-        writerId: UserId = 1
+        writer: CurrentUserId
     ) {
-        postService.updatePost(request.toDto(id, writerId))
+        postService.updatePost(request.toDto(id, writer.value))
     }
 }
