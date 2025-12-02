@@ -1,6 +1,7 @@
 package kr.co.wground.global.jwt
 
 import io.jsonwebtoken.Jwts
+import kr.co.wground.global.common.UserId
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.Date
@@ -29,7 +30,7 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
     }
 
     fun createToken(
-        userId: Long,
+        userId: UserId,
         expiredMs: Long
     ): String {
         return Jwts.builder()
