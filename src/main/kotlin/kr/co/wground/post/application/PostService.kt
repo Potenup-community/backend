@@ -8,7 +8,6 @@ import kr.co.wground.post.application.dto.PostUpdateDto
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
-import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,7 +21,10 @@ class PostService(
         return postRepository.save(dto.toDomain()).id
     }
 
-    fun deletePost(id: Long) {
+    fun deletePost(id: Long, writerId: WriterId) {
+        val foundPost = findPostByIdOrThrow(id)
+
+        validatePostOwner(foundPost, writerId)
         postRepository.deleteById(id)
     }
 
