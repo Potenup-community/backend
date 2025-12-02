@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional
 class ScheduleStartupLoader(
     private val trackRepository: TrackRepository,
     private val trackSchedulerManager: TrackSchedulerManager,
-    @Value("\${spring.jpa.properties.hibernate.jdbc.batch_size:100}")
+    @Value("\${spring.jpa.properties.hibernate.jdbc.batch_size}")
     private val batchSize: Int
 ) {
     @EventListener(ApplicationReadyEvent::class)
