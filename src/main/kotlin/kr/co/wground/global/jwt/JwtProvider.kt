@@ -1,6 +1,7 @@
 package kr.co.wground.global.jwt
 
 import io.jsonwebtoken.Jwts
+import kr.co.wground.global.common.UserId
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.util.Date
@@ -28,18 +29,8 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
             .get("userId", Number::class.java).toLong()
     }
 
-    fun isExpired(token: String?): Boolean {
-        return Jwts.parser()
-            .verifyWith(secretKey)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload()
-            .getExpiration()
-            .before(Date())
-    }
-
     fun createToken(
-        userId: Long,
+        userId: UserId,
         expiredMs: Long
     ): String {
         return Jwts.builder()

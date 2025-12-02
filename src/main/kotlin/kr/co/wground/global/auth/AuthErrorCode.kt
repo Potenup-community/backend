@@ -8,10 +8,9 @@ enum class AuthErrorCode(
     override val httpStatus: HttpStatus,
     override val errorCode: String
 ) : ErrorCode {
-    INVALID_TOKEN("INVALID_TOKEN", HttpStatus.UNAUTHORIZED,"400 Bad Request"),
-    MALFORMED_TOKEN("Malformed or invalid token format", HttpStatus.BAD_REQUEST, "400 Bad Request"),
-    GOOGLE_SERVER_ERROR("Failed to connect to Google Identity Server", HttpStatus.INTERNAL_SERVER_ERROR, "500 Internal Server Error"),
-    INVALID_SIGNATURE("Token signature validation failed", HttpStatus.UNAUTHORIZED, "401 Unauthorized"),
-    TOKEN_EXPIRED_OR_INVALID("Token is expired or invalid", HttpStatus.UNAUTHORIZED, "401 Unauthorized"),
-    TOKEN_HAS_NOT_VALID_EMAIL("Token does not have a valid email", httpStatus = HttpStatus.FORBIDDEN,"403 Forbidden"),
+    MALFORMED_TOKEN("잘못된 형식 또는 잘못된 토큰 형식입니다", HttpStatus.BAD_REQUEST, "G-0001"),
+    GOOGLE_SERVER_ERROR("Google ID 서버에 연결하지 못했습니다", HttpStatus.BAD_GATEWAY, "G-0002"),
+    INVALID_SIGNATURE("토큰 서명 검증 실패했습니다.", HttpStatus.UNAUTHORIZED, "G-0003"),
+    TOKEN_EXPIRED_OR_INVALID("토큰이 만료되었거나 유효하지 않습니다", HttpStatus.UNAUTHORIZED, "G-0004"),
+    TOKEN_HAS_NOT_VALID_EMAIL("토큰에 유효한 이메일이 없습니다", HttpStatus.NOT_FOUND,"G-0005"),
 }
