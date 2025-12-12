@@ -19,7 +19,7 @@ class AdminController(
     @PutMapping("/users/decision")
     fun decisionSignUp(@RequestBody request: DecisionStatusRequest): ResponseEntity<Unit> {
         adminServiceImpl.decisionSignup(request)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/users/all")
