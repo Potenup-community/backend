@@ -3,6 +3,7 @@ package kr.co.wground.user.application.common
 import io.jsonwebtoken.ExpiredJwtException
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
+import kr.co.wground.global.common.UserId
 import kr.co.wground.global.jwt.JwtProvider
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserStatus
@@ -75,5 +76,11 @@ class LoginServiceImpl(
         val newAccessToken = jwtProvider.createToken(user.userId, accessTokenExpiredMs)
 
         return AccessTokenResponse(newAccessToken)
+    }
+
+    @Transactional
+    override fun logout(userId : UserId) {
+        val user = userRepository.findByIdOrNull(userId) ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+        user.logout()
     }
 }

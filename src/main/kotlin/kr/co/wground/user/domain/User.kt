@@ -78,6 +78,10 @@ class User(
         modifiedAt = LocalDateTime.now()
     }
 
+    fun logout(){
+        refreshToken = null
+    }
+
     fun toAdmin() {
         this.role = UserRole.ADMIN
     }
