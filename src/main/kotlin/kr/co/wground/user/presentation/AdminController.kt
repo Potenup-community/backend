@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*
 class AdminController(
     private val adminServiceImpl: AdminServiceImpl
 ) {
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/users/decision")
     fun decisionSignUp(@RequestBody request: DecisionStatusRequest): ResponseEntity<Unit> {
         adminServiceImpl.decisionSignup(request)
