@@ -1,54 +1,51 @@
 package kr.co.wground.global.jwt
 
-import io.jsonwebtoken.ExpiredJwtException
-import io.jsonwebtoken.MalformedJwtException
-import io.jsonwebtoken.UnsupportedJwtException
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.jwt.constant.HEADER_NAME
 import kr.co.wground.global.jwt.constant.SUBSTRING_INDEX
 import kr.co.wground.global.jwt.constant.TOKEN_START
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.http.MediaType
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
-import java.security.SignatureException
 
 @Component
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
     private val userRepository: UserRepository,
+    private val objectMapper: ObjectMapper,
 ) : OncePerRequestFilter() {
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val token = resolveToken(request) ?: return filterChain.doFilter(request, response)
-
         try {
-            val userId = jwtProvider.getUserId(token)
+            val token = resolveToken(request) ?: return filterChain.doFilter(request, response)
+
+            val userId = jwtProvider.validateAccessToken(token)
+
             val user = userRepository.findByIdOrNull(userId)
             val principle = UserPrincipal(userId)
+
             if (user != null) {
                 val authorities = listOf(SimpleGrantedAuthority("ROLE_${user.role.name}"))
                 val authentication = UsernamePasswordAuthenticationToken(principle, null, authorities)
                 SecurityContextHolder.getContext().authentication = authentication
             }
-        } catch (e: SignatureException) {
-        } catch (e: MalformedJwtException) {
-        } catch (e: ExpiredJwtException) {
-            filterChain.doFilter(request, response)
-            return
-        } catch (e: UnsupportedJwtException) {
-        } catch (e: IllegalArgumentException) {
-        } catch (e: Exception) {
-        }
 
+        } catch (ex: BusinessException) {
+            setErrorResponse(response, ex)
+            return
+        }
         filterChain.doFilter(request, response)
     }
 
@@ -60,5 +57,21 @@ class JwtAuthenticationFilter(
         } else {
             null
         }
+    }
+
+    private fun setErrorResponse(
+        response: HttpServletResponse,
+        e: BusinessException
+    ) {
+        response.status = e.status.value()
+        response.contentType = MediaType.APPLICATION_JSON_VALUE
+        response.characterEncoding = "UTF-8"
+
+        val errorResponse = mapOf(
+            "code" to e.code,
+            "message" to e.message
+        )
+
+        response.writer.write(objectMapper.writeValueAsString(errorResponse))
     }
 }
