@@ -1,6 +1,6 @@
 package kr.co.wground.user.presentation.response
 
-class LoginResponse(
+class TokenResponse(
     val accessToken: String,
     val refreshToken: String,
 )

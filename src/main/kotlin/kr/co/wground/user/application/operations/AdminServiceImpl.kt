@@ -22,18 +22,19 @@ class AdminServiceImpl(
     val signupRepository: RequestSignupRepository,
     val userRepository: UserRepository,
     private val eventPublisher: ApplicationEventPublisher
-): UserOperations {
+) : UserOperations {
     fun decisionSignup(request: DecisionStatusRequest) {
         val requestSign = signupRepository.findByIdOrNull(request.id)
             ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
 
         requestSign.decide(request.requestStatus)
 
-        val event = DecideUserStatusEvent.from(requestSign.userId, request.requestStatus,request.role)
+        val event = DecideUserStatusEvent.from(requestSign.userId, request.requestStatus, request.role)
         eventPublisher.publishEvent(event)
     }
+
     @Transactional(readOnly = true)
-    fun findUsersByConditions(conditions : UserSearchRequest, pageable: Pageable): Page<UserInfoDto> {
+    fun findUsersByConditions(conditions: UserSearchRequest, pageable: Pageable): Page<UserInfoDto> {
         val conditionDto = ConditionDto.from(conditions)
         return userRepository.searchUsers(conditionDto, pageable)
     }
