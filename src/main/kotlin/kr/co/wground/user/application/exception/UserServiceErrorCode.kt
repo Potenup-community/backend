@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus
 enum class UserServiceErrorCode(
     override val message: String,
     override val httpStatus: HttpStatus,
-    override val errorCode: String
+    override val code: String
 ) : ErrorCode {
     REQUEST_SIGNUP_NOT_FOUND("해당 가입요청을 찾을 수 없습니다.", HttpStatus.NOT_FOUND, "U-0001"),
     REQUEST_SIGNUP_ALREADY_EXISTED("이미 가입 요청한 유저 입니다.", HttpStatus.BAD_REQUEST, "U-0002"),
@@ -20,4 +20,6 @@ enum class UserServiceErrorCode(
     TOKEN_EXPIRED("엑세스 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED, "U-0010"),
     INVALID_ACCESS_TOKEN("액세스 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED, "U-0011"),
     REFRESH_TOKEN_NOT_FOUND("리프레시 토큰을 찾을수 없습니다.", HttpStatus.NOT_FOUND, "U-0012"),
+    INVALID_USER_INPUT("사용자 입력값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST, "U-0012"),
+    ;
 }
