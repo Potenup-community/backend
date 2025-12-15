@@ -9,6 +9,7 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.presentation.dto.TokenType
 import kr.co.wground.user.presentation.request.LoginRequest
 import kr.co.wground.user.presentation.response.TokenResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
@@ -21,7 +22,13 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/auth")
-class AuthController(private val memberService: LoginService) {
+class AuthController(
+    private val memberService: LoginService,
+    @Value("\${jwt.expiration-ms}")
+    private val accessExpirationMs: Long,
+    @Value("\${jwt.refresh-expiration-ms}")
+    private val refreshExpirationMs: Long,
+) {
 
     @PostMapping("/login")
     fun login(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<TokenResponse> {
@@ -61,20 +68,20 @@ class AuthController(private val memberService: LoginService) {
             .header(HttpHeaders.SET_COOKIE, expiredRefresh.toString())
             .build()
     }
-}
 
-private fun setCookie(token: String, type: TokenType, maxAge: Long? = null): ResponseCookie {
-    val duration = maxAge ?: when (type) {
-        TokenType.ACCESS -> 60L * 10
-        TokenType.REFRESH -> 60L * 60 * 24 * 14
+    private fun setCookie(token: String, type: TokenType, maxAge: Long? = null): ResponseCookie {
+        val duration = maxAge ?: when (type) {
+            TokenType.ACCESS -> accessExpirationMs
+            TokenType.REFRESH -> refreshExpirationMs
+        }
+
+        return ResponseCookie.from(type.tokenType, token)
+            .httpOnly(true)
+            .secure(true)
+            .path("/")
+            .maxAge(duration)
+            .sameSite(CSRF)
+            // .domain("www.depth.co.kr")
+            .build()
     }
-
-    return ResponseCookie.from(type.tokenType, token)
-        .httpOnly(true)
-        .secure(true)
-        .path("/")
-        .maxAge(duration)
-        .sameSite(CSRF)
-        // .domain("www.depth.co.kr")
-        .build()
 }
