@@ -10,7 +10,12 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -34,18 +39,20 @@ class AdminController(
         return ResponseEntity.ok(responses)
     }
 
-    private fun userInfoToResponse(userInfos:  Page<UserInfoDto>): Page<AdminSearchUserResponse> {
-        return userInfos.map { userInfoDto -> AdminSearchUserResponse(
-            userId = userInfoDto.userId,
-            name = userInfoDto.name,
-            email = userInfoDto.email,
-            phoneNumber = userInfoDto.phoneNumber,
-            trackId = userInfoDto.trackId,
-            role = userInfoDto.role,
-            status = userInfoDto.status,
-            requestStatus = userInfoDto.requestStatus,
-            provider = userInfoDto.provider,
-            createdAt = userInfoDto.createdAt,
-        ) }
+    private fun userInfoToResponse(userInfos: Page<UserInfoDto>): Page<AdminSearchUserResponse> {
+        return userInfos.map { userInfoDto ->
+            AdminSearchUserResponse(
+                userId = userInfoDto.userId,
+                name = userInfoDto.name,
+                email = userInfoDto.email,
+                phoneNumber = userInfoDto.phoneNumber,
+                trackId = userInfoDto.trackId,
+                role = userInfoDto.role,
+                status = userInfoDto.status,
+                requestStatus = userInfoDto.requestStatus,
+                provider = userInfoDto.provider,
+                createdAt = userInfoDto.createdAt,
+            )
+        }
     }
 }

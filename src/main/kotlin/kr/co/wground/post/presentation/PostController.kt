@@ -1,13 +1,13 @@
 package kr.co.wground.post.presentation
 
 import jakarta.validation.Valid
+import java.net.URI
 import kr.co.wground.global.common.PostId
-import kr.co.wground.global.common.UserId
-import kr.co.wground.global.common.WriterId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.application.PostService
 import kr.co.wground.post.presentation.request.PostCreateRequest
 import kr.co.wground.post.presentation.request.PostUpdateRequest
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -22,21 +22,25 @@ class PostController(
     private val postService: PostService,
 ) {
     @PostMapping
-    fun writePost(@Valid@RequestBody request: PostCreateRequest, writer: CurrentUserId): Long {
-        return postService.createPost(request.toDto(writer.value))
+    fun writePost(@Valid @RequestBody request: PostCreateRequest, writer: CurrentUserId): ResponseEntity<Void> {
+        val createPost = postService.createPost(request.toDto(writer.value))
+        val location = "/api/v1/posts/${createPost}"
+        return ResponseEntity.created(URI.create(location)).build()
     }
 
     @DeleteMapping("/{id}")
-    fun deletePost(@PathVariable id: PostId, writer: CurrentUserId) {
+    fun deletePost(@PathVariable id: PostId, writer: CurrentUserId): ResponseEntity<Void> {
         postService.deletePost(id, writer.value)
+        return ResponseEntity.noContent().build()
     }
 
     @PatchMapping("/{id}")
     fun updatePost(
         @PathVariable id: PostId,
-        @Valid@RequestBody request: PostUpdateRequest,
+        @Valid @RequestBody request: PostUpdateRequest,
         writer: CurrentUserId
-    ) {
+    ): ResponseEntity<Void> {
         postService.updatePost(request.toDto(id, writer.value))
+        return ResponseEntity.noContent().build()
     }
 }

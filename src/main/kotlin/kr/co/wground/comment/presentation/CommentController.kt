@@ -1,12 +1,12 @@
 package kr.co.wground.comment.presentation
 
 import jakarta.validation.Valid
+import java.net.URI
 import kr.co.wground.comment.application.CommentService
 import kr.co.wground.comment.presentation.request.CommentCreateRequest
 import kr.co.wground.comment.presentation.request.CommentUpdateRequest
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.config.resolver.CurrentUserId
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -27,8 +27,8 @@ class CommentController(
         writerId: CurrentUserId
     ): ResponseEntity<Void> {
         val commentDto = request.toDto(writerId)
-        commentService.write(commentDto)
-        return ResponseEntity.status(HttpStatus.CREATED).build()
+        val location = "/api/v1/comments/${commentService.write(commentDto)}"
+        return ResponseEntity.created(URI.create(location)).build()
     }
 
     @PutMapping("/{commentId}")
@@ -39,14 +39,15 @@ class CommentController(
     ): ResponseEntity<Void> {
         val commentDto = request.toDto(commentId)
         commentService.update(commentDto, writerId)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/{id}")
     fun deleteComment(
         @PathVariable id: CommentId,
         writerId: CurrentUserId,
-    ) {
+    ): ResponseEntity<Void> {
         commentService.delete(id, writerId)
+        return ResponseEntity.noContent().build()
     }
 }
