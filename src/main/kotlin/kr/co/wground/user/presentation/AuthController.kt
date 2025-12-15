@@ -1,12 +1,18 @@
 package kr.co.wground.user.presentation
 
 import jakarta.validation.Valid
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.config.resolver.CurrentUserId
+import kr.co.wground.global.jwt.constant.CSRF
 import kr.co.wground.user.application.common.LoginService
+import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.presentation.dto.TokenType
 import kr.co.wground.user.presentation.request.LoginRequest
-import kr.co.wground.user.presentation.request.RefreshTokenRequest
 import kr.co.wground.user.presentation.response.TokenResponse
+import org.springframework.http.HttpHeaders
+import org.springframework.http.ResponseCookie
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -20,18 +26,55 @@ class AuthController(private val memberService: LoginService) {
     @PostMapping("/login")
     fun login(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<TokenResponse> {
         val response = memberService.login(loginRequest)
-        return ResponseEntity.ok(response)
+
+        return ResponseEntity.ok()
+            .header(
+                HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
+            )
+            .header(HttpHeaders.SET_COOKIE, setCookie(response.refreshToken, TokenType.REFRESH).toString())
+            .body(response)
     }
 
     @PostMapping("/refresh")
-    fun refreshAccessToken(@Valid @RequestBody request: RefreshTokenRequest): ResponseEntity<TokenResponse> {
+    fun refreshAccessToken(@CookieValue request: String?): ResponseEntity<TokenResponse> {
+        if (request.isNullOrBlank()) {
+            throw BusinessException(UserServiceErrorCode.REFRESH_TOKEN_NOT_FOUND)
+        }
         val response = memberService.refreshAccessToken(request)
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok()
+            .header(
+                HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
+            )
+            .header(HttpHeaders.SET_COOKIE, setCookie(response.refreshToken, TokenType.REFRESH).toString())
+            .body(response)
     }
 
     @DeleteMapping("/logout")
-    fun logout(userId : CurrentUserId): ResponseEntity<Unit> {
+    fun logout(userId: CurrentUserId): ResponseEntity<Unit> {
         memberService.logout(userId.value)
-        return ResponseEntity.noContent().build()
+
+        val expiredAccess = setCookie("", TokenType.ACCESS, 0)
+        val expiredRefresh = setCookie("", TokenType.REFRESH, 0)
+
+        return ResponseEntity.noContent()
+            .header(HttpHeaders.SET_COOKIE, expiredAccess.toString())
+            .header(HttpHeaders.SET_COOKIE, expiredRefresh.toString())
+            .build()
     }
+}
+
+private fun setCookie(token: String, type: TokenType, maxAge: Long? = null): ResponseCookie {
+    val duration = maxAge ?: when (type) {
+        TokenType.ACCESS -> 60L * 10
+        TokenType.REFRESH -> 60L * 60 * 24 * 14
+    }
+
+    return ResponseCookie.from(type.tokenType, token)
+        .httpOnly(true)
+        .secure(true)
+        .path("/")
+        .maxAge(duration)
+        .sameSite(CSRF)
+        // .domain("www.depth.co.kr")
+        .build()
 }

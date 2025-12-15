@@ -15,8 +15,8 @@ class RequestSignController(
     private val signUpService: SignUpService,
 ) {
     @PostMapping("/signup")
-    fun requestSignUp(@Valid @RequestBody requestSignup: SignUpRequest) : ResponseEntity<Unit> {
+    fun requestSignUp(@Valid @RequestBody requestSignup: SignUpRequest): ResponseEntity<Unit> {
         signUpService.addUser(requestSignup)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 }

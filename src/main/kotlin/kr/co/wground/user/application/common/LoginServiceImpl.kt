@@ -9,7 +9,6 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.LoginRequest
-import kr.co.wground.user.presentation.request.RefreshTokenRequest
 import kr.co.wground.user.presentation.response.TokenResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
@@ -49,14 +48,13 @@ class LoginServiceImpl(
     }
 
     @Transactional
-    override fun refreshAccessToken(request: RefreshTokenRequest): TokenResponse {
-        val refreshToken = request.refreshToken
-        val userId = jwtProvider.validateRefreshToken(refreshToken)
+    override fun refreshAccessToken(request: String): TokenResponse {
+        val userId = jwtProvider.validateRefreshToken(request)
 
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        val hashed = refreshTokenHasher.hash(refreshToken)
+        val hashed = refreshTokenHasher.hash(request)
         if (user.refreshToken != hashed) {
             throw BusinessException(UserServiceErrorCode.INVALID_REFRESH_TOKEN)
         }

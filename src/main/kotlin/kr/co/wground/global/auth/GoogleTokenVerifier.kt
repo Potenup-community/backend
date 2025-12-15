@@ -13,7 +13,7 @@ import java.util.Collections
 
 @Component
 class GoogleTokenVerifier(
-    @Value("\${google.auth.client-id}")
+    @param:Value("\${google.auth.client-id}")
     private val clientId: String
 ) {
     fun verify(idToken: String): String {

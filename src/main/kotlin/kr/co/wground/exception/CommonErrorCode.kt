@@ -11,5 +11,5 @@ enum class CommonErrorCode(
     INVALID_INPUT("요청 값이 올바르지 않습니다.",HttpStatus.BAD_REQUEST,"V-0001"),
 
     //AccessDenied
-    ACCESS_DENIED_ROLE("접근 권한이 없습니다.", HttpStatus.BAD_REQUEST,"A-0001")
+    ACCESS_DENIED_ROLE("접근 권한이 없습니다.", HttpStatus.FORBIDDEN,"A-0001")
 }
