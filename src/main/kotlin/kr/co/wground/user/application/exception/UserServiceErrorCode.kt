@@ -19,4 +19,5 @@ enum class UserServiceErrorCode(
     INVALID_REFRESH_TOKEN("리프레시 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED, "U-0009"),
     TOKEN_EXPIRED("엑세스 토큰이 만료되었습니다.", HttpStatus.UNAUTHORIZED, "U-0010"),
     INVALID_ACCESS_TOKEN("액세스 토큰이 유효하지 않습니다.", HttpStatus.UNAUTHORIZED, "U-0011"),
+    REFRESH_TOKEN_NOT_FOUND("리프레시 토큰을 찾을수 없습니다.", HttpStatus.NOT_FOUND, "U-0012"),
 }

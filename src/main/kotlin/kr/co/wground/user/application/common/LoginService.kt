@@ -7,6 +7,6 @@ import kr.co.wground.user.presentation.response.TokenResponse
 
 interface LoginService {
     fun login(loginRequest: LoginRequest): TokenResponse
-    fun refreshAccessToken(request: RefreshTokenRequest): TokenResponse
+    fun refreshAccessToken(request: String): TokenResponse
     fun logout(userId: UserId)
 }
