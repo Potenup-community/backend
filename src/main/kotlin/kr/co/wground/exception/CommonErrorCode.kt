@@ -3,16 +3,16 @@ package kr.co.wground.exception
 import org.springframework.http.HttpStatus
 
 enum class CommonErrorCode(
-    override val message: String,
     override val httpStatus: HttpStatus,
-    override val code: String
+    override val code: String,
+    override val message: String,
 ) : ErrorCode {
     //Validation
-    INVALID_INPUT("요청 값이 올바르지 않습니다.", HttpStatus.BAD_REQUEST, "V-0001"),
+    INVALID_INPUT(HttpStatus.BAD_REQUEST, "V-0001", "요청 값이 올바르지 않습니다."),
 
     //AccessDenied
-    ACCESS_DENIED_ROLE("접근 권한이 없습니다.", HttpStatus.FORBIDDEN, "A-0001"),
+    ACCESS_DENIED_ROLE(HttpStatus.FORBIDDEN, "A-0001", "접근 권한이 없습니다."),
 
     // Server Error
-    INTERNAL_SERVER_ERROR("서버 측에 오류가 발생하였습니다.", HttpStatus.INTERNAL_SERVER_ERROR, "I-0001")
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "I-0001", "서버 측에 오류가 발생하였습니다."),
 }
