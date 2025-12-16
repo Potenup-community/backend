@@ -31,13 +31,13 @@ class CommentController(
         return ResponseEntity.created(URI.create(location)).build()
     }
 
-    @PutMapping("/{commentId}")
+    @PutMapping("/{id}")
     fun updateComment(
-        @PathVariable commentId: CommentId,
+        @PathVariable id: CommentId,
         @Valid @RequestBody request: CommentUpdateRequest,
         writerId: CurrentUserId
     ): ResponseEntity<Void> {
-        val commentDto = request.toDto(commentId)
+        val commentDto = request.toDto(id)
         commentService.update(commentDto, writerId)
         return ResponseEntity.noContent().build()
     }
