@@ -22,12 +22,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
-
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @ExceptionHandler(BusinessException::class)
     fun handleBusinessException(e: BusinessException): ResponseEntity<ErrorResponse> {
-        val body = ErrorResponse.of(e, emptyList())
+        val body = ErrorResponse(e.code, e.message)
         return ResponseEntity.status(e.httpStatus).body(body)
     }
 
@@ -105,7 +104,6 @@ class GlobalExceptionHandler {
         val body = ErrorResponse(
             code = CommonErrorCode.INVALID_INPUT.code,
             message = message,
-            errors = emptyList(),
         )
         val status = if (e is HttpRequestMethodNotSupportedException) {
             e.statusCode
@@ -119,7 +117,7 @@ class GlobalExceptionHandler {
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
         logger.error("Unhandled exception", e)
         val errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR
-        val body = ErrorResponse.of(errorCode, emptyList())
+        val body = ErrorResponse(errorCode.code, errorCode.message)
         return ResponseEntity.status(errorCode.httpStatus).body(body)
     }
 
