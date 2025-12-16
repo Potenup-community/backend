@@ -22,14 +22,14 @@ class PostController(
     private val postService: PostService,
 ) {
     @PostMapping
-    fun writePost(@Valid @RequestBody request: PostCreateRequest, writer: CurrentUserId): ResponseEntity<Void> {
+    fun writePost(@Valid @RequestBody request: PostCreateRequest, writer: CurrentUserId): ResponseEntity<Unit> {
         val createPost = postService.createPost(request.toDto(writer.value))
         val location = "/api/v1/posts/${createPost}"
         return ResponseEntity.created(URI.create(location)).build()
     }
 
     @DeleteMapping("/{id}")
-    fun deletePost(@PathVariable id: PostId, writer: CurrentUserId): ResponseEntity<Void> {
+    fun deletePost(@PathVariable id: PostId, writer: CurrentUserId): ResponseEntity<Unit> {
         postService.deletePost(id, writer.value)
         return ResponseEntity.noContent().build()
     }
@@ -39,7 +39,7 @@ class PostController(
         @PathVariable id: PostId,
         @Valid @RequestBody request: PostUpdateRequest,
         writer: CurrentUserId
-    ): ResponseEntity<Void> {
+    ): ResponseEntity<Unit> {
         postService.updatePost(request.toDto(id, writer.value))
         return ResponseEntity.noContent().build()
     }
