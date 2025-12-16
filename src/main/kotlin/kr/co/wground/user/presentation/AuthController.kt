@@ -43,11 +43,11 @@ class AuthController(
     }
 
     @PostMapping("/refresh")
-    fun refreshAccessToken(@CookieValue("refreshToken") request: String?): ResponseEntity<TokenResponse> {
-        if (request.isNullOrBlank()) {
+    fun refreshAccessToken(@CookieValue refreshToken: String?): ResponseEntity<TokenResponse> {
+        if (refreshToken.isNullOrBlank()) {
             throw BusinessException(UserServiceErrorCode.REFRESH_TOKEN_NOT_FOUND)
         }
-        val response = memberService.refreshAccessToken(request)
+        val response = memberService.refreshAccessToken(refreshToken)
         return ResponseEntity.noContent()
             .header(
                 HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
