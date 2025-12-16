@@ -39,11 +39,11 @@ class AuthController(
                 HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
             )
             .header(HttpHeaders.SET_COOKIE, setCookie(response.refreshToken, TokenType.REFRESH).toString())
-            .body(response)
+            .build()
     }
 
     @PostMapping("/refresh")
-    fun refreshAccessToken(@CookieValue request: String?): ResponseEntity<TokenResponse> {
+    fun refreshAccessToken(@CookieValue("refreshToken") request: String?): ResponseEntity<TokenResponse> {
         if (request.isNullOrBlank()) {
             throw BusinessException(UserServiceErrorCode.REFRESH_TOKEN_NOT_FOUND)
         }
@@ -53,7 +53,7 @@ class AuthController(
                 HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
             )
             .header(HttpHeaders.SET_COOKIE, setCookie(response.refreshToken, TokenType.REFRESH).toString())
-            .body(response)
+            .build()
     }
 
     @DeleteMapping("/logout")
