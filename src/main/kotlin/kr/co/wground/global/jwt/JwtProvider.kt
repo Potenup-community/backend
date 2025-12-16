@@ -14,7 +14,14 @@ import javax.crypto.spec.SecretKeySpec
 
 
 @Component
-class JwtProvider(@Value("\${jwt.secret}") secret: String) {
+class JwtProvider(
+    @Value("\${jwt.secret}")
+    private val secret: String,
+    @Value("\${jwt.expiration-ms}")
+    private val accessTokenExpired: Long,
+    @Value("\${jwt.refresh-expiration-ms}")
+    private val refreshTokenExpired: Long,
+    ) {
 
     private companion object {
         private const val CLAIM_USER_ID = "userId"
@@ -30,13 +37,13 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
             .getAlgorithm()
     )
 
-    fun createAccessToken(userId: Long, expiredMs: Long): String {
-        return createToken(userId, TokenType.ACCESS, expiredMs)
+    fun createAccessToken(userId: Long): String {
+        return createToken(userId, TokenType.ACCESS, accessTokenExpired)
     }
 
 
-    fun createRefreshToken(userId: Long, expiredMs: Long): String {
-        return createToken(userId, TokenType.REFRESH, expiredMs)
+    fun createRefreshToken(userId: Long): String {
+        return createToken(userId, TokenType.REFRESH, refreshTokenExpired)
     }
 
     fun validateAccessToken(token: String): Long {

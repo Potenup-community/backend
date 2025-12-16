@@ -10,7 +10,6 @@ import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.LoginRequest
 import kr.co.wground.user.presentation.response.TokenResponse
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,10 +21,6 @@ class LoginServiceImpl(
     private val googleTokenVerifier: GoogleTokenVerifier,
     private val jwtProvider: JwtProvider,
     private val refreshTokenHasher: RefreshTokenHasher,
-    @Value("\${jwt.expiration-ms}")
-    private val accessTokenExpiredMs: Long,
-    @Value("\${jwt.refresh-expiration-ms}")
-    private val refreshTokenExpiredMs: Long,
 ) : LoginService {
 
     @Transactional
@@ -38,9 +33,9 @@ class LoginServiceImpl(
             throw BusinessException(UserServiceErrorCode.INACTIVE_USER)
         }
 
-        val accessToken = jwtProvider.createAccessToken(user.userId, accessTokenExpiredMs)
+        val accessToken = jwtProvider.createAccessToken(user.userId)
 
-        val refreshToken = jwtProvider.createRefreshToken(user.userId, refreshTokenExpiredMs)
+        val refreshToken = jwtProvider.createRefreshToken(user.userId)
 
         user.updateRefreshToken(refreshTokenHasher.hash(refreshToken))
 
@@ -49,19 +44,18 @@ class LoginServiceImpl(
 
     @Transactional
     override fun refreshAccessToken(request: String): TokenResponse {
-        val hashedRefreshToken = refreshTokenHasher.hash(request)
 
         val userId = jwtProvider.validateRefreshToken(request)
 
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
-
+        val hashedRefreshToken = refreshTokenHasher.hash(request)
         if (user.refreshToken != hashedRefreshToken) {
             throw BusinessException(UserServiceErrorCode.INVALID_REFRESH_TOKEN)
         }
 
-        val newAccessToken = jwtProvider.createAccessToken(user.userId, accessTokenExpiredMs)
-        val newRefreshToken = jwtProvider.createRefreshToken(user.userId, refreshTokenExpiredMs)
+        val newAccessToken = jwtProvider.createAccessToken(user.userId)
+        val newRefreshToken = jwtProvider.createRefreshToken(user.userId)
 
         user.updateRefreshToken(refreshTokenHasher.hash(newRefreshToken))
 
