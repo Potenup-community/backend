@@ -34,7 +34,7 @@ class AuthController(
     fun login(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<TokenResponse> {
         val response = memberService.login(loginRequest)
 
-        return ResponseEntity.ok()
+        return ResponseEntity.noContent()
             .header(
                 HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
             )
@@ -48,7 +48,7 @@ class AuthController(
             throw BusinessException(UserServiceErrorCode.REFRESH_TOKEN_NOT_FOUND)
         }
         val response = memberService.refreshAccessToken(request)
-        return ResponseEntity.ok()
+        return ResponseEntity.noContent()
             .header(
                 HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
             )
