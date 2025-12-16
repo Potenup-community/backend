@@ -24,7 +24,7 @@ class TrackController(
     @PostMapping
     fun createTrack(@RequestBody @Valid createTrack: CreateTrackRequest): ResponseEntity<Unit> {
         trackService.createTrack(createTrack.toCreateTrackDto())
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @PatchMapping("/{trackId}")
@@ -33,7 +33,7 @@ class TrackController(
         @RequestBody @Valid updateTrack: UpdateTrackRequest
     ): ResponseEntity<Unit> {
         trackService.updateTrack(updateTrack.toUpdateTrackDto(trackId))
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 
     @DeleteMapping("/{trackId}")
@@ -41,6 +41,6 @@ class TrackController(
         @PathVariable trackId: TrackId,
     ): ResponseEntity<Unit> {
         trackService.deleteTrack(trackId)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.noContent().build()
     }
 }
