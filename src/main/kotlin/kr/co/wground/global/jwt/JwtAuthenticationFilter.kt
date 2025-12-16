@@ -5,6 +5,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.global.jwt.constant.HEADER_NAME
 import kr.co.wground.global.jwt.constant.SUBSTRING_INDEX
 import kr.co.wground.global.jwt.constant.TOKEN_START
@@ -41,7 +42,6 @@ class JwtAuthenticationFilter(
                 val authentication = UsernamePasswordAuthenticationToken(principle, null, authorities)
                 SecurityContextHolder.getContext().authentication = authentication
             }
-
         } catch (ex: BusinessException) {
             setErrorResponse(response, ex)
             return
@@ -63,15 +63,10 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         e: BusinessException
     ) {
-        response.status = e.status.value()
+        response.status = e.httpStatus.value()
         response.contentType = MediaType.APPLICATION_JSON_VALUE
         response.characterEncoding = "UTF-8"
 
-        val errorResponse = mapOf(
-            "code" to e.code,
-            "message" to e.message
-        )
-
-        response.writer.write(objectMapper.writeValueAsString(errorResponse))
+        response.writer.write(objectMapper.writeValueAsString(ErrorResponse.of(e, emptyList())))
     }
 }
