@@ -10,6 +10,7 @@ import kr.co.wground.global.jwt.constant.HEADER_NAME
 import kr.co.wground.global.jwt.constant.SUBSTRING_INDEX
 import kr.co.wground.global.jwt.constant.TOKEN_START
 import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.presentation.dto.TokenType
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.MediaType
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -17,6 +18,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import org.springframework.web.util.WebUtils
 
 @Component
 class JwtAuthenticationFilter(
@@ -30,7 +32,11 @@ class JwtAuthenticationFilter(
         filterChain: FilterChain
     ) {
         try {
-            val token = resolveToken(request) ?: return filterChain.doFilter(request, response)
+            val token = resolveTokenFromHeader(request) ?: resolveTokenFromCookie(request)
+            if(token == null){
+                return filterChain.doFilter(request, response)
+            }
+
 
             val userId = jwtProvider.validateAccessToken(token)
 
@@ -49,11 +55,19 @@ class JwtAuthenticationFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun resolveToken(request: HttpServletRequest): String? {
+    private fun resolveTokenFromHeader(request: HttpServletRequest): String? {
         val bearerToken = request.getHeader(HEADER_NAME)
-
         return if (bearerToken != null && bearerToken.startsWith(TOKEN_START)) {
             bearerToken.substring(SUBSTRING_INDEX)
+        } else {
+            null
+        }
+    }
+
+    private fun resolveTokenFromCookie(request: HttpServletRequest): String? {
+        val cookie = WebUtils.getCookie(request, TokenType.ACCESS.tokenType)
+        return if (cookie != null && cookie.value.isNotBlank()) {
+            cookie.value
         } else {
             null
         }
