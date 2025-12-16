@@ -34,26 +34,26 @@ class AuthController(
     fun login(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<TokenResponse> {
         val response = memberService.login(loginRequest)
 
-        return ResponseEntity.ok()
+        return ResponseEntity.noContent()
             .header(
                 HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
             )
             .header(HttpHeaders.SET_COOKIE, setCookie(response.refreshToken, TokenType.REFRESH).toString())
-            .body(response)
+            .build()
     }
 
     @PostMapping("/refresh")
-    fun refreshAccessToken(@CookieValue request: String?): ResponseEntity<TokenResponse> {
-        if (request.isNullOrBlank()) {
+    fun refreshAccessToken(@CookieValue refreshToken: String?): ResponseEntity<TokenResponse> {
+        if (refreshToken.isNullOrBlank()) {
             throw BusinessException(UserServiceErrorCode.REFRESH_TOKEN_NOT_FOUND)
         }
-        val response = memberService.refreshAccessToken(request)
-        return ResponseEntity.ok()
+        val response = memberService.refreshAccessToken(refreshToken)
+        return ResponseEntity.noContent()
             .header(
                 HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
             )
             .header(HttpHeaders.SET_COOKIE, setCookie(response.refreshToken, TokenType.REFRESH).toString())
-            .body(response)
+            .build()
     }
 
     @DeleteMapping("/logout")

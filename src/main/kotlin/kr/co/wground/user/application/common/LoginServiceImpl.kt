@@ -25,7 +25,7 @@ class LoginServiceImpl(
     @Value("\${jwt.expiration-ms}")
     private val accessTokenExpiredMs: Long,
     @Value("\${jwt.refresh-expiration-ms}")
-    private val refreshTokenExpiredMs: Long
+    private val refreshTokenExpiredMs: Long,
 ) : LoginService {
 
     @Transactional
@@ -49,13 +49,14 @@ class LoginServiceImpl(
 
     @Transactional
     override fun refreshAccessToken(request: String): TokenResponse {
+        val hashedRefreshToken = refreshTokenHasher.hash(request)
+
         val userId = jwtProvider.validateRefreshToken(request)
 
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        val hashed = refreshTokenHasher.hash(request)
-        if (user.refreshToken != hashed) {
+        if (user.refreshToken != hashedRefreshToken) {
             throw BusinessException(UserServiceErrorCode.INVALID_REFRESH_TOKEN)
         }
 
