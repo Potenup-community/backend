@@ -7,8 +7,11 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.application.PostService
 import kr.co.wground.post.presentation.request.PostCreateRequest
 import kr.co.wground.post.presentation.request.PostUpdateRequest
+import kr.co.wground.post.presentation.response.PostSummaryResponse
+import kr.co.wground.post.presentation.response.toResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -42,5 +45,10 @@ class PostController(
     ): ResponseEntity<Unit> {
         postService.updatePost(request.toDto(id, writer.value))
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/summary")
+    fun getPostSummary(): PostSummaryResponse {
+        return postService.getSummary().toResponse()
     }
 }

@@ -1,13 +1,17 @@
 package kr.co.wground.post.application
 
+import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.WriterId
 import kr.co.wground.post.application.dto.PostCreateDto
+import kr.co.wground.post.application.dto.PostSummaryDto
 import kr.co.wground.post.application.dto.PostUpdateDto
+import kr.co.wground.post.application.dto.toDtos
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class PostService(
     private val postRepository: PostRepository,
+    private val commentRepository: CommentRepository,
+    private val userRepository: UserRepository
 ) {
     fun createPost(dto: PostCreateDto): Long {
         return postRepository.save(dto.toDomain()).id
@@ -47,5 +53,14 @@ class PostService(
 
     private fun validatePostOwner(post: Post, writerId: WriterId) {
         if (post.writerId != writerId) throw BusinessException(PostErrorCode.YOU_ARE_NOT_OWNER_THIS_POST)
+    }
+
+    fun getSummary(): List<PostSummaryDto> {
+        //TODO(Comment 개수 조회 추가 예정 blocked by Comment)
+
+        val posts = postRepository.findAll()
+        val writers = userRepository.findAllById(posts.map { it.writerId }.toSet())
+
+        return posts.toDtos(writers)
     }
 }
