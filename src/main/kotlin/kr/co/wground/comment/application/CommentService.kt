@@ -8,6 +8,7 @@ import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.config.resolver.CurrentUserId
+import kr.co.wground.post.infra.PostRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -15,9 +16,11 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class CommentService(
     private val commentRepository: CommentRepository,
+    private val postRepository: PostRepository,
 ) {
     @Transactional
     fun write(dto: CommentCreateDto): Long {
+        validateExistTargetPost(dto)
         validateParentId(dto)
         val comment = Comment.create(
             dto.writerId,
@@ -44,11 +47,16 @@ class CommentService(
         comment.deleteContent();
     }
 
+    private fun validateExistTargetPost(dto: CommentCreateDto) {
+        postRepository.findById(dto.postId)
+            .orElseThrow { BusinessException(CommentErrorCode.TARGET_POST_IS_NOT_FOUND) }
+    }
+
     private fun validateParentId(dto: CommentCreateDto) {
         dto.parentId?.let { parentId ->
             val parentComment = commentRepository.findById(parentId)
                 .orElseThrow { BusinessException(CommentErrorCode.COMMENT_PARENT_ID_NOT_FOUND) }
-            if (!parentComment.isParent()) {
+            if (parentComment.isParent()) {
                 throw BusinessException(CommentErrorCode.COMMENT_REPLY_NOT_ALLOWED)
             }
         }

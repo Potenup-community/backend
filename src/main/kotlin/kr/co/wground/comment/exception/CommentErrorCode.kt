@@ -17,4 +17,5 @@ enum class CommentErrorCode(
 
     COMMENT_NOT_WRITER(HttpStatus.FORBIDDEN, "C-0006", "댓글 작성자가 아닙니다."),
     INVALID_COMMENT_INPUT(HttpStatus.BAD_REQUEST, "C-0007", "댓글 입력값이 올바르지 않습니다."),
+    TARGET_POST_IS_NOT_FOUND(HttpStatus.NOT_FOUND, "C-0008", "대상 게시글을 찾을 수 없습니다."),
 }
