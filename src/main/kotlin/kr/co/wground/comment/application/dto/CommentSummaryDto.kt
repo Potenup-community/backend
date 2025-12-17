@@ -11,7 +11,33 @@ data class CommentSummaryDto(
     val authorName: String,
     val authorProfileImageUrl: String?,
     val createdAt: LocalDateTime,
-    val likeCount: Int = 0,
+    val likeCount: Int,
     val isDeleted: Boolean,
     val replies: List<CommentSummaryDto>,
-)
+) {
+    companion object {
+        fun of(
+            commentId: CommentId,
+            content: String,
+            authorId: UserId,
+            authorName: String,
+            authorProfileImageUrl: String?,
+            createdAt: LocalDateTime,
+            likeCount: Int = 0,
+            isDeleted: Boolean,
+            replies: List<CommentSummaryDto>,
+        ): CommentSummaryDto {
+            return CommentSummaryDto(
+                commentId = commentId,
+                content = content,
+                authorId = authorId,
+                authorName = authorName,
+                authorProfileImageUrl = authorProfileImageUrl,
+                createdAt = createdAt,
+                likeCount = likeCount,
+                isDeleted = isDeleted,
+                replies = replies,
+            )
+        }
+    }
+}
