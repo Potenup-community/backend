@@ -4,9 +4,9 @@ import jakarta.validation.Valid
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.global.jwt.constant.CSRF
+import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.common.LoginService
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.presentation.dto.TokenType
 import kr.co.wground.user.presentation.request.LoginRequest
 import kr.co.wground.user.presentation.response.TokenResponse
 import org.springframework.beans.factory.annotation.Value
@@ -35,9 +35,7 @@ class AuthController(
         val response = memberService.login(loginRequest)
 
         return ResponseEntity.noContent()
-            .header(
-                HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
-            )
+            .header(HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString())
             .header(HttpHeaders.SET_COOKIE, setCookie(response.refreshToken, TokenType.REFRESH).toString())
             .build()
     }
@@ -47,17 +45,17 @@ class AuthController(
         if (refreshToken.isNullOrBlank()) {
             throw BusinessException(UserServiceErrorCode.REFRESH_TOKEN_NOT_FOUND)
         }
+
         val response = memberService.refreshAccessToken(refreshToken)
+
         return ResponseEntity.noContent()
-            .header(
-                HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString()
-            )
+            .header(HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString())
             .header(HttpHeaders.SET_COOKIE, setCookie(response.refreshToken, TokenType.REFRESH).toString())
             .build()
     }
 
     @DeleteMapping("/logout")
-    fun logout(userId: CurrentUserId): ResponseEntity<Unit> {
+    fun logout(userId : CurrentUserId): ResponseEntity<Unit> {
         memberService.logout(userId.value)
 
         val expiredAccess = setCookie("", TokenType.ACCESS, 0)

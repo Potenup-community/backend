@@ -12,6 +12,7 @@ enum class CommonErrorCode(
 
     //AccessDenied
     ACCESS_DENIED_ROLE(HttpStatus.FORBIDDEN, "A-0001", "접근 권한이 없습니다."),
+    AUTHORIZATION_FAILURE(HttpStatus.UNAUTHORIZED,"A-0002","인증에 실패하였습니다."),
 
     // Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "I-0001", "서버 측에 오류가 발생하였습니다."),

@@ -1,10 +1,13 @@
-package kr.co.wground.exception
+package kr.co.wground.exception.handler
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.InvalidNullException
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import jakarta.validation.ConstraintViolationException
 import kr.co.wground.comment.exception.CommentErrorCode
+import kr.co.wground.exception.BusinessException
+import kr.co.wground.exception.CommonErrorCode
+import kr.co.wground.exception.ErrorCode
 import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.track.domain.exception.TrackDomainErrorCode
@@ -12,6 +15,8 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.authorization.AuthorizationDeniedException
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
@@ -26,7 +31,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException::class)
     fun handleBusinessException(e: BusinessException): ResponseEntity<ErrorResponse> {
-        val body = ErrorResponse(e.code, e.message)
+        val body = ErrorResponse.of(e)
         return ResponseEntity.status(e.httpStatus).body(body)
     }
 
@@ -101,10 +106,8 @@ class GlobalExceptionHandler {
             else -> CommonErrorCode.INVALID_INPUT.message
         }
 
-        val body = ErrorResponse(
-            code = CommonErrorCode.INVALID_INPUT.code,
-            message = message,
-        )
+        val body = ErrorResponse.of(CommonErrorCode.INVALID_INPUT)
+
         val status = if (e is HttpRequestMethodNotSupportedException) {
             e.statusCode
         } else {
@@ -116,9 +119,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
         logger.error("Unhandled exception", e)
-        val errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR
-        val body = ErrorResponse(errorCode.code, errorCode.message)
-        return ResponseEntity.status(errorCode.httpStatus).body(body)
+        val body = ErrorResponse.of(CommonErrorCode.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(CommonErrorCode.INTERNAL_SERVER_ERROR.httpStatus).body(body)
     }
 
     @ExceptionHandler(ConstraintViolationException::class)
@@ -143,10 +145,19 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException::class)
     fun handleAccessDenied(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
-        val body = ErrorResponse(
-            code = CommonErrorCode.ACCESS_DENIED_ROLE.code,
-            message = CommonErrorCode.ACCESS_DENIED_ROLE.message,
-        )
+        val body = ErrorResponse.of(CommonErrorCode.ACCESS_DENIED_ROLE)
         return ResponseEntity.status(CommonErrorCode.ACCESS_DENIED_ROLE.httpStatus).body(body)
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException::class)
+    fun handleAuthorizationDenied(e: AuthorizationDeniedException): ResponseEntity<ErrorResponse> {
+        val body = ErrorResponse.of(CommonErrorCode.ACCESS_DENIED_ROLE)
+        return ResponseEntity.status(CommonErrorCode.ACCESS_DENIED_ROLE.httpStatus).body(body)
+    }
+
+    @ExceptionHandler(AuthenticationException::class)
+    fun handleAuthenticationException(e: AuthenticationException): ResponseEntity<ErrorResponse> {
+        val body = ErrorResponse.of(CommonErrorCode.AUTHORIZATION_FAILURE)
+        return ResponseEntity.status(CommonErrorCode.AUTHORIZATION_FAILURE.httpStatus).body(body)
     }
 }

@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.UserId
 import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import org.springframework.beans.factory.annotation.Value
@@ -14,7 +15,14 @@ import javax.crypto.spec.SecretKeySpec
 
 
 @Component
-class JwtProvider(@Value("\${jwt.secret}") secret: String) {
+class JwtProvider(
+    @Value("\${jwt.secret}")
+    private val secret: String,
+    @Value("\${jwt.expiration-ms}")
+    private val accessTokenExpired: Long,
+    @Value("\${jwt.refresh-expiration-ms}")
+    private val refreshTokenExpired: Long,
+    ) {
 
     private companion object {
         private const val CLAIM_USER_ID = "userId"
@@ -30,13 +38,13 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
             .getAlgorithm()
     )
 
-    fun createAccessToken(userId: Long, expiredMs: Long): String {
-        return createToken(userId, TokenType.ACCESS, expiredMs)
+    fun createAccessToken(userId: UserId): String {
+        return createToken(userId, TokenType.ACCESS, accessTokenExpired)
     }
 
 
-    fun createRefreshToken(userId: Long, expiredMs: Long): String {
-        return createToken(userId, TokenType.REFRESH, expiredMs)
+    fun createRefreshToken(userId: UserId): String {
+        return createToken(userId, TokenType.REFRESH, refreshTokenExpired)
     }
 
     fun validateAccessToken(token: String): Long {
@@ -49,7 +57,7 @@ class JwtProvider(@Value("\${jwt.secret}") secret: String) {
         return extractUserId(claims, UserServiceErrorCode.INVALID_REFRESH_TOKEN)
     }
 
-    private fun createToken(userId: Long, tokenType: TokenType, expiredMs: Long): String {
+    private fun createToken(userId: UserId, tokenType: TokenType, expiredMs: Long): String {
         return Jwts.builder()
             .claim(CLAIM_USER_ID, userId)
             .claim(CLAIM_TOKEN_TYPE, tokenType.name)
