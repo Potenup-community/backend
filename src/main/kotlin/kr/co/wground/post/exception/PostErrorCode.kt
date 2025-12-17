@@ -12,6 +12,6 @@ enum class PostErrorCode(
     TITLE_TOO_LONG(HttpStatus.BAD_REQUEST, "P-0002", "게시글의 제목은 50자를 넘을 수 없습니다."),
     CONTENT_TOO_LONG(HttpStatus.BAD_REQUEST, "P-0003", "게시글의 본문은 5000자를 넘을 수 없습니다."),
     TITLE_IS_EMPTY(HttpStatus.BAD_REQUEST, "P-0004", "게시글의 제목을 넣어주세요."),
-    YOU_ARE_NOT_OWNER_THIS_POST(HttpStatus.BAD_REQUEST, "P-0005", "해당 게시글의 주인이 아닙니다."),
+    YOU_ARE_NOT_OWNER_THIS_POST(HttpStatus.FORBIDDEN, "P-0005", "해당 게시글의 주인이 아닙니다."),
     INVALID_POST_INPUT(HttpStatus.BAD_REQUEST, "P-0006", "게시글 입력값이 올바르지 않습니다."),
 }
