@@ -5,10 +5,13 @@ import java.net.URI
 import kr.co.wground.comment.application.CommentService
 import kr.co.wground.comment.presentation.request.CommentCreateRequest
 import kr.co.wground.comment.presentation.request.CommentUpdateRequest
+import kr.co.wground.comment.presentation.response.CommentSummaryResponse
 import kr.co.wground.global.common.CommentId
+import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -50,4 +53,10 @@ class CommentController(
         commentService.delete(id, writerId)
         return ResponseEntity.noContent().build()
     }
+
+    @GetMapping("/{postId}")
+    fun getComments(@PathVariable postId: PostId): List<CommentSummaryResponse> {
+        return commentService.getCommentsByPost(postId).map(CommentSummaryResponse::from)
+    }
+
 }
