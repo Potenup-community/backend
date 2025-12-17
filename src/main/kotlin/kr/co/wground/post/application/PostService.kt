@@ -13,7 +13,6 @@ import kr.co.wground.post.application.dto.toDtos
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
-import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -60,21 +59,20 @@ class PostService(
     }
 
     fun getSummary(): List<PostSummaryDto> {
-        //TODO(Comment 개수 조회 추가 예정 blocked by Comment)
-
         val posts = postRepository.findAll()
-        val writers = userRepository.findAllById(posts.map { it.writerId }.toSet())
+        val postIds = posts.map { it.writerId }.toSet()
+        val writers = userRepository.findAllById(postIds)
+        val commentsCountById = commentRepository.countByPostIds(postIds.toList())
 
-        return posts.toDtos(writers)
+        return posts.toDtos(writers, commentsCountById)
     }
 
     fun getCourse(id: PostId): PostDetailDto {
-        //TODO(Comment 개수 조회 추가 예정 blocked by Comment)
-
         val foundCourse = findPostByIdOrThrow(id)
         val writer = findUserByIdOrThrow(foundCourse.writerId)
+        val commentsCount = commentRepository.countByPostIds(listOf(id)).first().count
 
-        return foundCourse.toDto(writer.name)
+        return foundCourse.toDto(writer.name, commentsCount.toInt())
     }
 
     private fun findUserByIdOrThrow(id: WriterId): User {
