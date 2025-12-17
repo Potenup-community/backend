@@ -19,7 +19,7 @@ data class PostDetailDto(
     val wroteAt: LocalDateTime,
 )
 
-fun Post.toDto(writerName: String) = PostDetailDto(
+fun Post.toDto(writerName: String, commentsCount: Int) = PostDetailDto(
     postId = id,
     writerId = writerId,
     writerName = writerName,
@@ -27,6 +27,6 @@ fun Post.toDto(writerName: String) = PostDetailDto(
     content = postBody.content,
     topic = topic,
     highlightType = postStatus.highlightType,
-    commentsCount = 0,
+    commentsCount = commentsCount,
     wroteAt = createdAt,
 )

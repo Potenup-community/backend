@@ -1,5 +1,6 @@
 package kr.co.wground.post.application.dto
 
+import kr.co.wground.comment.domain.vo.CommentCount
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
@@ -17,8 +18,9 @@ class PostSummaryDto(
     val commentsCount: Int,
 )
 
-fun List<Post>.toDtos(writers: List<User>): List<PostSummaryDto> {
+fun List<Post>.toDtos(writers: List<User>, commentsCountById: List<CommentCount>): List<PostSummaryDto> {
     val writerNameByIdMap = writers.associate { it.userId to it.name }
+    val commentsCountByPostId = commentsCountById.associate { id -> id.postId to id.count.toInt() }
 
     return this.map { post ->
         PostSummaryDto(
@@ -29,7 +31,7 @@ fun List<Post>.toDtos(writers: List<User>): List<PostSummaryDto> {
             wroteAt = post.createdAt,
             topic = post.topic,
             highlightType = post.postStatus.highlightType,
-            commentsCount = 0
+            commentsCount = commentsCountByPostId[post.id] ?: 0
         )
     }
 }
