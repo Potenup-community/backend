@@ -25,7 +25,7 @@ class CommentController(
     fun writeComment(
         @Valid @RequestBody request: CommentCreateRequest,
         writerId: CurrentUserId
-    ): ResponseEntity<Void> {
+    ): ResponseEntity<Unit> {
         val commentDto = request.toDto(writerId)
         val location = "/api/v1/comments/${commentService.write(commentDto)}"
         return ResponseEntity.created(URI.create(location)).build()
@@ -36,7 +36,7 @@ class CommentController(
         @PathVariable id: CommentId,
         @Valid @RequestBody request: CommentUpdateRequest,
         writerId: CurrentUserId
-    ): ResponseEntity<Void> {
+    ): ResponseEntity<Unit> {
         val commentDto = request.toDto(id)
         commentService.update(commentDto, writerId)
         return ResponseEntity.noContent().build()
@@ -46,7 +46,7 @@ class CommentController(
     fun deleteComment(
         @PathVariable id: CommentId,
         writerId: CurrentUserId,
-    ): ResponseEntity<Void> {
+    ): ResponseEntity<Unit> {
         commentService.delete(id, writerId)
         return ResponseEntity.noContent().build()
     }
