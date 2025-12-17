@@ -4,5 +4,5 @@ import kr.co.wground.global.common.PostId
 
 data class CommentCount(
     val postId: PostId,
-    val count: Long,
+    val count: Int,
 )
