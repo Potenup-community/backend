@@ -5,7 +5,7 @@ import kr.co.wground.exception.ErrorCode
 data class ErrorResponse(
     val code: String,
     val message: String,
-    val errors: List<CustomError> = emptyList(),
+    val errors: List<CustomError>,
 ) {
     data class CustomError(
         val field: String,
