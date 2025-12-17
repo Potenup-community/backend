@@ -5,12 +5,16 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.WriterId
 import kr.co.wground.post.application.dto.PostCreateDto
+import kr.co.wground.post.application.dto.PostDetailDto
 import kr.co.wground.post.application.dto.PostSummaryDto
 import kr.co.wground.post.application.dto.PostUpdateDto
+import kr.co.wground.post.application.dto.toDto
 import kr.co.wground.post.application.dto.toDtos
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -62,5 +66,19 @@ class PostService(
         val writers = userRepository.findAllById(posts.map { it.writerId }.toSet())
 
         return posts.toDtos(writers)
+    }
+
+    fun getCourse(id: PostId): PostDetailDto {
+        //TODO(Comment 개수 조회 추가 예정 blocked by Comment)
+
+        val foundCourse = findPostByIdOrThrow(id)
+        val writer = findUserByIdOrThrow(foundCourse.writerId)
+
+        return foundCourse.toDto(writer.name)
+    }
+
+    private fun findUserByIdOrThrow(id: WriterId): User {
+        return userRepository.findByIdOrNull(id) ?:
+            throw BusinessException(PostErrorCode.NOT_FOUND_WRITER)
     }
 }

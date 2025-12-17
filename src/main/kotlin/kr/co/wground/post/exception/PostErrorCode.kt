@@ -14,4 +14,5 @@ enum class PostErrorCode(
     TITLE_IS_EMPTY(HttpStatus.BAD_REQUEST, "P-0004", "게시글의 제목을 넣어주세요."),
     YOU_ARE_NOT_OWNER_THIS_POST(HttpStatus.FORBIDDEN, "P-0005", "해당 게시글의 주인이 아닙니다."),
     INVALID_POST_INPUT(HttpStatus.BAD_REQUEST, "P-0006", "게시글 입력값이 올바르지 않습니다."),
+    NOT_FOUND_WRITER(HttpStatus.NOT_FOUND, "P-0007", "글쓴이를 찾을 수 없습니다.")
 }

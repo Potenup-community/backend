@@ -7,6 +7,7 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.application.PostService
 import kr.co.wground.post.presentation.request.PostCreateRequest
 import kr.co.wground.post.presentation.request.PostUpdateRequest
+import kr.co.wground.post.presentation.response.PostDetailResponse
 import kr.co.wground.post.presentation.response.PostSummaryResponse
 import kr.co.wground.post.presentation.response.toResponse
 import org.springframework.http.ResponseEntity
@@ -50,5 +51,10 @@ class PostController(
     @GetMapping("/summary")
     fun getPostSummary(): PostSummaryResponse {
         return postService.getSummary().toResponse()
+    }
+
+    @GetMapping("/{id}")
+    fun getPost(@PathVariable id: PostId): PostDetailResponse {
+        return postService.getCourse(id).toResponse()
     }
 }
