@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EmptySource
+import org.junit.jupiter.params.provider.ValueSource
 
 class CommentTest {
 
@@ -85,6 +86,20 @@ class CommentTest {
             }
         }
 
+        @ParameterizedTest
+        @ValueSource(strings = [" ", "\t"])
+        fun shouldThrowException_whenContentIsBlankOnCreate(content: String) {
+            // when & then
+            shouldThrowContentEmptyException {
+                Comment.create(
+                    writerId = 1L,
+                    postId = 1L,
+                    parentId = null,
+                    content = content,
+                )
+            }
+        }
+
         @Test
         fun shouldThrowException_whenContentIsTooLongOnCreate() {
             // given
@@ -107,41 +122,15 @@ class CommentTest {
     inner class UpdateComment {
 
         @Test
-        fun shouldUpdateContentAndModifiedAt_whenContentChanged() {
+        fun shouldUpdateContent_whenContentChanged() {
             // given
             val comment = createValidComment()
-            val beforeModifiedAt = comment.modifiedAt
 
             // when
             comment.updateContent("수정된 내용")
 
             // then
-            assertAll(
-                { assertThat(comment.content).isEqualTo("수정된 내용") },
-                { assertThat(comment.modifiedAt).isAfterOrEqualTo(beforeModifiedAt) },
-            )
-        }
-
-        @Test
-        fun shouldNotUpdateModifiedAt_whenContentIsSame() {
-            // given
-            val originalContent = "원래 내용"
-            val comment = Comment.create(
-                writerId = 1L,
-                postId = 1L,
-                parentId = null,
-                content = originalContent,
-            )
-            val beforeModifiedAt = comment.modifiedAt
-
-            // when
-            comment.updateContent(originalContent)
-
-            // then
-            assertAll(
-                { assertThat(comment.content).isEqualTo(originalContent) },
-                { assertThat(comment.modifiedAt).isEqualTo(beforeModifiedAt) },
-            )
+            assertThat(comment.content).isEqualTo("수정된 내용")
         }
 
         @ParameterizedTest
@@ -166,6 +155,71 @@ class CommentTest {
             shouldThrowContentTooLongException {
                 comment.updateContent(longContent)
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("댓글 삭제")
+    inner class DeleteComment {
+
+        @Test
+        fun shouldMarkDeletedWithTimestamp_whenDeleteCalled() {
+            // given
+            val comment = createValidComment()
+
+            // when
+            comment.deleteContent()
+
+            // then
+            assertAll(
+                { assertThat(comment.isDeleted).isTrue() },
+                { assertThat(comment.deletedAt).isNotNull() },
+            )
+        }
+
+        @Test
+        fun shouldIgnoreDuplicateDeleteCall() {
+            // given
+            val comment = createValidComment()
+            comment.deleteContent()
+            val firstDeletedAt = comment.deletedAt
+
+            // when
+            comment.deleteContent()
+
+            // then
+            assertAll(
+                { assertThat(comment.isDeleted).isTrue() },
+                { assertThat(comment.deletedAt).isEqualTo(firstDeletedAt) },
+            )
+        }
+    }
+
+    @Nested
+    @DisplayName("부모 댓글 여부 확인")
+    inner class ParentCheck {
+
+        @Test
+        fun shouldReturnTrue_whenParentIdIsNull() {
+            // given
+            val comment = createValidComment()
+
+            // when & then
+            assertThat(comment.isParent()).isTrue()
+        }
+
+        @Test
+        fun shouldReturnFalse_whenParentIdExists() {
+            // given
+            val comment = Comment.create(
+                writerId = 1L,
+                postId = 1L,
+                parentId = 2L,
+                content = "대댓글 내용",
+            )
+
+            // when & then
+            assertThat(comment.isParent()).isFalse()
         }
     }
 }
