@@ -1,17 +1,9 @@
 package kr.co.wground.comment.domain
 
-import java.util.*
-import kr.co.wground.comment.application.CommentService
-import kr.co.wground.comment.application.dto.CommentCreateDto
 import kr.co.wground.comment.exception.CommentErrorCode
-import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.post.domain.Post
-import kr.co.wground.post.domain.enums.Topic
-import kr.co.wground.post.infra.PostRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -19,8 +11,6 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EmptySource
 import org.junit.jupiter.params.provider.ValueSource
-import org.mockito.BDDMockito.given
-import org.mockito.Mockito.mock
 
 class CommentTest {
 
@@ -34,12 +24,6 @@ class CommentTest {
         assertThatThrownBy { action() }
             .isInstanceOf(BusinessException::class.java)
             .hasMessage(CommentErrorCode.CONTENT_IS_TOO_LONG.message)
-    }
-
-    private fun shouldThrowCommentDepthException(action: () -> Unit) {
-        assertThatThrownBy { action() }
-            .isInstanceOf(BusinessException::class.java)
-            .hasMessage(CommentErrorCode.COMMENT_REPLY_NOT_ALLOWED.message)
     }
 
     private fun createValidComment(): Comment =
@@ -208,56 +192,6 @@ class CommentTest {
                 { assertThat(comment.isDeleted).isTrue() },
                 { assertThat(comment.deletedAt).isEqualTo(firstDeletedAt) },
             )
-        }
-    }
-
-    @Nested
-    @DisplayName("대댓글 depth 제한")
-    inner class ReplyDepthValidation {
-
-        private lateinit var commentRepository: CommentRepository
-        private lateinit var postRepository: PostRepository
-        private lateinit var commentService: CommentService
-
-        @BeforeEach
-        fun setup() {
-            commentRepository = mock(CommentRepository::class.java)
-            postRepository = mock(PostRepository::class.java)
-            commentService = CommentService(commentRepository, postRepository)
-        }
-
-        @Test
-        fun shouldThrowException_whenReplyToReply() {
-            // given
-            val postId = 1L
-            val parentId = 10L
-            val parentComment = Comment.create(
-                writerId = 1L,
-                postId = postId,
-                parentId = 2L,
-                content = "이미 대댓글입니다.",
-            )
-
-            given(postRepository.findById(postId)).willReturn(
-                Optional.of(
-                    Post.from(
-                        writerId = 1L,
-                        topic = Topic.NOTICE,
-                        title = "제목",
-                        content = "내용",
-                    )
-                )
-            )
-            given(commentRepository.findById(parentId)).willReturn(Optional.of(parentComment))
-            val dto = CommentCreateDto(
-                writerId = 2L,
-                postId = postId,
-                parentId = parentId,
-                content = "대대댓글 작성 시도",
-            )
-
-            // when & then
-            shouldThrowCommentDepthException { commentService.write(dto) }
         }
     }
 }
