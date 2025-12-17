@@ -31,7 +31,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException::class)
     fun handleBusinessException(e: BusinessException): ResponseEntity<ErrorResponse> {
-        val body = ErrorResponse(e.code, e.message)
+        val body = ErrorResponse.of(e)
         return ResponseEntity.status(e.httpStatus).body(body)
     }
 
@@ -83,7 +83,7 @@ class GlobalExceptionHandler {
 
         errors.add(ErrorResponse.CustomError(field = fieldName.ifEmpty { "unknown" }, reason = reason))
 
-        val body = ErrorResponse.Companion.of(errorCode, errors)
+        val body = ErrorResponse.of(errorCode, errors)
         return ResponseEntity.status(errorCode.httpStatus).body(body)
     }
 
@@ -106,10 +106,8 @@ class GlobalExceptionHandler {
             else -> CommonErrorCode.INVALID_INPUT.message
         }
 
-        val body = ErrorResponse(
-            code = CommonErrorCode.INVALID_INPUT.code,
-            message = message,
-        )
+        val body = ErrorResponse.of(CommonErrorCode.INVALID_INPUT)
+
         val status = if (e is HttpRequestMethodNotSupportedException) {
             e.statusCode
         } else {
@@ -121,9 +119,8 @@ class GlobalExceptionHandler {
     @ExceptionHandler(Exception::class)
     fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
         logger.error("Unhandled exception", e)
-        val errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR
-        val body = ErrorResponse(errorCode.code, errorCode.message)
-        return ResponseEntity.status(errorCode.httpStatus).body(body)
+        val body = ErrorResponse.of(CommonErrorCode.INTERNAL_SERVER_ERROR)
+        return ResponseEntity.status(CommonErrorCode.INTERNAL_SERVER_ERROR.httpStatus).body(body)
     }
 
     @ExceptionHandler(ConstraintViolationException::class)
@@ -148,28 +145,19 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException::class)
     fun handleAccessDenied(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
-        val body = ErrorResponse(
-            code = CommonErrorCode.ACCESS_DENIED_ROLE.code,
-            message = CommonErrorCode.ACCESS_DENIED_ROLE.message,
-        )
+        val body = ErrorResponse.of(CommonErrorCode.ACCESS_DENIED_ROLE)
         return ResponseEntity.status(CommonErrorCode.ACCESS_DENIED_ROLE.httpStatus).body(body)
     }
 
     @ExceptionHandler(AuthorizationDeniedException::class)
     fun handleAuthorizationDenied(e: AuthorizationDeniedException): ResponseEntity<ErrorResponse> {
-        val body = ErrorResponse(
-            code = CommonErrorCode.ACCESS_DENIED_ROLE.code,
-            message = CommonErrorCode.ACCESS_DENIED_ROLE.message,
-        )
+        val body = ErrorResponse.of(CommonErrorCode.ACCESS_DENIED_ROLE)
         return ResponseEntity.status(CommonErrorCode.ACCESS_DENIED_ROLE.httpStatus).body(body)
     }
 
     @ExceptionHandler(AuthenticationException::class)
     fun handleAuthenticationException(e: AuthenticationException): ResponseEntity<ErrorResponse> {
-        val body = ErrorResponse(
-            code = CommonErrorCode.AUTHORIZATION_FAILURE.code,
-            message = CommonErrorCode.AUTHORIZATION_FAILURE.message,
-        )
+        val body = ErrorResponse.of(CommonErrorCode.AUTHORIZATION_FAILURE)
         return ResponseEntity.status(CommonErrorCode.AUTHORIZATION_FAILURE.httpStatus).body(body)
     }
 }
