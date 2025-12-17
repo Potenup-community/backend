@@ -15,7 +15,7 @@ class CommentRepositoryImpl(
                 Projections.constructor(
                     CommentCount::class.java,
                     comment.postId,
-                    comment.id.count()
+                    comment.id.count().intValue()
                 )
             )
             .from(comment)
@@ -24,4 +24,3 @@ class CommentRepositoryImpl(
             .fetch()
     }
 }
-
