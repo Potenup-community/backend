@@ -1,10 +1,13 @@
-package kr.co.wground.exception
+package kr.co.wground.exception.handler
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.InvalidNullException
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import jakarta.validation.ConstraintViolationException
 import kr.co.wground.comment.exception.CommentErrorCode
+import kr.co.wground.exception.BusinessException
+import kr.co.wground.exception.CommonErrorCode
+import kr.co.wground.exception.ErrorCode
 import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.track.domain.exception.TrackDomainErrorCode
@@ -12,6 +15,8 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.security.authorization.AuthorizationDeniedException
+import org.springframework.security.core.AuthenticationException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.MissingServletRequestParameterException
@@ -78,7 +83,7 @@ class GlobalExceptionHandler {
 
         errors.add(ErrorResponse.CustomError(field = fieldName.ifEmpty { "unknown" }, reason = reason))
 
-        val body = ErrorResponse.of(errorCode, errors)
+        val body = ErrorResponse.Companion.of(errorCode, errors)
         return ResponseEntity.status(errorCode.httpStatus).body(body)
     }
 
@@ -148,5 +153,23 @@ class GlobalExceptionHandler {
             message = CommonErrorCode.ACCESS_DENIED_ROLE.message,
         )
         return ResponseEntity.status(CommonErrorCode.ACCESS_DENIED_ROLE.httpStatus).body(body)
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException::class)
+    fun handleAuthorizationDenied(e: AuthorizationDeniedException): ResponseEntity<ErrorResponse> {
+        val body = ErrorResponse(
+            code = CommonErrorCode.ACCESS_DENIED_ROLE.code,
+            message = CommonErrorCode.ACCESS_DENIED_ROLE.message,
+        )
+        return ResponseEntity.status(CommonErrorCode.ACCESS_DENIED_ROLE.httpStatus).body(body)
+    }
+
+    @ExceptionHandler(AuthenticationException::class)
+    fun handleAuthenticationException(e: AuthenticationException): ResponseEntity<ErrorResponse> {
+        val body = ErrorResponse(
+            code = CommonErrorCode.AUTHORIZATION_FAILURE.code,
+            message = CommonErrorCode.AUTHORIZATION_FAILURE.message,
+        )
+        return ResponseEntity.status(CommonErrorCode.AUTHORIZATION_FAILURE.httpStatus).body(body)
     }
 }

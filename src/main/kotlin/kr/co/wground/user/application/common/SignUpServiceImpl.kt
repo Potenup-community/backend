@@ -26,7 +26,6 @@ class SignUpServiceImpl(
         val newUser = request.toUserEntity(email)
 
         validateExistUser(newUser.email)
-        validateUserRole(newUser.role)
 
         val savedUser = userRepository.save(newUser)
 
@@ -36,12 +35,6 @@ class SignUpServiceImpl(
     private fun validateExistUser(email: String) {
         if (userRepository.existsUserByEmail(email)) {
             throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
-        }
-    }
-
-    private fun validateUserRole(role: UserRole) {
-        if (role == UserRole.ADMIN) {
-            throw BusinessException(UserServiceErrorCode.ROLE_ADMIN_CANT_REQUEST)
         }
     }
 }

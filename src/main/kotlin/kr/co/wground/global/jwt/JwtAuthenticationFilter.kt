@@ -5,30 +5,31 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.global.jwt.constant.CSRF
 import kr.co.wground.global.jwt.constant.HEADER_NAME
 import kr.co.wground.global.jwt.constant.SUBSTRING_INDEX
 import kr.co.wground.global.jwt.constant.TOKEN_START
 import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.common.LoginService
+import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseCookie
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
+import org.springframework.web.servlet.HandlerExceptionResolver
 import org.springframework.web.util.WebUtils
 import java.time.Duration
 
 @Component
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
+    private val handlerExceptionResolver: HandlerExceptionResolver,
     private val userRepository: UserRepository,
     private val objectMapper: ObjectMapper,
     private val loginService: LoginService,
@@ -37,16 +38,13 @@ class JwtAuthenticationFilter(
     @Value("\${jwt.refresh-expiration-ms}")
     private val refreshExpirationMs: Long,
 ) : OncePerRequestFilter() {
-    private companion object {
-        private const val TOKEN_EXPIRED = "U-0010"
-    }
 
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val token = resolveTokenFromHeader(request) ?: resolveTokenFromCookie(request)
+        val token = resolveTokenFromHeader(request) ?: resolveTokenFromCookie(request, TokenType.ACCESS)
 
         if (token == null) {
             filterChain.doFilter(request, response)
@@ -58,9 +56,9 @@ class JwtAuthenticationFilter(
             setAuthentication(userId)
 
         } catch (ex: BusinessException) {
-            if (ex.code == TOKEN_EXPIRED) {
+            if (ex.code == UserServiceErrorCode.TOKEN_EXPIRED.code) {
                 try {
-                    val refreshToken = resolveRefreshTokenFromCookie(request) ?: throw ex
+                    val refreshToken = resolveTokenFromCookie(request, TokenType.REFRESH) ?: throw ex
 
                     val tokenResponse = loginService.refreshAccessToken(refreshToken)
 
@@ -78,11 +76,11 @@ class JwtAuthenticationFilter(
                     filterChain.doFilter(request, response)
                     return
                 } catch (e: BusinessException) {
-                    setErrorResponse(response, ex)
+                    handlerExceptionResolver.resolveException(request, response, null, e)
                     return
                 }
             }
-            setErrorResponse(response, ex)
+            handlerExceptionResolver.resolveException(request, response, null, ex)
             return
         }
         filterChain.doFilter(request, response)
@@ -117,31 +115,12 @@ class JwtAuthenticationFilter(
         }
     }
 
-    private fun resolveTokenFromCookie(request: HttpServletRequest): String? {
-        val cookie = WebUtils.getCookie(request, TokenType.ACCESS.tokenType)
+    private fun resolveTokenFromCookie(request: HttpServletRequest,tokenType: TokenType): String? {
+        val cookie = WebUtils.getCookie(request, tokenType.tokenType)
         return if (cookie != null && cookie.value.isNotBlank()) {
             cookie.value
         } else {
             null
         }
-    }
-
-    private fun resolveRefreshTokenFromCookie(request: HttpServletRequest): String? {
-        val cookie = WebUtils.getCookie(request, TokenType.REFRESH.tokenType)
-        return if (cookie != null && cookie.value.isNotBlank()) {
-            cookie.value
-        } else {
-            null
-        }
-    }
-
-    private fun setErrorResponse(
-        response: HttpServletResponse,
-        e: BusinessException
-    ) {
-        response.status = e.httpStatus.value()
-        response.contentType = MediaType.APPLICATION_JSON_VALUE
-        response.characterEncoding = "UTF-8"
-        response.writer.write(objectMapper.writeValueAsString(ErrorResponse.of(e, emptyList())))
     }
 }

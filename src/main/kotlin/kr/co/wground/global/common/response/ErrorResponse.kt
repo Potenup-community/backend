@@ -13,7 +13,7 @@ data class ErrorResponse(
     )
 
     companion object {
-        fun of(errorCode: ErrorCode, errors: List<CustomError>): ErrorResponse {
+        fun of(errorCode: ErrorCode, errors: List<CustomError> = emptyList()): ErrorResponse {
             return ErrorResponse(
                 code = errorCode.code,
                 message = errorCode.message,
