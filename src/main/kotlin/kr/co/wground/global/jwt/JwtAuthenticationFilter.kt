@@ -1,6 +1,5 @@
 package kr.co.wground.global.jwt
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -13,6 +12,7 @@ import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.common.LoginService
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.presentation.response.TokenResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpHeaders
@@ -31,14 +31,12 @@ class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
     private val handlerExceptionResolver: HandlerExceptionResolver,
     private val userRepository: UserRepository,
-    private val objectMapper: ObjectMapper,
     private val loginService: LoginService,
     @Value("\${jwt.expiration-ms}")
     private val accessExpirationMs: Long,
     @Value("\${jwt.refresh-expiration-ms}")
     private val refreshExpirationMs: Long,
 ) : OncePerRequestFilter() {
-
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -88,12 +86,13 @@ class JwtAuthenticationFilter(
 
     private fun setAuthentication(userId: Long) {
         val user = userRepository.findByIdOrNull(userId)
-        if (user != null) {
-            val principle = UserPrincipal(userId)
-            val authorities = listOf(SimpleGrantedAuthority("ROLE_${user.role.name}"))
-            val authentication = UsernamePasswordAuthenticationToken(principle, null, authorities)
-            SecurityContextHolder.getContext().authentication = authentication
-        }
+            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+
+        val principle = UserPrincipal(userId)
+        val authorities = listOf(SimpleGrantedAuthority("ROLE_${user.role.name}"))
+        val authentication = UsernamePasswordAuthenticationToken(principle, null, authorities)
+
+        SecurityContextHolder.getContext().authentication = authentication
     }
 
     private fun createTokenCookie(token: String, tokenType: TokenType, expiredMs: Long): ResponseCookie {
@@ -115,7 +114,7 @@ class JwtAuthenticationFilter(
         }
     }
 
-    private fun resolveTokenFromCookie(request: HttpServletRequest,tokenType: TokenType): String? {
+    private fun resolveTokenFromCookie(request: HttpServletRequest, tokenType: TokenType): String? {
         val cookie = WebUtils.getCookie(request, tokenType.tokenType)
         return if (cookie != null && cookie.value.isNotBlank()) {
             cookie.value

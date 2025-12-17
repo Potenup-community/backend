@@ -2,7 +2,7 @@ package kr.co.wground.global.common.response
 
 import kr.co.wground.exception.ErrorCode
 
-data class ErrorResponse(
+data class ErrorResponse private constructor(
     val code: String,
     val message: String,
     val errors: List<CustomError>,

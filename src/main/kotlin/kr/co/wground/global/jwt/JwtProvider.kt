@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.UserId
 import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import org.springframework.beans.factory.annotation.Value
@@ -37,12 +38,12 @@ class JwtProvider(
             .getAlgorithm()
     )
 
-    fun createAccessToken(userId: Long): String {
+    fun createAccessToken(userId: UserId): String {
         return createToken(userId, TokenType.ACCESS, accessTokenExpired)
     }
 
 
-    fun createRefreshToken(userId: Long): String {
+    fun createRefreshToken(userId: UserId): String {
         return createToken(userId, TokenType.REFRESH, refreshTokenExpired)
     }
 
@@ -56,7 +57,7 @@ class JwtProvider(
         return extractUserId(claims, UserServiceErrorCode.INVALID_REFRESH_TOKEN)
     }
 
-    private fun createToken(userId: Long, tokenType: TokenType, expiredMs: Long): String {
+    private fun createToken(userId: UserId, tokenType: TokenType, expiredMs: Long): String {
         return Jwts.builder()
             .claim(CLAIM_USER_ID, userId)
             .claim(CLAIM_TOKEN_TYPE, tokenType.name)
