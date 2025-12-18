@@ -7,8 +7,10 @@ import kr.co.wground.global.jwt.constant.CSRF
 import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.common.LoginService
 import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.presentation.request.LoginRequest
-import kr.co.wground.user.presentation.response.TokenResponse
+import kr.co.wground.user.presentation.response.LoginResponse
+import kr.co.wground.user.presentation.response.RoleResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseCookie
@@ -31,17 +33,17 @@ class AuthController(
 ) {
 
     @PostMapping("/login")
-    fun login(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<TokenResponse> {
+    fun login(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<RoleResponse> {
         val response = memberService.login(loginRequest)
 
-        return ResponseEntity.noContent()
+        return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, setCookie(response.accessToken, TokenType.ACCESS).toString())
             .header(HttpHeaders.SET_COOKIE, setCookie(response.refreshToken, TokenType.REFRESH).toString())
-            .build()
+            .body(RoleResponse(response.role))
     }
 
     @PostMapping("/refresh")
-    fun refreshAccessToken(@CookieValue refreshToken: String?): ResponseEntity<TokenResponse> {
+    fun refreshAccessToken(@CookieValue refreshToken: String?): ResponseEntity<Unit> {
         if (refreshToken.isNullOrBlank()) {
             throw BusinessException(UserServiceErrorCode.REFRESH_TOKEN_NOT_FOUND)
         }

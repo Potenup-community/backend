@@ -9,6 +9,7 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.LoginRequest
+import kr.co.wground.user.presentation.response.LoginResponse
 import kr.co.wground.user.presentation.response.TokenResponse
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -24,7 +25,7 @@ class LoginServiceImpl(
 ) : LoginService {
 
     @Transactional
-    override fun login(loginRequest: LoginRequest): TokenResponse {
+    override fun login(loginRequest: LoginRequest): LoginResponse {
         val email = googleTokenVerifier.verify(loginRequest.idToken)
 
         val user = userRepository.findByEmail(email) ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
@@ -39,17 +40,18 @@ class LoginServiceImpl(
 
         user.updateRefreshToken(refreshTokenHasher.hash(refreshToken))
 
-        return TokenResponse(accessToken, refreshToken)
+        return LoginResponse(user.role, accessToken, refreshToken)
     }
 
     @Transactional
     override fun refreshAccessToken(request: String): TokenResponse {
-
         val userId = jwtProvider.validateRefreshToken(request)
 
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+
         val hashedRefreshToken = refreshTokenHasher.hash(request)
+
         if (user.refreshToken != hashedRefreshToken) {
             throw BusinessException(UserServiceErrorCode.INVALID_REFRESH_TOKEN)
         }

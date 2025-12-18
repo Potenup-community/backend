@@ -7,6 +7,7 @@ import kr.co.wground.track.presentation.request.CreateTrackRequest
 import kr.co.wground.track.presentation.request.UpdateTrackRequest
 import kr.co.wground.track.presentation.request.toCreateTrackDto
 import kr.co.wground.track.presentation.request.toUpdateTrackDto
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -24,7 +25,7 @@ class TrackController(
     @PostMapping
     fun createTrack(@RequestBody @Valid createTrack: CreateTrackRequest): ResponseEntity<Unit> {
         trackService.createTrack(createTrack.toCreateTrackDto())
-        return ResponseEntity.noContent().build()
+        return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 
     @PatchMapping("/{trackId}")
