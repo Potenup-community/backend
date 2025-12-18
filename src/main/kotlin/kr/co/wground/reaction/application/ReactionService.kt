@@ -2,7 +2,7 @@ package kr.co.wground.reaction.application
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.reaction.application.dto.ReactionDto
-import kr.co.wground.reaction.domain.enums.ReactionAction
+import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.infra.ReactionJpaRepository
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
@@ -24,8 +24,8 @@ class ReactionService(
     fun changeReaction(dto: ReactionDto) {
         validatePostExists(dto)
         when (dto.action) {
-            ReactionAction.LIKED -> react(dto)
-            ReactionAction.UNLIKED -> undo(dto)
+            ReactionType.LIKED -> react(dto)
+            ReactionType.UNLIKED -> undo(dto)
         }
     }
 
