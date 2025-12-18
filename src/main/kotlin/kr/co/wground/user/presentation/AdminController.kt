@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
+@PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/v1/admin")
 class AdminController(
     private val adminServiceImpl: AdminServiceImpl
 ) {
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/users/decision")
     fun decisionSignUp(@RequestBody request: DecisionStatusRequest): ResponseEntity<Unit> {
         adminServiceImpl.decisionSignup(request)
