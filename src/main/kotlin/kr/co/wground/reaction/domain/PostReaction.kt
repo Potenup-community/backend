@@ -40,7 +40,8 @@ class PostReaction(
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0
+    var id: Long? = null
+        protected set
 
     @Column(updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
