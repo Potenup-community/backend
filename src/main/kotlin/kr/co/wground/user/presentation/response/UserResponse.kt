@@ -5,7 +5,7 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.user.domain.constant.UserRole
 
 data class UserResponse(
-    val id: UserId,
+    val userId: UserId,
     val name: String,
     val email: String,
     val trackId: TrackId,

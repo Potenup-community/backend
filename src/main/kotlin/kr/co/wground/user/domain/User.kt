@@ -40,6 +40,9 @@ class User(
     val phoneNumber: String,
 
     @Column(nullable = false)
+    val profileImageUrl : String,
+
+    @Column(nullable = false)
     val provider: String,
 
     @Column(nullable = false, updatable = false)

@@ -15,7 +15,7 @@ class UserServiceImpl(
     override fun getMyInfo(userId: UserId): UserResponse {
         val user = userRepository.findByIdOrNull(userId) ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
         return UserResponse(
-            id = user.userId,
+            userId = user.userId,
             name = user.name,
             email = user.email,
             trackId = user.trackId,
