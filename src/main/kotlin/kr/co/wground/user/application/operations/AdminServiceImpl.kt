@@ -8,6 +8,7 @@ import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.infra.dto.UserInfoDto
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.UserSearchRequest
 import kr.co.wground.user.presentation.response.AdminSearchUserResponse
@@ -41,7 +42,9 @@ class AdminServiceImpl(
         val conditionDto = ConditionDto.from(conditions)
         val userInfos = userRepository.searchUsers(conditionDto, pageable)
 
-        val trackIds = userInfos.map { it.trackId }.toSet()
+        validatePageBounds(userInfos,pageable)
+
+        val trackIds = userInfos.content.map { it.trackId }.toSet()
         val tracks = trackRepository.findAllById(trackIds)
 
         val trackNameMap = tracks.associate { it.trackId to it.trackName }
@@ -59,6 +62,24 @@ class AdminServiceImpl(
                 requestStatus = userInfo.requestStatus,
                 createdAt = userInfo.createdAt
             )
+        }
+    }
+
+    private fun validatePageBounds(userInfos: Page<UserInfoDto>, pageable: Pageable) {
+        val requestedPage = pageable.pageNumber
+        val totalPages = userInfos.totalPages
+        val totalElements = userInfos.totalElements
+
+        if (requestedPage < 0) {
+            throw BusinessException(UserServiceErrorCode.PAGE_NUMBER_MIN_ERROR)
+        }
+
+        if (totalElements > 0 && requestedPage >= totalPages) {
+            throw BusinessException(UserServiceErrorCode.PAGE_NUMBER_IS_OVER_TOTAL_PAGE)
+        }
+
+        if (totalElements == 0L && requestedPage > 0) {
+            throw BusinessException(UserServiceErrorCode.PAGE_REQUEST_ERROR)
         }
     }
 }
