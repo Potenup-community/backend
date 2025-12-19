@@ -17,8 +17,8 @@ import java.time.LocalDateTime
 @Table(
     uniqueConstraints = [
         UniqueConstraint(
-            name = "reaction_uk",
-            columnNames = ["user_id", "post_id"]
+            name = "post_reaction_uk",
+            columnNames = ["user_id", "post_id", "reaction_type"]
         )
     ]
 )
