@@ -16,6 +16,6 @@ class UserController(
     @GetMapping("/myInfo")
     fun getMyInfo(userId : CurrentUserId) : ResponseEntity<UserResponse> {
         val response = userService.getMyInfo(userId.value)
-        return ResponseEntity.ok(response)
+        return ResponseEntity.ok(UserResponse.from(response))
     }
 }
