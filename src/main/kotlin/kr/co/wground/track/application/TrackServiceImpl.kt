@@ -9,6 +9,7 @@ import kr.co.wground.track.application.exception.TrackServiceErrorCode
 import kr.co.wground.track.domain.Track
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.track.presentation.response.TrackQueryResponse
+import kr.co.wground.track.presentation.response.TrackQueryResponse.Companion.toTrackQueryResponse
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -22,7 +23,6 @@ class TrackServiceImpl(
 ) : TrackService {
     override fun createTrack(createTrack: CreateTrackDto): List<TrackQueryResponse> {
         val savedTrack = trackRepository.save(createTrack.toEntity())
-        val findAllTracks = trackRepository.findAll().map(TrackQueryResponse::fromEntity)
 
         //스케줄러 만료 변환 날짜 등록
         eventPublisher.publishEvent(
@@ -30,7 +30,7 @@ class TrackServiceImpl(
                 trackId = savedTrack.trackId, endDate = savedTrack.endDate, type = TrackChangedEvent.EventType.CREATED
             )
         )
-        return findAllTracks
+        return getAllTrackResponses()
     }
 
     override fun updateTrack(updateTrack: UpdateTrackDto) {
@@ -67,5 +67,9 @@ class TrackServiceImpl(
     private fun findTrackById(id: TrackId): Track {
         return trackRepository.findByIdOrNull(id)
             ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
+    }
+
+    private fun getAllTrackResponses(): List<TrackQueryResponse> {
+        return trackRepository.findAllByCreatedAtDesc().map{ it.toTrackQueryResponse()}
     }
 }

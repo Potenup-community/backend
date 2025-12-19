@@ -12,13 +12,13 @@ data class TrackQueryResponse private constructor(
     val trackStatus: TrackStatus
 ) {
     companion object {
-        fun fromEntity(entity: Track): TrackQueryResponse {
+        fun Track.toTrackQueryResponse(): TrackQueryResponse {
             return TrackQueryResponse(
-                trackId = entity.trackId,
-                trackName = entity.trackName,
-                startDate = entity.startDate,
-                endDate = entity.endDate,
-                trackStatus = entity.trackStatus
+                trackId = this.trackId,
+                trackName = this.trackName,
+                startDate = this.startDate,
+                endDate = this.endDate,
+                trackStatus = this.trackStatus
             )
         }
     }
