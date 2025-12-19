@@ -5,6 +5,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import kr.co.wground.global.common.PostId
@@ -13,7 +14,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(
-    name = "reactions",
+    name = "post_reactions",
     uniqueConstraints = [
         UniqueConstraint(
             name = "reaction_uk",
@@ -21,7 +22,7 @@ import java.time.LocalDateTime
         )
     ]
 )
-class Reaction(
+class PostReaction(
     @Column(updatable = false)
     val userId: UserId,
 
