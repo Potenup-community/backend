@@ -11,7 +11,7 @@ import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserInfoDto
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.UserSearchRequest
-import kr.co.wground.user.presentation.response.AdminSearchUserResponse
+import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -38,7 +38,7 @@ class AdminServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    fun findUsersByConditions(conditions: UserSearchRequest, pageable: Pageable): Page<AdminSearchUserResponse> {
+    fun findUsersByConditions(conditions: UserSearchRequest, pageable: Pageable): Page<AdminSearchUserDto> {
         val conditionDto = ConditionDto.from(conditions)
         val userInfos = userRepository.searchUsers(conditionDto, pageable)
 
@@ -50,7 +50,7 @@ class AdminServiceImpl(
         val trackNameMap = tracks.associate { it.trackId to it.trackName }
 
         return userInfos.map { userInfo ->
-            AdminSearchUserResponse(
+            AdminSearchUserDto(
                 userId = userInfo.userId,
                 name = userInfo.name,
                 email = userInfo.email,
@@ -79,7 +79,7 @@ class AdminServiceImpl(
         }
 
         if (totalElements == 0L && requestedPage > 0) {
-            throw BusinessException(UserServiceErrorCode.PAGE_REQUEST_ERROR)
+            throw BusinessException(UserServiceErrorCode.CANT_REQUEST_NEXT_PAGE_IN_ZERO_ELEMENT)
         }
     }
 }

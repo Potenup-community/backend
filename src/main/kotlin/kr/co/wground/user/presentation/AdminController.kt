@@ -3,7 +3,7 @@ package kr.co.wground.user.presentation
 import kr.co.wground.user.application.operations.AdminServiceImpl
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.UserSearchRequest
-import kr.co.wground.user.presentation.response.AdminSearchUserResponse
+import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.presentation.response.UserPageResponse
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -32,9 +32,9 @@ class AdminController(
     fun getAllUsers(
         @ModelAttribute condition: UserSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
-    ): ResponseEntity<UserPageResponse<AdminSearchUserResponse>> {
+    ): ResponseEntity<UserPageResponse<AdminSearchUserDto>> {
         val userInfos = adminServiceImpl.findUsersByConditions(condition, pageable)
-        val response = UserPageResponse.fromAdminSearchUserResponse(userInfos)
+        val response = UserPageResponse.fromAdminSearchUserDto(userInfos)
         return ResponseEntity.ok(response)
     }
 }

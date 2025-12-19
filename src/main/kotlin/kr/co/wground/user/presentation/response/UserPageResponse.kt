@@ -1,6 +1,7 @@
 package kr.co.wground.user.presentation.response
 
 import kr.co.wground.user.application.operations.constant.START_NUMBER
+import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import org.springframework.data.domain.Page
 
 data class UserPageResponse<T>(
@@ -8,16 +9,16 @@ data class UserPageResponse<T>(
     val pageInfo: PageMetadata
 ){
     companion object{
-        fun fromAdminSearchUserResponse(userPage : Page<AdminSearchUserResponse>): UserPageResponse<AdminSearchUserResponse> {
+        fun fromAdminSearchUserDto(userQueryPage : Page<AdminSearchUserDto>): UserPageResponse<AdminSearchUserDto> {
             return UserPageResponse(
-                content = userPage.content,
+                content = userQueryPage.content,
                 pageInfo = PageMetadata(
-                    currentPage = userPage.number + START_NUMBER,
-                    pageSize = userPage.size,
-                    totalElements = userPage.totalElements,
-                    totalPages = userPage.totalPages,
-                    isFirst = userPage.isFirst,
-                    isLast = userPage.isLast
+                    currentPage = userQueryPage.number + START_NUMBER,
+                    pageSize = userQueryPage.size,
+                    totalElements = userQueryPage.totalElements,
+                    totalPages = userQueryPage.totalPages,
+                    isFirst = userQueryPage.isFirst,
+                    isLast = userQueryPage.isLast
             )
             )
         }
