@@ -23,10 +23,12 @@ class ReactionService(
 
     fun changeReaction(dto: ReactionDto) {
         validatePostExists(dto)
-        when (dto.action) {
-            ReactionType.LIKED -> react(dto)
-            ReactionType.UNLIKED -> undo(dto)
-        }
+        // To Do: reaction target 에 따라 분기하도록 변경해야 함
+        // To Do: reaction type 의 경우 필드 중 하나로 들어감
+//        when (dto.action) {
+//            ReactionType.LIKED -> react(dto)
+//            ReactionType.UNLIKED -> undo(dto)
+//        }
     }
 
     private fun validatePostExists(dto: ReactionDto) {
