@@ -11,7 +11,7 @@ data class AdminSearchUserResponse(
     val name: String,
     val email: String,
     val phoneNumber: String,
-    val trackId: Long,
+    val trackName: String,
     val role: UserRole,
     val status: UserStatus,
     val provider: String,

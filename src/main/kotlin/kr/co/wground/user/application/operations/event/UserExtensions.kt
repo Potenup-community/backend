@@ -11,6 +11,7 @@ fun SignUpRequest.toUserEntity(email: String): User{
         name = this.name,
         phoneNumber = this.phoneNumber,
         provider = this.provider,
+        profileImageUrl = ""
     )
 }
 

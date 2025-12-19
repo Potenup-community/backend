@@ -21,4 +21,7 @@ enum class UserServiceErrorCode(
     INVALID_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, "U-0011", "액세스 토큰이 유효하지 않습니다."),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "U-0012", "리프레시 토큰을 찾을수 없습니다."),
     INVALID_USER_INPUT(HttpStatus.BAD_REQUEST, "U-0012", "사용자 입력값이 올바르지 않습니다."),
+    PAGE_NUMBER_IS_OVER_TOTAL_PAGE(HttpStatus.BAD_REQUEST,"U-0013","최대 페이지 수를 넘었습니다."),
+    PAGE_NUMBER_MIN_ERROR(HttpStatus.BAD_REQUEST,"U-0014","최소 페이지 수에 해당하지 않습니다."),
+    PAGE_REQUEST_ERROR(HttpStatus.BAD_REQUEST,"U-0015","요청 페이지가 유효하지 않습니다."),
 }
