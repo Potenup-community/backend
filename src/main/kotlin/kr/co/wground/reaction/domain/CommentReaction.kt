@@ -9,9 +9,11 @@ import jakarta.persistence.Index
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.domain.enums.ReactionType
+import kr.co.wground.reaction.exception.ReactionErrorCode
 import java.time.LocalDateTime
 
 @Entity
@@ -57,8 +59,17 @@ class CommentReaction private constructor(
 
     companion object {
         fun create(userId: Long, commentId: Long, reactionType: ReactionType): CommentReaction {
-            // To Do: 불변식 검증 해야 함
+            validate(userId = userId, commentId = commentId)
             return CommentReaction(userId = userId, commentId = commentId, reactionType = reactionType)
+        }
+
+        private fun validate(userId: Long, commentId: Long) {
+            if (userId < 0) {
+                throw BusinessException(ReactionErrorCode.USER_ID_IS_NEGATIVE)
+            }
+            if (commentId < 0) {
+                throw BusinessException(ReactionErrorCode.COMMENT_ID_IS_NEGATIVE)
+            }
         }
     }
 }
