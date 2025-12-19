@@ -9,10 +9,11 @@ import jakarta.persistence.Index
 import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.domain.enums.ReactionType
-import kr.co.wground.reaction.exception.ReactionException
+import kr.co.wground.reaction.exception.ReactionErrorCode
 import java.time.LocalDateTime
 
 @Entity
@@ -64,10 +65,10 @@ class PostReaction private constructor(
 
         private fun validate(userId: Long, postId: Long) {
             if (userId < 0) {
-                throw ReactionException.userIdIsNegative()
+                throw BusinessException(ReactionErrorCode.USER_ID_IS_NEGATIVE)
             }
             if (postId < 0) {
-                throw ReactionException.postIdIsNegative()
+                throw BusinessException(ReactionErrorCode.POST_ID_IS_NEGATIVE)
             }
         }
     }
