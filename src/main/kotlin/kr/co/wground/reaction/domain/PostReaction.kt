@@ -20,6 +20,12 @@ import java.time.LocalDateTime
             name = "post_reaction_uk",
             columnNames = ["user_id", "post_id", "reaction_type"]
         )
+    ],
+    indexes = [
+        Index(
+            name = "idx_post_id",
+            columnList = "post_id"
+        )
     ]
 )
 class PostReaction(
