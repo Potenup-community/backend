@@ -46,11 +46,11 @@ class PostReaction private constructor(
 
     @Column(updatable = false)
     lateinit var createdAt: Instant
-        protected set;
+        protected set
 
     @PrePersist
     fun onCreate() {
-        createdAt = Instant.now();
+        createdAt = Instant.now()
     }
 
     // static factory --------------------

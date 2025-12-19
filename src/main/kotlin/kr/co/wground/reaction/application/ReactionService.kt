@@ -2,7 +2,6 @@ package kr.co.wground.reaction.application
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.reaction.application.dto.ReactionDto
-import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.infra.ReactionJpaRepository
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
