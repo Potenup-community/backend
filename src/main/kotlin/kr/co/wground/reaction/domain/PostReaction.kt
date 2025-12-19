@@ -13,7 +13,6 @@ import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.domain.enums.ReactionType
 import java.time.Instant
-import java.time.LocalDateTime
 
 @Entity
 @Table(
