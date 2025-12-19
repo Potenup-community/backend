@@ -10,6 +10,7 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.reaction.domain.enums.ReactionType
 import java.time.LocalDateTime
 
 @Entity
@@ -27,8 +28,10 @@ class PostReaction(
 
     @Column(updatable = false)
     val postId: PostId,
-) {
 
+    @Column(updatable = false)
+    val reactionType: ReactionType
+) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0
