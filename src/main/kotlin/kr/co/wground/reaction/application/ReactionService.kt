@@ -1,9 +1,9 @@
-package kr.co.wground.like.application
+package kr.co.wground.reaction.application
 
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.like.application.dto.LikeDto
-import kr.co.wground.like.domain.enums.LikeAction
-import kr.co.wground.like.infra.LikeJpaRepository
+import kr.co.wground.reaction.application.dto.ReactionDto
+import kr.co.wground.reaction.domain.enums.ReactionType
+import kr.co.wground.reaction.infra.ReactionJpaRepository
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
 import org.hibernate.exception.ConstraintViolationException
@@ -14,35 +14,35 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 
 @Service
-class LikeService(
-    private val likeRepository: LikeJpaRepository,
+class ReactionService(
+    private val reactionRepository: ReactionJpaRepository,
     private val postRepository: PostRepository,
     transactionManager: PlatformTransactionManager,
 ) {
     private val transactionTemplate = TransactionTemplate(transactionManager)
 
-    fun changeLike(dto: LikeDto) {
+    fun changeReaction(dto: ReactionDto) {
         validatePostExists(dto)
         when (dto.action) {
-            LikeAction.LIKED -> like(dto)
-            LikeAction.UNLIKED -> unlike(dto)
+            ReactionType.LIKED -> react(dto)
+            ReactionType.UNLIKED -> undo(dto)
         }
     }
 
-    private fun validatePostExists(dto: LikeDto) {
+    private fun validatePostExists(dto: ReactionDto) {
         postRepository.findByIdOrNull(dto.postId)
             ?: throw BusinessException(PostErrorCode.NOT_FOUND_POST)
     }
 
-    private fun like(dto: LikeDto) {
+    private fun react(dto: ReactionDto) {
         runIdempotently {
-            likeRepository.save(dto.toDomain())
+            reactionRepository.save(dto.toDomain())
         }
     }
 
-    private fun unlike(dto: LikeDto) {
+    private fun undo(dto: ReactionDto) {
         runIdempotently {
-            likeRepository.deleteByUserIdAndPostId(dto.userId, dto.postId)
+            reactionRepository.deleteByUserIdAndPostId(dto.userId, dto.postId)
         }
     }
 
@@ -50,14 +50,14 @@ class LikeService(
         try {
             transactionTemplate.execute { action() }
         } catch (e: DataIntegrityViolationException) {
-            if (!e.isDuplicateLikeViolation()) {
+            if (!e.isDuplicateReactionViolation()) {
                 throw e
             }
         }
     }
 
-    private fun DataIntegrityViolationException.isDuplicateLikeViolation(): Boolean {
+    private fun DataIntegrityViolationException.isDuplicateReactionViolation(): Boolean {
         val constraint = cause as? ConstraintViolationException
-        return constraint?.constraintName == "like_uk"
+        return constraint?.constraintName == "reaction_uk"
     }
 }

@@ -1,4 +1,4 @@
-package kr.co.wground.like.domain
+package kr.co.wground.reaction.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -13,15 +13,15 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(
-    name = "likes",
+    name = "reactions",
     uniqueConstraints = [
         UniqueConstraint(
-            name = "like_uk",
+            name = "reaction_uk",
             columnNames = ["user_id", "post_id"]
         )
     ]
 )
-class Like(
+class Reaction(
     @Column(updatable = false)
     val userId: UserId,
 
