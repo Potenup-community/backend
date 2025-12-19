@@ -29,18 +29,18 @@ class TrackController(
         return ResponseEntity.status(HttpStatus.CREATED).body(response)
     }
 
-    @PatchMapping("/{trackId}")
+    @PatchMapping("/{id}")
     fun updateTrack(
-        @PathVariable trackId: TrackId,
+        @PathVariable("id") trackId: TrackId,
         @RequestBody @Valid updateTrack: UpdateTrackRequest
     ): ResponseEntity<Unit> {
         trackService.updateTrack(updateTrack.toUpdateTrackDto(trackId))
         return ResponseEntity.noContent().build()
     }
 
-    @DeleteMapping("/{trackId}")
+    @DeleteMapping("/{id}")
     fun deleteTrack(
-        @PathVariable trackId: TrackId,
+        @PathVariable("id") trackId: TrackId,
     ): ResponseEntity<Unit> {
         trackService.deleteTrack(trackId)
         return ResponseEntity.noContent().build()
