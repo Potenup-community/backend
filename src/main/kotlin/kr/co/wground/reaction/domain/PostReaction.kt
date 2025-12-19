@@ -58,14 +58,17 @@ class PostReaction private constructor(
 
     companion object {
         fun create(userId: Long, postId: Long, reactionType: ReactionType): PostReaction {
+            validate(userId = userId, postId = postId)
+            return PostReaction(userId = userId, postId = postId, reactionType = reactionType)
+        }
+
+        private fun validate(userId: Long, postId: Long) {
             if (userId < 0) {
                 throw ReactionException.userIdIsNegative()
             }
             if (postId < 0) {
                 throw ReactionException.postIdIsNegative()
             }
-
-            return PostReaction(userId = userId, postId = postId, reactionType = reactionType)
         }
     }
 }

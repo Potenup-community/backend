@@ -58,14 +58,17 @@ class CommentReaction private constructor(
 
     companion object {
         fun create(userId: Long, commentId: Long, reactionType: ReactionType): CommentReaction {
+            validate(userId = userId, commentId = commentId)
+            return CommentReaction(userId = userId, commentId = commentId, reactionType = reactionType)
+        }
+
+        private fun validate(userId: Long, commentId: Long) {
             if (userId < 0) {
                 throw ReactionException.userIdIsNegative()
             }
             if (commentId < 0) {
                 throw ReactionException.commentIdIsNegative()
             }
-
-            return CommentReaction(userId = userId, commentId = commentId, reactionType = reactionType)
         }
     }
 }
