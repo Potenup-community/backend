@@ -6,11 +6,13 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Index
+import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.domain.enums.ReactionType
+import java.time.Instant
 import java.time.LocalDateTime
 
 @Entity
@@ -44,5 +46,11 @@ class PostReaction(
         protected set
 
     @Column(updatable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now()
+    lateinit var createdAt: Instant
+        protected set;
+
+    @PrePersist
+    fun onCreate() {
+        createdAt = Instant.now();
+    }
 }
