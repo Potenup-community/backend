@@ -12,6 +12,7 @@ import jakarta.persistence.UniqueConstraint
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.domain.enums.ReactionType
+import kr.co.wground.reaction.exception.ReactionException
 import java.time.LocalDateTime
 
 @Entity
@@ -57,7 +58,13 @@ class PostReaction private constructor(
 
     companion object {
         fun create(userId: Long, postId: Long, reactionType: ReactionType): PostReaction {
-            // To Do: 불변식 검증 해야 함
+            if (userId < 0) {
+                throw ReactionException.userIdIsNegative()
+            }
+            if (postId < 0) {
+                throw ReactionException.postIdIsNegative()
+            }
+
             return PostReaction(userId = userId, postId = postId, reactionType = reactionType)
         }
     }
