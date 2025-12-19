@@ -14,7 +14,6 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(
-    name = "post_reactions",
     uniqueConstraints = [
         UniqueConstraint(
             name = "reaction_uk",
