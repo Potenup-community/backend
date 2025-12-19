@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface TrackRepository : JpaRepository<Track, Long>  {
     fun findAllByTrackStatus(status: TrackStatus, pageRequest: Pageable): Page<Track>
-    fun findAllByCreatedAtDesc(): List<Track>
+    fun findAllByOrderByEndDateDesc(): List<Track>
 }

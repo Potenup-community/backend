@@ -70,6 +70,6 @@ class TrackServiceImpl(
     }
 
     private fun getAllTrackResponses(): List<TrackQueryResponse> {
-        return trackRepository.findAllByCreatedAtDesc().map{ it.toTrackQueryResponse()}
+        return trackRepository.findAllByOrderByEndDateDesc().map{ it.toTrackQueryResponse()}
     }
 }
