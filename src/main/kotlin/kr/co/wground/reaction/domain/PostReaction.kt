@@ -29,7 +29,7 @@ import java.time.Instant
         )
     ]
 )
-class PostReaction(
+class PostReaction private constructor(
     @Column(updatable = false)
     val userId: UserId,
 
@@ -51,5 +51,14 @@ class PostReaction(
     @PrePersist
     fun onCreate() {
         createdAt = Instant.now();
+    }
+
+    // static factory --------------------
+
+    companion object {
+        fun create(userId: Long, postId: Long, reactionType: ReactionType): PostReaction {
+            // To Do: 불변식 검증 해야 함
+            return PostReaction(userId = userId, postId = postId, reactionType = reactionType)
+        }
     }
 }
