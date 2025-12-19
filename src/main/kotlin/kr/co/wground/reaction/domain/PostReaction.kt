@@ -12,7 +12,7 @@ import jakarta.persistence.UniqueConstraint
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.domain.enums.ReactionType
-import java.time.Instant
+import java.time.LocalDateTime
 
 @Entity
 @Table(
@@ -45,12 +45,12 @@ class PostReaction private constructor(
         protected set
 
     @Column(updatable = false)
-    lateinit var createdAt: Instant
+    lateinit var createdAt: LocalDateTime
         protected set
 
     @PrePersist
     fun onCreate() {
-        createdAt = Instant.now()
+        createdAt = LocalDateTime.now()
     }
 
     // static factory --------------------
