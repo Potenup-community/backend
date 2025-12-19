@@ -35,24 +35,6 @@ class AdminController(
         @PageableDefault(size = 20) pageable: Pageable
     ): ResponseEntity<Page<AdminSearchUserResponse>> {
         val userInfos = adminServiceImpl.findUsersByConditions(condition, pageable)
-        val responses = userInfoToResponse(userInfos)
-        return ResponseEntity.ok(responses)
-    }
-
-    private fun userInfoToResponse(userInfos: Page<UserInfoDto>): Page<AdminSearchUserResponse> {
-        return userInfos.map { userInfoDto ->
-            AdminSearchUserResponse(
-                userId = userInfoDto.userId,
-                name = userInfoDto.name,
-                email = userInfoDto.email,
-                phoneNumber = userInfoDto.phoneNumber,
-                trackId = userInfoDto.trackId,
-                role = userInfoDto.role,
-                status = userInfoDto.status,
-                requestStatus = userInfoDto.requestStatus,
-                provider = userInfoDto.provider,
-                createdAt = userInfoDto.createdAt,
-            )
-        }
+        return ResponseEntity.ok(userInfos)
     }
 }

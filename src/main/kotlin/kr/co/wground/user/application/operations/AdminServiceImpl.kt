@@ -1,14 +1,16 @@
 package kr.co.wground.user.application.operations
 
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
+import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
 import kr.co.wground.user.application.operations.dto.ConditionDto
+import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
-import kr.co.wground.user.infra.dto.UserInfoDto
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.UserSearchRequest
+import kr.co.wground.user.presentation.response.AdminSearchUserResponse
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 class AdminServiceImpl(
     val signupRepository: RequestSignupRepository,
     val userRepository: UserRepository,
+    val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : UserOperations {
     fun decisionSignup(request: DecisionStatusRequest) {
@@ -34,8 +37,28 @@ class AdminServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    fun findUsersByConditions(conditions: UserSearchRequest, pageable: Pageable): Page<UserInfoDto> {
+    fun findUsersByConditions(conditions: UserSearchRequest, pageable: Pageable): Page<AdminSearchUserResponse> {
         val conditionDto = ConditionDto.from(conditions)
-        return userRepository.searchUsers(conditionDto, pageable)
+        val userInfos = userRepository.searchUsers(conditionDto, pageable)
+
+        val trackIds = userInfos.map { it.trackId }.toSet()
+        val tracks = trackRepository.findAllById(trackIds)
+
+        val trackNameMap = tracks.associate { it.trackId to it.trackName }
+
+        return userInfos.map { userInfo ->
+            AdminSearchUserResponse(
+                userId = userInfo.userId,
+                name = userInfo.name,
+                email = userInfo.email,
+                phoneNumber = userInfo.phoneNumber,
+                trackName = (trackNameMap[userInfo.trackId] ?: NOT_ASSOCIATE),
+                role = userInfo.role,
+                status = userInfo.status,
+                provider = userInfo.provider,
+                requestStatus = userInfo.requestStatus,
+                createdAt = userInfo.createdAt
+            )
+        }
     }
 }
