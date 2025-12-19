@@ -42,7 +42,7 @@ class AdminServiceImpl(
         val conditionDto = ConditionDto.from(conditions)
         val userInfos = userRepository.searchUsers(conditionDto, pageable)
 
-        validatePageBounds(userInfos,pageable)
+        validatePageBounds(userInfos, pageable)
 
         val trackIds = userInfos.content.map { it.trackId }.toSet()
         val tracks = trackRepository.findAllById(trackIds)
@@ -70,14 +70,28 @@ class AdminServiceImpl(
         val totalPages = userInfos.totalPages
         val totalElements = userInfos.totalElements
 
+        validateMinPage(pageable, requestedPage)
+        validateOverPage(totalPages, totalElements, requestedPage)
+        validateElementZeroNextPage(totalElements, requestedPage)
+    }
+
+    private fun validateMinPage(pageable: Pageable, requestedPage: Int) {
         if (requestedPage < 0) {
             throw BusinessException(UserServiceErrorCode.PAGE_NUMBER_MIN_ERROR)
         }
+    }
 
+    fun validateOverPage(
+        totalPages: Int,
+        totalElements: Long,
+        requestedPage: Int
+    ) {
         if (totalElements > 0 && requestedPage >= totalPages) {
             throw BusinessException(UserServiceErrorCode.PAGE_NUMBER_IS_OVER_TOTAL_PAGE)
         }
+    }
 
+    private fun validateElementZeroNextPage(totalElements: Long, requestedPage: Int) {
         if (totalElements == 0L && requestedPage > 0) {
             throw BusinessException(UserServiceErrorCode.CANT_REQUEST_NEXT_PAGE_IN_ZERO_ELEMENT)
         }
