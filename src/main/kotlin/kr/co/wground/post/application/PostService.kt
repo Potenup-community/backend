@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 @Transactional
@@ -32,13 +33,11 @@ class PostService(
     fun createPost(dto: PostCreateDto): Long {
         val postId = postRepository.save(dto.toDomain()).id
 
-        eventPublisher.publishEvent(
-            SyncDraftImagesToPostEvent(
-                postId = postId,
-                ownerId = dto.writerId,
-                draftId = dto.draftId,
-                markdown = dto.content
-            )
+        sendSyncImageEvent(
+            postId = postId,
+            ownerId = dto.writerId,
+            draftId = dto.draftId,
+            content = dto.content
         )
 
         return postId
@@ -52,7 +51,7 @@ class PostService(
     }
 
     fun updatePost(dto: PostUpdateDto) {
-        val foundPost = findPostByIdOrThrow(dto.id)
+        val foundPost = findPostByIdOrThrow(dto.postId)
         validatePostOwner(foundPost, dto.writerId)
 
         foundPost.update(
@@ -60,6 +59,31 @@ class PostService(
             title = dto.title,
             content = dto.content,
             type = dto.highlightType
+        )
+
+        if (dto.content != null && dto.draftId != null) {
+            sendSyncImageEvent(
+                postId = dto.postId,
+                ownerId = dto.writerId,
+                draftId = dto.draftId,
+                content = dto.content
+            )
+        }
+    }
+
+    private fun sendSyncImageEvent(
+        postId: PostId,
+        ownerId: WriterId,
+        draftId: UUID,
+        content: String,
+    ) {
+        eventPublisher.publishEvent(
+            SyncDraftImagesToPostEvent(
+                postId = postId,
+                ownerId = ownerId,
+                draftId = draftId,
+                markdown = content,
+            )
         )
     }
 
