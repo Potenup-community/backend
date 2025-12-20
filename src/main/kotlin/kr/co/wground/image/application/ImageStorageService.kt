@@ -52,7 +52,7 @@ class ImageStorageService(
         val imageFile = ImageFile.create(dto.ownerId, dto.draftId, relativePath)
         imageRepository.save(imageFile)
 
-        return LocalStoredDto(id = id, relativePath = relativePath, url = url)
+        return LocalStoredDto(imageId = id, relativePath = relativePath, url = url)
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

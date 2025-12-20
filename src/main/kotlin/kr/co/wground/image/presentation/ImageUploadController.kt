@@ -5,6 +5,8 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.image.application.ImageStorageService
 import kr.co.wground.image.application.dto.UploadImageDto
 import kr.co.wground.image.presentation.request.UploadImageRequest
+import kr.co.wground.image.presentation.response.UploadedImageResponse
+import kr.co.wground.image.presentation.response.toResponse
 import kr.co.wground.image.validator.ImageUploadValidator
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,7 +28,8 @@ class ImageUploadController(
         @Valid@RequestBody request: UploadImageRequest,
         @RequestPart file: MultipartFile,
         ownerId: CurrentUserId
-    ) {
-        imageStorageService.saveTemp(UploadImageDto(request.draftId, ownerId.value, file))
+    ): UploadedImageResponse {
+        return imageStorageService.saveTemp(UploadImageDto(request.draftId, ownerId.value, file))
+            .toResponse()
     }
 }
