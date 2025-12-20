@@ -1,6 +1,7 @@
 package kr.co.wground.post.application
 
 import kr.co.wground.comment.infra.CommentRepository
+import kr.co.wground.common.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.WriterId
@@ -15,6 +16,7 @@ import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,10 +26,22 @@ import org.springframework.transaction.annotation.Transactional
 class PostService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val eventPublisher: ApplicationEventPublisher
 ) {
     fun createPost(dto: PostCreateDto): Long {
-        return postRepository.save(dto.toDomain()).id
+        val postId = postRepository.save(dto.toDomain()).id
+
+        eventPublisher.publishEvent(
+            SyncDraftImagesToPostEvent(
+                postId = postId,
+                ownerId = dto.writerId,
+                draftId = dto.draftId,
+                markdown = dto.content
+            )
+        )
+
+        return postId
     }
 
     fun deletePost(id: Long, writerId: WriterId) {
