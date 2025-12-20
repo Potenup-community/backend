@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.UserId
 import kr.co.wground.global.jwt.constant.CSRF
 import kr.co.wground.global.jwt.constant.HEADER_NAME
 import kr.co.wground.global.jwt.constant.SUBSTRING_INDEX
@@ -41,49 +42,61 @@ class JwtAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        val token = resolveTokenFromHeader(request) ?: resolveTokenFromCookie(request, TokenType.ACCESS)
 
-        if (token == null) {
+        val accessToken = resolveTokenFromHeader(request) ?: resolveTokenFromCookie(request, TokenType.ACCESS)
+
+        if (accessToken == null) {
+            val refreshToken = resolveTokenFromCookie(request, TokenType.REFRESH)
+
+            if (refreshToken != null) {
+                try {
+                    rePublishAndAuthenticate(refreshToken, response)
+                    filterChain.doFilter(request, response)
+                    return
+                } catch (ex: BusinessException) {
+                    handlerExceptionResolver.resolveException(request, response, null, ex)
+                    return
+                }
+            }
+
             filterChain.doFilter(request, response)
             return
         }
 
         try {
-            val userId = jwtProvider.validateAccessToken(token)
+            val userId = jwtProvider.validateAccessToken(accessToken)
             setAuthentication(userId)
-
         } catch (ex: BusinessException) {
             if (ex.code == UserServiceErrorCode.TOKEN_EXPIRED.code) {
                 try {
                     val refreshToken = resolveTokenFromCookie(request, TokenType.REFRESH) ?: throw ex
-
-                    val tokenResponse = loginService.refreshAccessToken(refreshToken)
-
-                    val accessCookie =
-                        createTokenCookie(tokenResponse.accessToken, TokenType.ACCESS, accessExpirationMs)
-                    val refreshCookie =
-                        createTokenCookie(tokenResponse.refreshToken, TokenType.REFRESH, refreshExpirationMs)
-
-                    response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                    response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-
-                    val userId = jwtProvider.validateAccessToken(tokenResponse.accessToken)
-                    setAuthentication(userId)
-
-                    filterChain.doFilter(request, response)
-                    return
+                    rePublishAndAuthenticate(refreshToken, response)
                 } catch (e: BusinessException) {
                     handlerExceptionResolver.resolveException(request, response, null, e)
                     return
                 }
+            } else {
+                handlerExceptionResolver.resolveException(request, response, null, ex)
+                return
             }
-            handlerExceptionResolver.resolveException(request, response, null, ex)
-            return
         }
+
         filterChain.doFilter(request, response)
     }
 
-    private fun setAuthentication(userId: Long) {
+    private fun rePublishAndAuthenticate(refreshToken: String, response: HttpServletResponse) {
+        val tokenResponse = loginService.refreshAccessToken(refreshToken)
+
+        val accessCookie = createTokenCookie(tokenResponse.accessToken, TokenType.ACCESS, accessExpirationMs)
+        val refreshCookie = createTokenCookie(tokenResponse.refreshToken, TokenType.REFRESH, refreshExpirationMs)
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString())
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+
+        setAuthentication(tokenResponse.userId)
+    }
+
+    private fun setAuthentication(userId: UserId) {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 

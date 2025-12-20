@@ -61,7 +61,7 @@ class LoginServiceImpl(
 
         user.updateRefreshToken(refreshTokenHasher.hash(newRefreshToken))
 
-        return TokenResponse(newAccessToken, newRefreshToken)
+        return TokenResponse(user.userId, newAccessToken, newRefreshToken)
     }
 
     @Transactional
