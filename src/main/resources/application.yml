@@ -43,3 +43,12 @@ jwt:
 google:
   auth:
     client-id: ${GOOGLE_CLIENT_KEY}
+
+app:
+  upload:
+    local-dir: ${LOCAL_UPLOAD_DIR}
+    public-base-path: ${PUBLIC_BASE_PATH}
+    max-image-bytes: ${MAX_IMAGE_BYTE}
+    max-gif-bytes: ${MAX_GIF_BYTES}
+    allowed-mime-types: ${ALLOWED_MIME_TYPES}
+    cache-period: ${CACHE_PERIOD}
