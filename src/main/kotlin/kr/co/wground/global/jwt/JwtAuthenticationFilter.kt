@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.UserId
 import kr.co.wground.global.jwt.constant.CSRF
 import kr.co.wground.global.jwt.constant.HEADER_NAME
 import kr.co.wground.global.jwt.constant.SUBSTRING_INDEX
@@ -12,7 +13,6 @@ import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.common.LoginService
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.infra.UserRepository
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpHeaders
@@ -96,7 +96,7 @@ class JwtAuthenticationFilter(
         setAuthentication(tokenResponse.userId)
     }
 
-    private fun setAuthentication(userId: Long) {
+    private fun setAuthentication(userId: UserId) {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
