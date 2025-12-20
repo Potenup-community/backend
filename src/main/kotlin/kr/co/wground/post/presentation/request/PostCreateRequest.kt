@@ -6,8 +6,11 @@ import jakarta.validation.constraints.Size
 import kr.co.wground.post.application.dto.PostCreateDto
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
+import java.util.UUID
 
 data class PostCreateRequest(
+    @field:NotNull(message = "드래프트 아이디를 넣어주세요.")
+    val drawerId: UUID,
     @field:NotNull(message = "작성할 토픽을 선택해주세요.")
     val topic: Topic,
     @field:NotEmpty(message = "제목을 작성해주세요.")
@@ -19,6 +22,7 @@ data class PostCreateRequest(
     val highlightType: HighlightType? = null,
 ) {
     fun toDto(writerId: Long) = PostCreateDto(
+        draftId = drawerId,
         writerId = writerId,
         topic = topic,
         title = title,
