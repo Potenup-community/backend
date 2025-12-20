@@ -16,7 +16,6 @@ class UploadConfig(
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         val location = Path.of(props.localDir).toAbsolutePath().normalize().toUri().toString()
-        println(location)
         registry.addResourceHandler("${props.publicBasePath.trimEnd('/')}/**")
             .addResourceLocations(location)
             .setCachePeriod(props.cachePeriod)
