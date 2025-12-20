@@ -24,6 +24,7 @@ class CustomUserRepositoryImpl(
         condition: ConditionDto,
         pageable: Pageable
     ): Page<UserInfoDto> {
+        val predicatesArray = predicates(condition)
 
         val content = queryFactory
             .select(
@@ -45,20 +46,13 @@ class CustomUserRepositoryImpl(
             .from(user)
             .leftJoin(requestSignup).on(user.userId.eq(requestSignup.userId))
             .where(
-                nameContains(condition.name),
-                emailEquals(condition.email),
-                trackIdEquals(condition.trackId),
-                roleEquals(condition.role),
-                statusEquals(condition.status),
-                requestStatusEquals(condition.requestStatus),
-                providerEquals(condition.provider)
+                *predicatesArray
             )
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong())
             .orderBy(user.createdAt.desc())
             .fetch()
 
-        val predicatesArray = predicates(condition)
         val countQuery = getUserCountQuery(condition,predicatesArray)
 
         return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchOne() ?: 0L }

@@ -34,6 +34,9 @@ class User(
     val email: String,
 
     @Column(nullable = false)
+    val profileImageUrl : String,
+
+    @Column(nullable = false)
     val name: String,
 
     @Column(nullable = false)
