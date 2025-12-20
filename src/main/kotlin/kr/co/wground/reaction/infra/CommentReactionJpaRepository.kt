@@ -20,7 +20,7 @@ interface CommentReactionJpaRepository : JpaRepository<CommentReaction, Long> {
     @Modifying(clearAutomatically = true)
     @Query(
         nativeQuery = true,
-        value = "INSERT INTO post_reaction (user_id, comment_id, reaction_type, created_at)" +
+        value = "INSERT INTO comment_reaction (user_id, comment_id, reaction_type, created_at)" +
                 "VALUES (:userId, :commentId, :reactionType, :now)" +
                 "ON DUPLICATE KEY UPDATE id = id" // 기본 키 중복 시 사실 상 no-op
     )
