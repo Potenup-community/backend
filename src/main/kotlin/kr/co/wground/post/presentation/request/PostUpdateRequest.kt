@@ -6,8 +6,10 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.post.application.dto.PostUpdateDto
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
+import java.util.UUID
 
 data class PostUpdateRequest(
+    val draftId: UUID?,
     val topic: Topic? = null,
     @field:Size(max = 50, message = "제목은 50자까지 작성할 수 있습니다.")
     val title: String? = null,
@@ -16,7 +18,8 @@ data class PostUpdateRequest(
     val highlightType: HighlightType? = null,
 ) {
     fun toDto(id: PostId, writerId: UserId) = PostUpdateDto(
-        id = id,
+        draftId = draftId,
+        postId = id,
         title = title,
         content = content,
         writerId = writerId,
