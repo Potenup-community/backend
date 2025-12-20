@@ -9,6 +9,7 @@ import kr.co.wground.image.presentation.response.UploadedImageResponse
 import kr.co.wground.image.presentation.response.toResponse
 import kr.co.wground.image.validator.ImageUploadValidator
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,11 +26,10 @@ class ImageUploadController(
 ) {
     @PostMapping("/upload", consumes = [MULTIPART_FORM_DATA_VALUE])
     fun uploadImage(
-        @Valid@RequestBody request: UploadImageRequest,
-        @RequestPart file: MultipartFile,
+        @Valid @ModelAttribute request: UploadImageRequest,
         ownerId: CurrentUserId
     ): UploadedImageResponse {
-        return imageStorageService.saveTemp(UploadImageDto(request.draftId, ownerId.value, file))
+        return imageStorageService.saveTemp(UploadImageDto(request.draftId, ownerId.value, request.file))
             .toResponse()
     }
 }
