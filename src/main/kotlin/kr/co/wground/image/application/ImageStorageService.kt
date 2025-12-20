@@ -55,6 +55,7 @@ class ImageStorageService(
 
         val currentlyLinked = imageRepository.findAllByDraftIdAndOwnerId(dto.draftId, dto.ownerId)
 
+        //TODO(Repository에 in 쿼리로 마크하는 부분으로 수정 예정 -> 이유는 현재 모든 엔티티를 들고와서 어플리케이션에서 작업중 하지만 그것보다 그냥 바로 in query를 하는것이 더 나을 수 있음
         currentlyLinked.filter { it.relativePath in usedRelativePaths }
             .forEach {
                 it.markUsed()
