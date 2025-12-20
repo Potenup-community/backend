@@ -1,18 +1,28 @@
 package kr.co.wground.reaction.presentation.request
 
-import kr.co.wground.reaction.application.dto.ReactionDto
-import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.reaction.application.dto.CommentReactCommand
+import kr.co.wground.reaction.application.dto.PostReactCommand
 import kr.co.wground.reaction.domain.enums.ReactionType
+import kr.co.wground.reaction.presentation.request.ReactionTarget.COMMENT
+import kr.co.wground.reaction.presentation.request.ReactionTarget.POST
 
-// To Do: 수연님이랑 논의했던 내용 바탕으로 수정해야 함(reactionTarget 추가, ...)
 data class ReactionRequest(
-    val postId: PostId,
+    val targetType: ReactionTarget,
+    val targetId: Long,
     val reactionType: ReactionType,
 ) {
-    fun toDto(userId: UserId) = ReactionDto(
-        userId = userId,
-        postId = postId,
-        reactionType = reactionType,
-    )
+    fun toPostReactCommand(userId: UserId) : PostReactCommand {
+        if (targetType != POST) {
+            throw IllegalStateException("targetType 이 POST 가 아닌 경우 PostReactCommand 로 변환할 수 없습니다.")
+        }
+        return PostReactCommand(userId = userId, postId = targetId, reactionType = reactionType)
+    }
+
+    fun toCommentReactCommand(userId: UserId) : CommentReactCommand {
+        if (targetType != COMMENT) {
+            throw IllegalStateException("targetType 이 COMMENT 가 아닌 경우 CommentReactCommand 로 변환할 수 없습니다.")
+        }
+        return CommentReactCommand(userId = userId, commentId = targetId, reactionType = reactionType)
+    }
 }
