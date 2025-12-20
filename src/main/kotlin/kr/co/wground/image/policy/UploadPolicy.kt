@@ -8,7 +8,8 @@ class UploadPolicy(
     val maxGifBytes: Long,
     allowedMimeTypes: String,
     val localDir: String,
-    val publicBasePath: String
+    val publicBasePath: String,
+    val cachePeriod: Int
 ) {
     val allowedMimeTypeSet: Set<String> =
         allowedMimeTypes.split(",").map { it.trim().lowercase() }.toSet()
