@@ -19,7 +19,6 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/v1/files")
 class ImageUploadController(
-    private val validator: ImageUploadValidator,
     private val imageStorageService: ImageStorageService
 ) {
     @PostMapping("/upload", consumes = [MULTIPART_FORM_DATA_VALUE])
@@ -28,8 +27,6 @@ class ImageUploadController(
         @RequestPart file: MultipartFile,
         ownerId: CurrentUserId
     ) {
-        validator.validate(file)
-
         imageStorageService.saveTemp(UploadImageDto(request.draftId, ownerId.value, file))
     }
 }
