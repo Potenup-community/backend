@@ -33,17 +33,13 @@ class User(
     @Column(unique = true)
     val email: String,
 
-    @Column(nullable = false)
-    val profileImageUrl : String,
+    profileImageUrl: String,
 
     @Column(nullable = false)
     val name: String,
 
     @Column(nullable = false)
     val phoneNumber: String,
-
-    @Column(nullable = false)
-    val profileImageUrl : String,
 
     @Column(nullable = false)
     val provider: String,
@@ -58,6 +54,10 @@ class User(
     status: UserStatus = UserStatus.BLOCKED
 
 ) {
+    @Column(nullable = false)
+    var profileImageUrl: String = profileImageUrl
+        protected set
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var role: UserRole = role
@@ -84,7 +84,7 @@ class User(
         modifiedAt = LocalDateTime.now()
     }
 
-    fun logout(){
+    fun logout() {
         refreshToken = null
     }
 
@@ -107,6 +107,7 @@ class User(
                 this.status = UserStatus.ACTIVE
                 this.role = decidedRole
             }
+
             UserSignupStatus.REJECTED,
             UserSignupStatus.PENDING -> this.status = UserStatus.BLOCKED
         }
