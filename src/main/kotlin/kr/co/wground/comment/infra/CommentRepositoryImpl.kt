@@ -20,6 +20,7 @@ class CommentRepositoryImpl(
             )
             .from(comment)
             .where(comment.postId.`in`(postIds))
+            .where(comment.isDeleted.isFalse)
             .groupBy(comment.postId)
             .fetch()
     }
