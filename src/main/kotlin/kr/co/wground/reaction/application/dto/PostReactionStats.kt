@@ -7,5 +7,4 @@ data class PostReactionStats(
     val postId: PostId,
     val totalCount: Int,
     val summaries: Map<ReactionType, ReactionSummary>
-) {
-}
+)
