@@ -60,13 +60,13 @@ class ReactionCommandService(
     // validation --------------------
 
     fun validatePostExistence(postId: PostId) {
-        if (postRepository.existsById(postId)) {
+        if (!postRepository.existsById(postId)) {
             throw BusinessException(ReactionErrorCode.POST_NOT_FOUND)
         }
     }
 
     fun validateCommentExistence(commentId: CommentId) {
-        if (commentRepository.existsById(commentId)) {
+        if (!commentRepository.existsById(commentId)) {
             throw BusinessException(ReactionErrorCode.COMMENT_NOT_FOUND)
         }
     }
