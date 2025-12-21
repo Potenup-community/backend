@@ -12,6 +12,7 @@ import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -23,6 +24,7 @@ class CommentService(
     private val commentRepository: CommentRepository,
     private val postRepository: PostRepository,
     private val userRepository: UserRepository,
+    private val reactionQueryService: ReactionQueryService,
 ) {
     @Transactional
     fun write(dto: CommentCreateDto): Long {
@@ -52,15 +54,16 @@ class CommentService(
     }
 
     @Transactional(readOnly = true)
-    fun getCommentsByPost(postId: PostId): List<CommentSummaryDto> {
+    fun getCommentsByPost(postId: PostId, userId: CurrentUserId): List<CommentSummaryDto> {
         validateExistTargetPost(postId)
 
         val comments = commentRepository.findByPostId(postId)
         if (comments.isEmpty()) return emptyList()
 
         val usersById = loadUsersByComments(comments)
+        val reactionCountByCommentId = fetchReactionCounts(comments, userId.value)
 
-        return CommentSummaryTreeBuilder.from(comments, usersById).build()
+        return CommentSummaryTreeBuilder.from(comments, usersById, reactionCountByCommentId).build()
     }
 
     private fun validateExistTargetPost(postId: PostId) {
@@ -93,5 +96,19 @@ class CommentService(
     ): Map<UserId, User> {
         val writerIds = comments.map { it.writerId }.toSet()
         return userRepository.findAllById(writerIds).associateBy { it.userId }
+    }
+
+    private fun fetchReactionCounts(comments: List<Comment>, userId: UserId): Map<CommentId, Int> {
+        val commentIds = comments.map { it.id }.toSet()
+        if (commentIds.isEmpty()) return emptyMap()
+        // 크기 제한으로 배치 조회
+        return commentIds
+            .chunked(50)
+            .flatMap { chunk ->
+                reactionQueryService.getCommentReactionStats(chunk.toSet(), userId).entries
+            }
+            .associate { (commentId, stats) ->
+                commentId to stats.totalCount
+            }
     }
 }
