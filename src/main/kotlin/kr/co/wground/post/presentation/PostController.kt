@@ -53,8 +53,9 @@ class PostController(
     @GetMapping("/summary")
     fun getPostSummary(
         @PageableDefault(size = 20) pageable: Pageable,
+        userId: CurrentUserId
     ): PostSummaryResponse {
-        return postService.getSummary(pageable).toResponse()
+        return postService.getSummary(userId.value, pageable).toResponse()
     }
 
     @GetMapping("/{id}")

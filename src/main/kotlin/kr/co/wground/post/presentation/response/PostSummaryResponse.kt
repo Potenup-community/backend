@@ -4,7 +4,8 @@ import kr.co.wground.post.application.dto.PostSummaryDto
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
 import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
+import kr.co.wground.post.presentation.response.PostSummaryDetail.PostReactionSummaryDetail
+import kr.co.wground.reaction.domain.enums.ReactionType
 import java.time.LocalDateTime
 
 data class PostSummaryResponse(
@@ -22,7 +23,13 @@ data class PostSummaryDetail(
     val topic: Topic,
     val highlightType: HighlightType?,
     val commentsCount: Int,
-)
+    val reactions: List<PostReactionSummaryDetail> = emptyList(),
+) {
+    data class PostReactionSummaryDetail(
+        val reactionType: ReactionType,
+        val count: Int,
+    )
+}
 
 fun PostSummaryDto.toResponseDetail() = PostSummaryDetail(
     postId = postId,
@@ -33,6 +40,7 @@ fun PostSummaryDto.toResponseDetail() = PostSummaryDetail(
     topic = topic,
     highlightType = highlightType,
     commentsCount = commentsCount,
+    reactions = reactions.map { PostReactionSummaryDetail(it.reactionType, it.count) }
 )
 
 fun Slice<PostSummaryDto>.toResponse(): PostSummaryResponse {
