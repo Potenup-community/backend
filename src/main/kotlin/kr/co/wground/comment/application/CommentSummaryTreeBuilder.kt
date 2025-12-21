@@ -11,17 +11,19 @@ private const val UNKNOWN_USER_NAME_TAG = "탈퇴한 사용자"
 
 class CommentSummaryTreeBuilder private constructor(
     private val groupedByParent: Map<CommentId?, List<Comment>>,
-    private val usersById: Map<UserId, User>
+    private val usersById: Map<UserId, User>,
+    private val reactionCountByCommentId: Map<CommentId, Int>,
 ) {
     companion object {
         fun from(
             comments: List<Comment>,
             usersById: Map<UserId, User>,
+            reactionCountByCommentId: Map<CommentId, Int>,
         ): CommentSummaryTreeBuilder {
             val grouped = comments
                 .sortedBy { it.createdAt }
                 .groupBy { it.parentId }
-            return CommentSummaryTreeBuilder(grouped, usersById)
+            return CommentSummaryTreeBuilder(grouped, usersById, reactionCountByCommentId)
         }
     }
 
@@ -41,9 +43,9 @@ class CommentSummaryTreeBuilder private constructor(
             content = content,
             authorId = comment.writerId,
             authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
-            authorProfileImageUrl = null, // TODO: authorProfileImageUrl 매핑(User.profileImageUrl 추가 시)
+            authorProfileImageUrl = author?.profileImageUrl,
             createdAt = comment.createdAt,
-            likeCount = 0,
+            reactionCount = reactionCountByCommentId[comment.id] ?: 0,
             isDeleted = comment.isDeleted,
             replies = replies
         )

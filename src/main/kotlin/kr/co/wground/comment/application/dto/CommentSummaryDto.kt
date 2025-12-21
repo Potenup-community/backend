@@ -11,7 +11,7 @@ data class CommentSummaryDto(
     val authorName: String,
     val authorProfileImageUrl: String?,
     val createdAt: LocalDateTime,
-    val likeCount: Int,
+    val reactionCount: Int,
     val isDeleted: Boolean,
     val replies: List<CommentSummaryDto>,
 ) {
@@ -23,7 +23,7 @@ data class CommentSummaryDto(
             authorName: String,
             authorProfileImageUrl: String?,
             createdAt: LocalDateTime,
-            likeCount: Int = 0,
+            reactionCount: Int = 0,
             isDeleted: Boolean,
             replies: List<CommentSummaryDto>,
         ): CommentSummaryDto {
@@ -34,7 +34,7 @@ data class CommentSummaryDto(
                 authorName = authorName,
                 authorProfileImageUrl = authorProfileImageUrl,
                 createdAt = createdAt,
-                likeCount = likeCount,
+                reactionCount = reactionCount,
                 isDeleted = isDeleted,
                 replies = replies,
             )

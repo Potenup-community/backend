@@ -27,7 +27,7 @@ class CommentController(
     @PostMapping
     fun writeComment(
         @Valid @RequestBody request: CommentCreateRequest,
-        writerId: CurrentUserId
+        writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
         val commentDto = request.toDto(writerId)
         val location = "/api/v1/comments/${commentService.write(commentDto)}"
@@ -38,7 +38,7 @@ class CommentController(
     fun updateComment(
         @PathVariable id: CommentId,
         @Valid @RequestBody request: CommentUpdateRequest,
-        writerId: CurrentUserId
+        writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
         val commentDto = request.toDto(id)
         commentService.update(commentDto, writerId)
@@ -55,8 +55,11 @@ class CommentController(
     }
 
     @GetMapping("/{postId}")
-    fun getComments(@PathVariable postId: PostId): List<CommentSummaryResponse> {
-        return commentService.getCommentsByPost(postId).map(CommentSummaryResponse::from)
+    fun getComments(
+        @PathVariable postId: PostId,
+        writerId: CurrentUserId,
+    ): List<CommentSummaryResponse> {
+        return commentService.getCommentsByPost(postId, writerId).map(CommentSummaryResponse::from)
     }
 
 }
