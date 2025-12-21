@@ -11,9 +11,9 @@ import org.springframework.stereotype.Repository
 @Repository
 class CommentReactionQuerydslRepository(
     private val queryFactory: JPAQueryFactory
-) {
+): CustomCommentReactionRepository {
 
-    fun fetchCommentReactionStatsRows(commentIds: Set<CommentId>, userId: UserId): List<CommentReactionStatsRow> {
+    override fun fetchCommentReactionStatsRows(commentIds: Set<CommentId>, userId: UserId): List<CommentReactionStatsRow> {
         if (commentIds.isEmpty()) {
             return emptyList()
         }

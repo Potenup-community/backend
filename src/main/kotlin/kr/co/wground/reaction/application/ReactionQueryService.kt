@@ -10,6 +10,7 @@ import kr.co.wground.reaction.exception.ReactionErrorCode
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.reaction.application.dto.PostReactionStats
 import kr.co.wground.reaction.application.dto.ReactionSummary
+import kr.co.wground.reaction.infra.jpa.CommentReactionJpaRepository
 import kr.co.wground.reaction.infra.querydsl.CommentReactionQuerydslRepository
 import kr.co.wground.reaction.infra.querydsl.PostReactionQuerydslRepository
 import org.springframework.stereotype.Service
@@ -19,9 +20,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class ReactionQueryService(
     private val postReactionJpaRepository: PostReactionJpaRepository,
-    private val postReactionQuerydslRepository: PostReactionQuerydslRepository,
     private val postRepository: PostRepository,
-    private val commentReactionQuerydslRepository: CommentReactionQuerydslRepository
+    private val commentReactionJpaRepository: CommentReactionJpaRepository,
 ) {
 
     fun getPostReactionStats(postId: PostId, userId: UserId): PostReactionStats {
@@ -62,7 +62,7 @@ class ReactionQueryService(
         // postIds 집합에 속한 각 postId 에 해당하는 게시글들의 실존 여부 검증은 따로 하지 않을 생각임
         // 안 해도 될 듯? 없으면 어차피 결과 안 나갈거니까
 
-        val rowsFetched = postReactionQuerydslRepository.fetchPostReactionStatsRows(postIds, userId)
+        val rowsFetched = postReactionJpaRepository.fetchPostReactionStatsRows(postIds, userId)
 
         val rowsByPostId = rowsFetched.groupBy { it.postId }
 
@@ -107,7 +107,7 @@ class ReactionQueryService(
         // commentIds 집합에 속한 각 commentId 에 해당하는 댓글들의 실존 여부 검증은 따로 하지 않을 생각임
         // 안 해도 될 듯? 없으면 어차피 결과 안 나갈거니까
 
-        val rowsFetched = commentReactionQuerydslRepository.fetchCommentReactionStatsRows(commentIds, userId)
+        val rowsFetched = commentReactionJpaRepository.fetchCommentReactionStatsRows(commentIds, userId)
 
         val rowsByPostId = rowsFetched.groupBy { it.commentId }
 

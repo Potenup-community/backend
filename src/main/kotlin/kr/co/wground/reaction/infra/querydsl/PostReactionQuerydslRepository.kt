@@ -11,9 +11,9 @@ import org.springframework.stereotype.Repository
 @Repository
 class PostReactionQuerydslRepository(
     private val queryFactory: JPAQueryFactory
-) {
+): CustomPostReactionRepository {
 
-    fun fetchPostReactionStatsRows(postIds: Set<PostId>, userId: UserId): List<PostReactionStatsRow> {
+    override fun fetchPostReactionStatsRows(postIds: Set<PostId>, userId: UserId): List<PostReactionStatsRow> {
         if (postIds.isEmpty()) {
             return emptyList()
         }

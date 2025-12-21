@@ -4,13 +4,14 @@ import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.domain.CommentReaction
 import kr.co.wground.reaction.domain.enums.ReactionType
+import kr.co.wground.reaction.infra.querydsl.CustomCommentReactionRepository
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
-interface CommentReactionJpaRepository : JpaRepository<CommentReaction, Long> {
+interface CommentReactionJpaRepository : JpaRepository<CommentReaction, Long>, CustomCommentReactionRepository {
     fun deleteByUserIdAndCommentIdAndReactionType(userId: UserId, commentId: CommentId, reactionType: ReactionType) : Long
 
     /**
