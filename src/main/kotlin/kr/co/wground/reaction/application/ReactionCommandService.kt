@@ -4,12 +4,12 @@ import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
-import kr.co.wground.reaction.infra.PostReactionJpaRepository
+import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.dto.CommentReactCommand
 import kr.co.wground.reaction.application.dto.PostReactCommand
 import kr.co.wground.reaction.exception.ReactionErrorCode
-import kr.co.wground.reaction.infra.CommentReactionJpaRepository
+import kr.co.wground.reaction.infra.jpa.CommentReactionJpaRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime

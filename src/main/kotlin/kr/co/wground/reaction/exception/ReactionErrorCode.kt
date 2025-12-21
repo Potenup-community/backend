@@ -14,4 +14,7 @@ enum class ReactionErrorCode(
 
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "PR-0008", "반응할 게시글을 찾을 수 없습니다."),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "PR-0009", "반응할 댓글을 찾을 수 없습니다."),
+
+    TOO_LARGE_POST_ID_SET(HttpStatus.BAD_REQUEST, "PR-0010", "요청 된 postId 집합이 너무 큽니다."),
+    TOO_LARGE_COMMENT_ID_SET(HttpStatus.BAD_REQUEST, "PR-0011", "요청 된 commentId 집합이 너무 큽니다."),
 }

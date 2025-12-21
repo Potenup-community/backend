@@ -1,4 +1,4 @@
-package kr.co.wground.reaction.infra
+package kr.co.wground.reaction.infra.jpa
 
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
