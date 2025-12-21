@@ -49,8 +49,8 @@ class PostController(
     }
 
     @GetMapping("/summary")
-    fun getPostSummary(): PostSummaryResponse {
-        return postService.getSummary().toResponse()
+    fun getPostSummary(userId: CurrentUserId): PostSummaryResponse {
+        return postService.getSummary(userId.value).toResponse()
     }
 
     @GetMapping("/{id}")
