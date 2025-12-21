@@ -22,6 +22,9 @@ class PostReactionQuerydslRepository(
             .`when`(postReaction.userId.eq(userId)).then(1)
             .otherwise(0)
 
+        val reactedByMeMax = reactedByMeFlag.max()
+        val countExpr = postReaction.id.count()
+
         val tuples = queryFactory
             /*
              * 쿼리 의도(나중에 까먹을 까봐 여기 적어둠)
@@ -32,8 +35,8 @@ class PostReactionQuerydslRepository(
             .select(
                 postReaction.postId,
                 postReaction.reactionType,
-                postReaction.id.count(),
-                reactedByMeFlag.max()
+                countExpr,
+                reactedByMeMax
             )
             .from(postReaction)
             .where(postReaction.postId.`in`(postIds))
@@ -41,11 +44,24 @@ class PostReactionQuerydslRepository(
             .fetch()
 
         return tuples.map { tuple ->
+
+            val postId = tuple.get(postReaction.postId)
+                ?: throw IllegalStateException("postId 는 null 일 수 없으나, null 상태입니다.")
+
+            val reactionType = tuple.get(postReaction.reactionType)
+                ?: throw IllegalStateException("reactionType 는 null 일 수 없으나, null 상태입니다.")
+
+            val count = tuple.get(countExpr)
+                ?: throw IllegalStateException("count 집계 결과는 null 일 수 없으나, null 상태입니다.")
+
+            val reactedByMe = tuple.get(reactedByMeMax)
+                ?: throw IllegalStateException("reactedByMe 집계 결과는 null 일 수 없으나, null 상태입니다.")
+
             PostReactionStatsRow(
-                postId = tuple.get(postReaction.postId)!!,
-                reactionType = tuple.get(postReaction.reactionType)!!,
-                count = tuple.get(postReaction.id.count())!!,
-                reactedByMe = (tuple.get(reactedByMeFlag.max()) ?: 0) > 0
+                postId = postId,
+                reactionType = reactionType,
+                count = count,
+                reactedByMe = reactedByMe > 0
             )
         }
     }
