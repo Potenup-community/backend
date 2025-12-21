@@ -35,11 +35,10 @@ fun PostReactionStatsRow.toDto() = PostReactionSummaryDto(
     count = count.toInt()
 )
 
+fun Slice<Post>.toDtos(
+    writers: List<User>,
     commentsCountById: List<CommentCount>,
     postReactionStats: List<PostReactionStatsRow>
-fun Slice<Post>.toDtos(
-    writers: List<User>, 
-    
 ): Slice<PostSummaryDto> {
     val writerNameByIdMap = writers.associate { it.userId to it.name }
     val commentsCountByPostId = commentsCountById.associate { id -> id.postId to id.count }
