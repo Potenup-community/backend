@@ -10,7 +10,7 @@ import java.util.UUID
 
 data class PostCreateRequest(
     @field:NotNull(message = "드래프트 아이디를 넣어주세요.")
-    val drawerId: UUID,
+    val draftId: UUID,
     @field:NotNull(message = "작성할 토픽을 선택해주세요.")
     val topic: Topic,
     @field:NotEmpty(message = "제목을 작성해주세요.")
@@ -22,7 +22,7 @@ data class PostCreateRequest(
     val highlightType: HighlightType? = null,
 ) {
     fun toDto(writerId: Long) = PostCreateDto(
-        draftId = drawerId,
+        draftId = draftId,
         writerId = writerId,
         topic = topic,
         title = title,
