@@ -9,7 +9,7 @@ data class CommentSummaryResponse(
     val content: String,
     val author: CommentAuthorResponse,
     val createdAt: LocalDateTime,
-    val likeCount: Int,
+    val reactionCount: Int,
     val isDeleted: Boolean,
     val replies: List<CommentSummaryResponse>,
 ) {
@@ -24,7 +24,7 @@ data class CommentSummaryResponse(
                     profileImageUrl = dto.authorProfileImageUrl,
                 ),
                 createdAt = dto.createdAt,
-                likeCount = dto.likeCount,
+                reactionCount = dto.reactionCount,
                 isDeleted = dto.isDeleted,
                 replies = dto.replies.map { from(it) },
             )
