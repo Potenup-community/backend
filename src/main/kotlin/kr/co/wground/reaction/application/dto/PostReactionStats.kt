@@ -5,7 +5,7 @@ import kr.co.wground.reaction.domain.enums.ReactionType
 
 data class PostReactionStats(
     val postId: PostId,
-    val totalCount: Long,
+    val totalCount: Int,
     val summaries: Map<ReactionType, ReactionSummary>
 ) {
 }

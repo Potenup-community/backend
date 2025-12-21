@@ -37,7 +37,7 @@ class ReactionQueryService(
 
         return PostReactionStats(
             postId = postId,
-            totalCount = reactions.size.toLong(),
+            totalCount = reactions.size,
             summaries = summaries
         )
     }
