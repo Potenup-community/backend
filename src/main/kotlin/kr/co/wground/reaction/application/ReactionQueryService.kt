@@ -8,6 +8,7 @@ import kr.co.wground.reaction.exception.ReactionErrorCode
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.reaction.application.dto.PostReactionStats
 import kr.co.wground.reaction.application.dto.ReactionSummary
+import kr.co.wground.reaction.infra.querydsl.PostReactionQuerydslRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class ReactionQueryService(
     private val postReactionJpaRepository: PostReactionJpaRepository,
+    private val postReactionQuerydslRepository: PostReactionQuerydslRepository,
     private val postRepository: PostRepository,
 ) {
 
@@ -40,6 +42,51 @@ class ReactionQueryService(
             totalCount = reactions.size,
             summaries = summaries
         )
+    }
+
+    fun getPostReactionStats(postIds: Set<PostId>, userId: UserId): Map<PostId, PostReactionStats> {
+
+        if (postIds.isEmpty()) {
+            return emptyMap()
+        }
+
+        // To Do: 나중에 매직 넘버 뺄 생각입니다.
+        if (postIds.size > 50) {
+            throw BusinessException(ReactionErrorCode.TOO_LARGE_POST_ID_SET)
+        }
+
+        // postIds 집합에 속한 각 postId 에 해당하는 게시글들의 실존 여부 검증은 따로 하지 않을 생각임
+        // 안 해도 될 듯? 없으면 어차피 결과 안 나갈거니까
+
+        val rowsFetched = postReactionQuerydslRepository.fetchPostReactionStatsRows(postIds, userId)
+
+        val rowsByPostId = rowsFetched.groupBy { it.postId }
+
+        return postIds
+            .asSequence()
+            .mapNotNull { postId ->
+                val postRows = rowsByPostId[postId].orEmpty()
+
+                // postId 에 해당하는 반응 정보가 없는 경우
+                val totalCount = postRows.sumOf { it.count }
+                if (totalCount == 0L) {
+                    return@mapNotNull null
+                }
+
+                val summaries = postRows.associate { r ->
+                    r.reactionType to ReactionSummary(
+                        count = r.count.toInt(),
+                        reactedByMe = r.reactedByMe
+                    )
+                }
+
+                postId to PostReactionStats(
+                    postId,
+                    totalCount = totalCount.toInt(),
+                    summaries = summaries
+                )
+            }
+            .toMap()
     }
 
     // validation --------------------
