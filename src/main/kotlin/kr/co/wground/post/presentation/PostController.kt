@@ -55,6 +55,6 @@ class PostController(
 
     @GetMapping("/{id}")
     fun getPost(@PathVariable id: PostId): PostDetailResponse {
-        return postService.getCourse(id).toResponse()
+        return postService.getPostDetail(id).toResponse()
     }
 }
