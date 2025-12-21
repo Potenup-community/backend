@@ -11,6 +11,7 @@ import kr.co.wground.reaction.presentation.request.ReactionRequest
 import kr.co.wground.reaction.presentation.request.ReactionTarget.COMMENT
 import kr.co.wground.reaction.presentation.request.ReactionTarget.POST
 import kr.co.wground.reaction.application.dto.PostReactionStats
+import kr.co.wground.reaction.presentation.request.PostReactionStatsBatchRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -76,6 +77,21 @@ class ReactionController(
 
         // To Do: 서비스 쿼리 결과를 담는 dto 를 XxxResponse Dto 로 매핑하는 로직 추가
         val result = reactionQueryService.getPostReactionStats(userId, postId)
+
+        return ResponseEntity.ok(result)
+    }
+
+    @GetMapping("/posts")
+    fun getPostReactionStats(
+        @Valid
+        @RequestBody
+        request: PostReactionStatsBatchRequest,
+        user: CurrentUserId
+    ): ResponseEntity<Map<PostId, PostReactionStats>> {
+
+        val userId = user.value;
+
+        val result = reactionQueryService.getPostReactionStats(request.postIds, userId)
 
         return ResponseEntity.ok(result)
     }
