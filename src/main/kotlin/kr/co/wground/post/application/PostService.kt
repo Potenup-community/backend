@@ -4,6 +4,7 @@ import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.global.common.WriterId
 import kr.co.wground.post.application.dto.PostCreateDto
 import kr.co.wground.post.application.dto.PostDetailDto
@@ -15,7 +16,7 @@ import kr.co.wground.post.domain.Post
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.domain.enums.ReactionType
-import kr.co.wground.reaction.infra.PostReactionJpaRepository
+import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.context.ApplicationEventPublisher
@@ -30,7 +31,7 @@ class PostService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
     private val userRepository: UserRepository,
-    private val reactionRepository: PostReactionJpaRepository,
+    private val postReactionRepository: PostReactionJpaRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) {
     fun createPost(dto: PostCreateDto): Long {
@@ -99,31 +100,29 @@ class PostService(
         if (post.writerId != writerId) throw BusinessException(PostErrorCode.YOU_ARE_NOT_OWNER_THIS_POST)
     }
 
-    fun getSummary(): List<PostSummaryDto> {
+    fun getSummary(userId: UserId): List<PostSummaryDto> {
         val posts = postRepository.findAll()
-        val postIds = posts.map { it.writerId }.toSet()
+        val postIds = posts.map { it.id }.toSet()
         val writers = userRepository.findAllById(postIds)
+        val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
         val commentsCountById = commentRepository.countByPostIds(postIds.toList())
 
-        return posts.toDtos(writers, commentsCountById)
+        return posts.toDtos(writers, commentsCountById, postReactionStats)
     }
 
     fun getPostDetail(id: PostId): PostDetailDto {
         val foundCourse = findPostByIdOrThrow(id)
         val writer = findUserByIdOrThrow(foundCourse.writerId)
 
-        val reactionsByPostId = reactionRepository.findPostReactionsByPostId(id)
-        val (likes, reactions) = reactionsByPostId.partition { it.reactionType == ReactionType.LIKE }
-
+        val reactionsByPostId = postReactionRepository.findPostReactionsByPostId(id)
 
         val commentsCount = commentRepository.countByPostIds(listOf(id))
-            .takeIf { it.isNotEmpty() }?.first()?.count ?: 0
+            .firstOrNull()?.count ?: 0
 
         return foundCourse.toDto(
             writerName = writer.name,
             commentsCount = commentsCount,
-            likeCount = likes.size,
-            reactionCount = reactions.size
+            reactions = reactionsByPostId
         )
     }
 
