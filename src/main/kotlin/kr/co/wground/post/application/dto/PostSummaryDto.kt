@@ -6,9 +6,10 @@ import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.reaction.domain.enums.ReactionType
-import kr.co.wground.reaction.infra.querydsl.PostReactionQuerydslRepository
-import kr.co.wground.reaction.infra.querydsl.PostReactionQuerydslRepository.PostReactionStatsRow
+import kr.co.wground.reaction.infra.querydsl.CustomPostReactionRepositoryImpl.PostReactionStatsRow
 import kr.co.wground.user.domain.User
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import java.time.LocalDateTime
 
 data class PostSummaryDto(
@@ -33,16 +34,16 @@ fun PostReactionStatsRow.toDto() = PostReactionSummaryDto(
     count = count.toInt()
 )
 
-fun List<Post>.toDtos(
+fun Slice<Post>.toDtos(
     writers: List<User>,
     commentsCountById: List<CommentCount>,
     postReactionStats: List<PostReactionStatsRow>
-): List<PostSummaryDto> {
+): Slice<PostSummaryDto> {
     val writerNameByIdMap = writers.associate { it.userId to it.name }
     val commentsCountByPostId = commentsCountById.associate { id -> id.postId to id.count }
     val reactionStatsByPostId = postReactionStats.groupBy { it.postId }
 
-    return this.map { post ->
+    val dtoContent = this.content.map { post ->
         PostSummaryDto(
             postId = post.id,
             title = post.postBody.title,
@@ -55,4 +56,10 @@ fun List<Post>.toDtos(
             reactions = reactionStatsByPostId[post.id]?.map { it.toDto() } ?: emptyList()
         )
     }
+
+    return SliceImpl(
+        dtoContent,
+        this.pageable,
+        this.hasNext()
+    )
 }

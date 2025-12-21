@@ -11,8 +11,6 @@ import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.reaction.application.dto.PostReactionStats
 import kr.co.wground.reaction.application.dto.ReactionSummary
 import kr.co.wground.reaction.infra.jpa.CommentReactionJpaRepository
-import kr.co.wground.reaction.infra.querydsl.CommentReactionQuerydslRepository
-import kr.co.wground.reaction.infra.querydsl.PostReactionQuerydslRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
