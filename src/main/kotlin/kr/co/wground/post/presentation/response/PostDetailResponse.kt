@@ -17,6 +17,8 @@ data class PostDetailResponse(
     val highlightType: HighlightType?,
     val commentsCount: Int,
     val wroteAt: LocalDateTime,
+    val likeCount: Int,
+    val reactionCount: Int,
 )
 
 fun PostDetailDto.toResponse() = PostDetailResponse(
@@ -29,4 +31,6 @@ fun PostDetailDto.toResponse() = PostDetailResponse(
     highlightType = highlightType,
     commentsCount = commentsCount,
     wroteAt = wroteAt,
+    likeCount = likeCount,
+    reactionCount = reactionCount,
 )

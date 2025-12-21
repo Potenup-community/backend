@@ -31,4 +31,6 @@ fun Post.toDto(writerName: String, commentsCount: Int, likeCount: Int, reactionC
     highlightType = postStatus.highlightType,
     commentsCount = commentsCount,
     wroteAt = createdAt,
+    likeCount = likeCount,
+    reactionCount = reactionCount,
 )
