@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
 interface CommentReactionJpaRepository : JpaRepository<CommentReaction, Long> {
-    fun deleteByUserIdAndCommentId(userId: UserId, commentId: CommentId) : Long
+    fun deleteByUserIdAndCommentIdAndReactionType(userId: UserId, commentId: CommentId, reactionType: ReactionType) : Long
 
     /**
      * MySQL(H2 for test) 의 upsert 문법을 활용한 멱등 insert

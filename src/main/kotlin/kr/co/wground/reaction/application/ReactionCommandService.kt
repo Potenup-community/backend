@@ -50,11 +50,13 @@ class ReactionCommandService(
     // unreacts --------------------
 
     fun unreactToPost(command: PostReactCommand) {
-        postReactionJpaRepository.deleteByUserIdAndPostId(command.userId, command.postId)
+        postReactionJpaRepository.deleteByUserIdAndPostIdAndReactionType(
+            command.userId, command.postId, command.reactionType)
     }
 
     fun unreactToComment(command: CommentReactCommand) {
-        commentReactionJpaRepository.deleteByUserIdAndCommentId(command.userId, command.commentId)
+        commentReactionJpaRepository.deleteByUserIdAndCommentIdAndReactionType(
+            command.userId, command.commentId, command.reactionType)
     }
 
     // validation --------------------
