@@ -92,7 +92,7 @@ class ReactionController(
         user: CurrentUserId
     ): ResponseEntity<Map<PostId, PostReactionStats>> {
 
-        val userId = user.value;
+        val userId = user.value
 
         val result = reactionQueryService.getPostReactionStats(request.postIds, userId)
 
@@ -107,7 +107,7 @@ class ReactionController(
         user: CurrentUserId
     ): ResponseEntity<Map<CommentId, CommentReactionStats>> {
 
-        val userId = user.value;
+        val userId = user.value
 
         val result = reactionQueryService.getCommentReactionStats(request.commentIds, userId)
 
