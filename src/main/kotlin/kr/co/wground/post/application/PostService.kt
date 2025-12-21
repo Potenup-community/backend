@@ -14,6 +14,8 @@ import kr.co.wground.post.application.dto.toDtos
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.reaction.domain.enums.ReactionType
+import kr.co.wground.reaction.infra.PostReactionJpaRepository
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.context.ApplicationEventPublisher
@@ -28,6 +30,7 @@ class PostService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
     private val userRepository: UserRepository,
+    private val reactionRepository: PostReactionJpaRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) {
     fun createPost(dto: PostCreateDto): Long {
@@ -108,10 +111,20 @@ class PostService(
     fun getPostDetail(id: PostId): PostDetailDto {
         val foundCourse = findPostByIdOrThrow(id)
         val writer = findUserByIdOrThrow(foundCourse.writerId)
+
+        val reactionsByPostId = reactionRepository.findPostReactionsByPostId(id)
+        val (likes, reactions) = reactionsByPostId.partition { it.reactionType == ReactionType.LIKE }
+
+
         val commentsCount = commentRepository.countByPostIds(listOf(id))
             .takeIf { it.isNotEmpty() }?.first()?.count ?: 0
 
-        return foundCourse.toDto(writer.name, commentsCount)
+        return foundCourse.toDto(
+            writerName = writer.name,
+            commentsCount = commentsCount,
+            likeCount = likes.size,
+            reactionCount = reactions.size
+        )
     }
 
     private fun findUserByIdOrThrow(id: WriterId): User {

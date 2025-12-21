@@ -17,9 +17,11 @@ data class PostDetailDto(
     val highlightType: HighlightType?,
     val commentsCount: Int,
     val wroteAt: LocalDateTime,
+    val likeCount: Int,
+    val reactionCount: Int,
 )
 
-fun Post.toDto(writerName: String, commentsCount: Int) = PostDetailDto(
+fun Post.toDto(writerName: String, commentsCount: Int, likeCount: Int, reactionCount: Int) = PostDetailDto(
     postId = id,
     writerId = writerId,
     writerName = writerName,
