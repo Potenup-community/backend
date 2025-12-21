@@ -4,13 +4,14 @@ import kr.co.wground.reaction.domain.PostReaction
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.domain.enums.ReactionType
+import kr.co.wground.reaction.infra.querydsl.CustomPostReactionRepository
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import java.time.LocalDateTime
 
-interface PostReactionJpaRepository : JpaRepository<PostReaction, Long> {
+interface PostReactionJpaRepository : JpaRepository<PostReaction, Long>, CustomPostReactionRepository {
 
     fun deleteByUserIdAndPostIdAndReactionType(userId: UserId, postId: PostId, reactionType: ReactionType): Long
 

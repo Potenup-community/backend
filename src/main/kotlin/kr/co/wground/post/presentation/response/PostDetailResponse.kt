@@ -5,6 +5,8 @@ import kr.co.wground.global.common.WriterId
 import kr.co.wground.post.application.dto.PostDetailDto
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
+import kr.co.wground.post.presentation.response.PostDetailResponse.PostReactionDetail
+import kr.co.wground.reaction.domain.enums.ReactionType
 import java.time.LocalDateTime
 
 data class PostDetailResponse(
@@ -17,7 +19,13 @@ data class PostDetailResponse(
     val highlightType: HighlightType?,
     val commentsCount: Int,
     val wroteAt: LocalDateTime,
-)
+    val reactions: List<PostReactionDetail> = emptyList(),
+) {
+    data class PostReactionDetail(
+        val reactionType: ReactionType,
+        val count: Int,
+    )
+}
 
 fun PostDetailDto.toResponse() = PostDetailResponse(
     postId = postId,
@@ -29,4 +37,5 @@ fun PostDetailDto.toResponse() = PostDetailResponse(
     highlightType = highlightType,
     commentsCount = commentsCount,
     wroteAt = wroteAt,
+    reactions = reactions.map { PostReactionDetail(it.reactionType, it.count) }
 )
