@@ -79,7 +79,7 @@ class ReactionController(
         val userId = user.value
 
         // To Do: 서비스 쿼리 결과를 담는 dto 를 XxxResponse Dto 로 매핑하는 로직 추가
-        val result = reactionQueryService.getPostReactionStats(userId, postId)
+        val result = reactionQueryService.getPostReactionStats(postId, userId)
 
         return ResponseEntity.ok(result)
     }
