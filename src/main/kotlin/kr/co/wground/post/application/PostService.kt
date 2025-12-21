@@ -105,12 +105,13 @@ class PostService(
         return posts.toDtos(writers, commentsCountById)
     }
 
-    fun getCourse(id: PostId): PostDetailDto {
+    fun getPostDetail(id: PostId): PostDetailDto {
         val foundCourse = findPostByIdOrThrow(id)
         val writer = findUserByIdOrThrow(foundCourse.writerId)
-        val commentsCount = commentRepository.countByPostIds(listOf(id)).first().count
+        val commentsCount = commentRepository.countByPostIds(listOf(id))
+            .takeIf { it.isNotEmpty() }?.first()?.count ?: 0
 
-        return foundCourse.toDto(writer.name, commentsCount.toInt())
+        return foundCourse.toDto(writer.name, commentsCount)
     }
 
     private fun findUserByIdOrThrow(id: WriterId): User {

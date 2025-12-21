@@ -20,7 +20,7 @@ class PostSummaryDto(
 
 fun List<Post>.toDtos(writers: List<User>, commentsCountById: List<CommentCount>): List<PostSummaryDto> {
     val writerNameByIdMap = writers.associate { it.userId to it.name }
-    val commentsCountByPostId = commentsCountById.associate { id -> id.postId to id.count.toInt() }
+    val commentsCountByPostId = commentsCountById.associate { id -> id.postId to id.count }
 
     return this.map { post ->
         PostSummaryDto(
