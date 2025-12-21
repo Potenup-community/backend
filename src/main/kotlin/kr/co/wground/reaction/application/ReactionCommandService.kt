@@ -50,23 +50,25 @@ class ReactionCommandService(
     // unreacts --------------------
 
     fun unreactToPost(command: PostReactCommand) {
-        postReactionJpaRepository.deleteByUserIdAndPostId(command.userId, command.postId)
+        postReactionJpaRepository.deleteByUserIdAndPostIdAndReactionType(
+            command.userId, command.postId, command.reactionType)
     }
 
     fun unreactToComment(command: CommentReactCommand) {
-        commentReactionJpaRepository.deleteByUserIdAndCommentId(command.userId, command.commentId)
+        commentReactionJpaRepository.deleteByUserIdAndCommentIdAndReactionType(
+            command.userId, command.commentId, command.reactionType)
     }
 
     // validation --------------------
 
     fun validatePostExistence(postId: PostId) {
-        if (postRepository.existsById(postId)) {
+        if (!postRepository.existsById(postId)) {
             throw BusinessException(ReactionErrorCode.POST_NOT_FOUND)
         }
     }
 
     fun validateCommentExistence(commentId: CommentId) {
-        if (commentRepository.existsById(commentId)) {
+        if (!commentRepository.existsById(commentId)) {
             throw BusinessException(ReactionErrorCode.COMMENT_NOT_FOUND)
         }
     }

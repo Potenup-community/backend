@@ -23,6 +23,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
+import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 
 @RestControllerAdvice
@@ -57,6 +58,26 @@ class GlobalExceptionHandler {
             path.startsWith("/api/v1/auth") -> UserServiceErrorCode.INVALID_USER_INPUT
             path.startsWith("/api/v1/admin/tracks") -> TrackDomainErrorCode.INVALID_TRACK_INPUT
             else -> CommonErrorCode.INVALID_INPUT
+        }
+
+        val body = ErrorResponse.of(errorCode, errors)
+        return ResponseEntity.status(errorCode.httpStatus).body(body)
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException::class)
+    fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
+        val errorCode = CommonErrorCode.INVALID_INPUT
+        val errors = e.parameterValidationResults.map { result ->
+
+            val fieldName: String = result.methodParameter.parameterName ?: "unknown"
+            val reason = result.resolvableErrors
+                .joinToString(", ") { err ->
+                    err.defaultMessage
+                        ?: err.codes?.firstOrNull()
+                        ?: "요청 파라미터 검증 실패"
+            }
+
+            ErrorResponse.CustomError(fieldName, reason)
         }
 
         val body = ErrorResponse.of(errorCode, errors)

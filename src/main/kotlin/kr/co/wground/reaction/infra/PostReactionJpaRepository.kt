@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 
 interface PostReactionJpaRepository : JpaRepository<PostReaction, Long> {
 
-    fun deleteByUserIdAndPostId(userId: UserId, postId: PostId): Long
+    fun deleteByUserIdAndPostIdAndReactionType(userId: UserId, postId: PostId, reactionType: ReactionType): Long
 
     /**
      * MySQL(H2 for test) 의 upsert 문법을 활용한 멱등 insert
@@ -31,4 +31,6 @@ interface PostReactionJpaRepository : JpaRepository<PostReaction, Long> {
         @Param("reactionType") reactionType: ReactionType,
         @Param("now") now: LocalDateTime
     )
+
+    fun findPostReactionsByPostId(postId: Long): List<PostReaction>
 }
