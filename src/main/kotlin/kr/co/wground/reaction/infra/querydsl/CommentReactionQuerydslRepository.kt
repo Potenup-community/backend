@@ -4,7 +4,7 @@ import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
-import kr.co.wground.reaction.domain.QCommentReaction
+import kr.co.wground.reaction.domain.QCommentReaction.commentReaction
 import kr.co.wground.reaction.domain.enums.ReactionType
 import org.springframework.stereotype.Repository
 
@@ -18,10 +18,8 @@ class CommentReactionQuerydslRepository(
             return emptyList()
         }
 
-        val qcr = QCommentReaction.commentReaction
-
         val reactedByMeFlag = CaseBuilder()
-            .`when`(qcr.userId.eq(userId)).then(1)
+            .`when`(commentReaction.userId.eq(userId)).then(1)
             .otherwise(0)
 
         val tuples = queryFactory
@@ -32,21 +30,21 @@ class CommentReactionQuerydslRepository(
              * - reactedByMeFlag.max()  : 각 그룹 내에 userId 가 같은 애가 하나라도 있으면(사실 최대 하나만 있을 수 있긴 함) 표시
              */
             .select(
-                qcr.commentId,
-                qcr.reactionType,
-                qcr.id.count(),
+                commentReaction.commentId,
+                commentReaction.reactionType,
+                commentReaction.id.count(),
                 reactedByMeFlag.max()
             )
-            .from(qcr)
-            .where(qcr.commentId.`in`(commentIds))
-            .groupBy(qcr.commentId, qcr.reactionType)
+            .from(commentReaction)
+            .where(commentReaction.commentId.`in`(commentIds))
+            .groupBy(commentReaction.commentId, commentReaction.reactionType)
             .fetch()
 
         return tuples.map { tuple ->
             CommentReactionStatsRow(
-                commentId = tuple.get(qcr.commentId)!!,
-                reactionType = tuple.get(qcr.reactionType)!!,
-                count = tuple.get(qcr.id.count())!!,
+                commentId = tuple.get(commentReaction.commentId)!!,
+                reactionType = tuple.get(commentReaction.reactionType)!!,
+                count = tuple.get(commentReaction.id.count())!!,
                 reactedByMe = (tuple.get(reactedByMeFlag.max()) ?: 0) > 0
             )
         }

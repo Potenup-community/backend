@@ -4,7 +4,7 @@ import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
-import kr.co.wground.reaction.domain.QPostReaction
+import kr.co.wground.reaction.domain.QPostReaction.postReaction
 import kr.co.wground.reaction.domain.enums.ReactionType
 import org.springframework.stereotype.Repository
 
@@ -18,10 +18,8 @@ class PostReactionQuerydslRepository(
             return emptyList()
         }
 
-        val qpr = QPostReaction.postReaction
-
         val reactedByMeFlag = CaseBuilder()
-            .`when`(qpr.userId.eq(userId)).then(1)
+            .`when`(postReaction.userId.eq(userId)).then(1)
             .otherwise(0)
 
         val tuples = queryFactory
@@ -32,21 +30,21 @@ class PostReactionQuerydslRepository(
              * - reactedByMeFlag.max()  : 각 그룹 내에 userId 가 같은 애가 하나라도 있으면(사실 최대 하나만 있을 수 있긴 함) 표시
              */
             .select(
-                qpr.postId,
-                qpr.reactionType,
-                qpr.id.count(),
+                postReaction.postId,
+                postReaction.reactionType,
+                postReaction.id.count(),
                 reactedByMeFlag.max()
             )
-            .from(qpr)
-            .where(qpr.postId.`in`(postIds))
-            .groupBy(qpr.postId, qpr.reactionType)
+            .from(postReaction)
+            .where(postReaction.postId.`in`(postIds))
+            .groupBy(postReaction.postId, postReaction.reactionType)
             .fetch()
 
         return tuples.map { tuple ->
             PostReactionStatsRow(
-                postId = tuple.get(qpr.postId)!!,
-                reactionType = tuple.get(qpr.reactionType)!!,
-                count = tuple.get(qpr.id.count())!!,
+                postId = tuple.get(postReaction.postId)!!,
+                reactionType = tuple.get(postReaction.reactionType)!!,
+                count = tuple.get(postReaction.id.count())!!,
                 reactedByMe = (tuple.get(reactedByMeFlag.max()) ?: 0) > 0
             )
         }
