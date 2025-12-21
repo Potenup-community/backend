@@ -6,8 +6,7 @@ import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.reaction.domain.enums.ReactionType
-import kr.co.wground.reaction.infra.querydsl.PostReactionQuerydslRepository
-import kr.co.wground.reaction.infra.querydsl.PostReactionQuerydslRepository.PostReactionStatsRow
+import kr.co.wground.reaction.infra.querydsl.CustomPostReactionRepositoryImpl.PostReactionStatsRow
 import kr.co.wground.user.domain.User
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
