@@ -10,6 +10,8 @@ import kr.co.wground.post.presentation.request.PostUpdateRequest
 import kr.co.wground.post.presentation.response.PostDetailResponse
 import kr.co.wground.post.presentation.response.PostSummaryResponse
 import kr.co.wground.post.presentation.response.toResponse
+import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -49,8 +51,10 @@ class PostController(
     }
 
     @GetMapping("/summary")
-    fun getPostSummary(): PostSummaryResponse {
-        return postService.getSummary().toResponse()
+    fun getPostSummary(
+        @PageableDefault(size = 20) pageable: Pageable,
+    ): PostSummaryResponse {
+        return postService.getSummary(pageable).toResponse()
     }
 
     @GetMapping("/{id}")
