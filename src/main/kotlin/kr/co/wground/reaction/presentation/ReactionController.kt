@@ -3,14 +3,17 @@ package kr.co.wground.reaction.presentation
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
+import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.reaction.application.ReactionCommandService
 import kr.co.wground.reaction.application.ReactionQueryService
+import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.reaction.presentation.request.ReactionRequest
 import kr.co.wground.reaction.presentation.request.ReactionTarget.COMMENT
 import kr.co.wground.reaction.presentation.request.ReactionTarget.POST
 import kr.co.wground.reaction.application.dto.PostReactionStats
+import kr.co.wground.reaction.presentation.request.CommentReactionStatsBatchRequest
 import kr.co.wground.reaction.presentation.request.PostReactionStatsBatchRequest
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -92,6 +95,21 @@ class ReactionController(
         val userId = user.value;
 
         val result = reactionQueryService.getPostReactionStats(request.postIds, userId)
+
+        return ResponseEntity.ok(result)
+    }
+
+    @GetMapping("/comments")
+    fun getCommentReactionStats(
+        @Valid
+        @RequestBody
+        request: CommentReactionStatsBatchRequest,
+        user: CurrentUserId
+    ): ResponseEntity<Map<CommentId, CommentReactionStats>> {
+
+        val userId = user.value;
+
+        val result = reactionQueryService.getCommentReactionStats(request.commentIds, userId)
 
         return ResponseEntity.ok(result)
     }

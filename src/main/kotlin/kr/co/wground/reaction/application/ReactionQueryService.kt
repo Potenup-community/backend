@@ -1,13 +1,16 @@
 package kr.co.wground.reaction.application
 
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.reaction.exception.ReactionErrorCode
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.reaction.application.dto.PostReactionStats
 import kr.co.wground.reaction.application.dto.ReactionSummary
+import kr.co.wground.reaction.infra.querydsl.CommentReactionQuerydslRepository
 import kr.co.wground.reaction.infra.querydsl.PostReactionQuerydslRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,6 +21,7 @@ class ReactionQueryService(
     private val postReactionJpaRepository: PostReactionJpaRepository,
     private val postReactionQuerydslRepository: PostReactionQuerydslRepository,
     private val postRepository: PostRepository,
+    private val commentReactionQuerydslRepository: CommentReactionQuerydslRepository
 ) {
 
     fun getPostReactionStats(postId: PostId, userId: UserId): PostReactionStats {
@@ -82,6 +86,51 @@ class ReactionQueryService(
 
                 postId to PostReactionStats(
                     postId,
+                    totalCount = totalCount.toInt(),
+                    summaries = summaries
+                )
+            }
+            .toMap()
+    }
+
+    fun getCommentReactionStats(commentIds: Set<CommentId>, userId: Long): Map<CommentId, CommentReactionStats> {
+
+        if (commentIds.isEmpty()) {
+            return emptyMap()
+        }
+
+        // To Do: 나중에 매직 넘버 뺄 생각입니다.
+        if (commentIds.size > 50) {
+            throw BusinessException(ReactionErrorCode.TOO_LARGE_COMMENT_ID_SET)
+        }
+
+        // commentIds 집합에 속한 각 commentId 에 해당하는 댓글들의 실존 여부 검증은 따로 하지 않을 생각임
+        // 안 해도 될 듯? 없으면 어차피 결과 안 나갈거니까
+
+        val rowsFetched = commentReactionQuerydslRepository.fetchCommentReactionStatsRows(commentIds, userId)
+
+        val rowsByPostId = rowsFetched.groupBy { it.commentId }
+
+        return commentIds
+            .asSequence()
+            .mapNotNull { commentId ->
+                val commentRows = rowsByPostId[commentId].orEmpty()
+
+                // commentId 에 해당하는 반응 정보가 없는 경우
+                val totalCount = commentRows.sumOf { it.count }
+                if (totalCount == 0L) {
+                    return@mapNotNull null
+                }
+
+                val summaries = commentRows.associate { r ->
+                    r.reactionType to ReactionSummary(
+                        count = r.count.toInt(),
+                        reactedByMe = r.reactedByMe
+                    )
+                }
+
+                commentId to CommentReactionStats(
+                    commentId,
                     totalCount = totalCount.toInt(),
                     summaries = summaries
                 )
