@@ -1,13 +1,11 @@
 package kr.co.wground.reaction.application
 
-import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.exception.ReactionErrorCode
-import kr.co.wground.reaction.infra.PostReactionJpaRepository
+import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.reaction.application.dto.PostReactionStats
 import kr.co.wground.reaction.application.dto.ReactionSummary
 import org.springframework.stereotype.Service
