@@ -31,4 +31,6 @@ interface PostReactionJpaRepository : JpaRepository<PostReaction, Long> {
         @Param("reactionType") reactionType: ReactionType,
         @Param("now") now: LocalDateTime
     )
+
+    fun findPostReactionsByPostId(postId: Long): List<PostReaction>
 }
