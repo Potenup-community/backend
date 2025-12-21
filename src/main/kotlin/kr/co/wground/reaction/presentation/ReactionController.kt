@@ -1,5 +1,7 @@
 package kr.co.wground.reaction.presentation
 
+import jakarta.validation.Valid
+import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.reaction.application.ReactionCommandService
 import kr.co.wground.reaction.presentation.request.ReactionRequest
@@ -20,7 +22,7 @@ class ReactionController(
 
     @PostMapping
     fun react(
-        @RequestBody request: ReactionRequest,
+        @Valid @RequestBody request: ReactionRequest,
         user: CurrentUserId,
     ): ResponseEntity<Unit> {
 
@@ -36,7 +38,7 @@ class ReactionController(
 
     @DeleteMapping
     fun unreact(
-        @RequestBody request: ReactionRequest,
+        @Valid @RequestBody request: ReactionRequest,
         user: CurrentUserId,
     ): ResponseEntity<Unit> {
 
