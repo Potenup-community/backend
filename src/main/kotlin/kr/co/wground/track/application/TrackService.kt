@@ -9,4 +9,5 @@ interface TrackService {
     fun createTrack(createTrack: CreateTrackDto): List<TrackQueryResponse>
     fun updateTrack(updateTrack: UpdateTrackDto)
     fun deleteTrack(trackId: TrackId)
+    fun getAllTrackResponses(): List<TrackQueryResponse>
 }
