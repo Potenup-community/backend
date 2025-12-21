@@ -17,6 +17,8 @@ import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -96,8 +98,8 @@ class PostService(
         if (post.writerId != writerId) throw BusinessException(PostErrorCode.YOU_ARE_NOT_OWNER_THIS_POST)
     }
 
-    fun getSummary(): List<PostSummaryDto> {
-        val posts = postRepository.findAll()
+    fun getSummary(pageable: Pageable): Slice<PostSummaryDto> {
+        val posts = postRepository.findAllByPageable(pageable)
         val postIds = posts.map { it.writerId }.toSet()
         val writers = userRepository.findAllById(postIds)
         val commentsCountById = commentRepository.countByPostIds(postIds.toList())

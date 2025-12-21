@@ -5,6 +5,8 @@ import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.user.domain.User
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import java.time.LocalDateTime
 
 class PostSummaryDto(
@@ -18,11 +20,11 @@ class PostSummaryDto(
     val commentsCount: Int,
 )
 
-fun List<Post>.toDtos(writers: List<User>, commentsCountById: List<CommentCount>): List<PostSummaryDto> {
+fun Slice<Post>.toDtos(writers: List<User>, commentsCountById: List<CommentCount>): Slice<PostSummaryDto> {
     val writerNameByIdMap = writers.associate { it.userId to it.name }
     val commentsCountByPostId = commentsCountById.associate { id -> id.postId to id.count }
 
-    return this.map { post ->
+    val dtoContent = this.content.map { post ->
         PostSummaryDto(
             postId = post.id,
             title = post.postBody.title,
@@ -34,4 +36,10 @@ fun List<Post>.toDtos(writers: List<User>, commentsCountById: List<CommentCount>
             commentsCount = commentsCountByPostId[post.id] ?: 0
         )
     }
+
+    return SliceImpl(
+        dtoContent,
+        this.pageable,
+        this.hasNext()
+    )
 }
