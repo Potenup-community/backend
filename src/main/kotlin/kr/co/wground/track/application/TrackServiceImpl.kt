@@ -69,7 +69,7 @@ class TrackServiceImpl(
             ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
     }
 
-    private fun getAllTrackResponses(): List<TrackQueryResponse> {
+    override fun getAllTrackResponses(): List<TrackQueryResponse> {
         return trackRepository.findAllByOrderByEndDateDesc().map{ it.toTrackQueryResponse()}
     }
 }
