@@ -67,15 +67,6 @@ class PostService(
             content = dto.content,
             type = dto.highlightType
         )
-
-        if (dto.content != null && dto.draftId != null) {
-            sendSyncImageEvent(
-                postId = dto.postId,
-                ownerId = dto.writerId,
-                draftId = dto.draftId,
-                content = dto.content
-            )
-        }
     }
 
     private fun sendSyncImageEvent(
