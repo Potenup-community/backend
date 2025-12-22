@@ -3,8 +3,7 @@ server:
 
 spring:
   application:
-    name: wantedground-community-api
-
+    name: depth-api
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
