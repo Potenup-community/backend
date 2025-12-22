@@ -10,7 +10,7 @@ object ProfileImageMapper {
         profileImageUrl = entity.profileImageUrl,
         originalProfileName = entity.originalProfileName,
         currentFileName = entity.currentFileName,
-        relativePath= entity.relativePath,
+        relativePath= entity.storagePath,
         modifiedAt = entity.modifiedAt
     )
     fun toEntity(dto: ProfileImageDto) = UserProfile.create(

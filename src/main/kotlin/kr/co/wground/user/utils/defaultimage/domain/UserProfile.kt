@@ -1,5 +1,6 @@
 package kr.co.wground.user.utils.defaultimage.domain
 
+import jakarta.persistence.Embeddable
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -7,16 +8,12 @@ import jakarta.persistence.Id
 import kr.co.wground.global.common.UserId
 import java.time.LocalDateTime
 
-@Entity
-class UserProfile private constructor(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
-    val userId: UserId,
+@Embeddable
+class UserProfile (
     originalProfileName: String,
     currentFileName: String,
-    profileImageUrl: String,
-    val relativePath: String,
+    val profileImageUrl: String,
+    storagePath: String,
     modifiedAt: LocalDateTime = LocalDateTime.now(),
 ) {
     var originalProfileName: String = originalProfileName
@@ -25,7 +22,7 @@ class UserProfile private constructor(
     var currentFileName: String = currentFileName
         protected set
 
-    var profileImageUrl: String = profileImageUrl
+    var storagePath: String = storagePath
         protected set
 
     var modifiedAt: LocalDateTime = modifiedAt
@@ -33,30 +30,32 @@ class UserProfile private constructor(
 
     companion object {
         fun create(
-            userId: UserId,
             originalProfileName: String,
             currentFileName: String,
             profileImageUrl: String,
-            relativePath: String
+            storagePath: String
         ): UserProfile {
             return UserProfile(
-                userId = userId,
                 originalProfileName = originalProfileName,
                 currentFileName = currentFileName,
                 profileImageUrl = profileImageUrl,
-                relativePath = relativePath,
+                storagePath = storagePath,
             )
         }
     }
 
-    fun getAccessUrl(): String{
-        return "$relativePath/$currentFileName"
+    fun getStoragesUrl(): String {
+        return "$storagePath/$currentFileName"
     }
 
-    fun updateProfile(newOriginalProfileName: String, newCurrentProfileName: String, newProfileImageUrl: String) {
+    fun updateProfile(
+        newOriginalProfileName: String,
+        newCurrentProfileName: String,
+        newStoragePath: String
+    ) {
         this.originalProfileName = newOriginalProfileName
         this.currentFileName = newCurrentProfileName
-        this.profileImageUrl = newProfileImageUrl
+        this.storagePath = newStoragePath
         updateModifiedAt(LocalDateTime.now())
     }
 

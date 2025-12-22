@@ -6,8 +6,8 @@ import java.time.Duration
 
 @ConfigurationProperties(prefix = "app.avatar")
 data class AvatarProperties(
-    val uploadPath: Path = Path.of(System.getProperty("user.home"), "depth", "profiles"),
-    val webPathPrefix: String = "/images/profiles/",
+    val uploadPath: Path = Path.of("C:/app/uploads/profile"),
+    val webPathPrefix: String = "/api/v1/profiles/",
     val retryMaxAttempts: Int = 3,
     val retryDelay: Duration = Duration.ofSeconds(2),
     val defaultSize: Int = 40,
