@@ -13,9 +13,10 @@ import kr.co.wground.post.application.dto.PostUpdateDto
 import kr.co.wground.post.application.dto.toDto
 import kr.co.wground.post.application.dto.toDtos
 import kr.co.wground.post.domain.Post
+import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.post.exception.PostErrorCode
+import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import kr.co.wground.post.infra.PostRepository
-import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
@@ -66,15 +67,6 @@ class PostService(
             content = dto.content,
             type = dto.highlightType
         )
-
-        if (dto.content != null && dto.draftId != null) {
-            sendSyncImageEvent(
-                postId = dto.postId,
-                ownerId = dto.writerId,
-                draftId = dto.draftId,
-                content = dto.content
-            )
-        }
     }
 
     private fun sendSyncImageEvent(
@@ -102,8 +94,10 @@ class PostService(
         if (post.writerId != writerId) throw BusinessException(PostErrorCode.YOU_ARE_NOT_OWNER_THIS_POST)
     }
 
-    fun getSummary(userId: UserId, pageable: Pageable): Slice<PostSummaryDto> {
-        val posts = postRepository.findAllByPageable(pageable)
+    fun getSummary(userId: UserId, pageable: Pageable, topic: Topic?): Slice<PostSummaryDto> {
+        val predicate = GetPostSummaryPredicate(pageable, topic)
+
+        val posts = postRepository.findAllByPredicate(predicate)
 
         val postIds = posts.map { it.id }.toSet()
         val writerIds = posts.map { it.writerId }.toSet()

@@ -5,6 +5,7 @@ import java.net.URI
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.application.PostService
+import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.post.presentation.request.PostCreateRequest
 import kr.co.wground.post.presentation.request.PostUpdateRequest
 import kr.co.wground.post.presentation.response.PostDetailResponse
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -53,9 +55,10 @@ class PostController(
     @GetMapping("/summary")
     fun getPostSummary(
         @PageableDefault(size = 20) pageable: Pageable,
+        @RequestParam topic: Topic?,
         userId: CurrentUserId
     ): PostSummaryResponse {
-        return postService.getSummary(userId.value, pageable).toResponse()
+        return postService.getSummary(userId.value, pageable, topic).toResponse()
     }
 
     @GetMapping("/{id}")

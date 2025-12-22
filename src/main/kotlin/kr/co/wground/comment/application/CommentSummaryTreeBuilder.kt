@@ -22,7 +22,7 @@ class CommentSummaryTreeBuilder private constructor(
             reactionCountByCommentId: Map<CommentId, Int>,
         ): CommentSummaryTreeBuilder {
             val grouped = comments
-                .sortedBy { it.createdAt }
+                .sortedWith(compareBy<Comment> { it.createdAt }.thenBy { it.id })
                 .groupBy { it.parentId }
             return CommentSummaryTreeBuilder(grouped, usersById, reactionCountByCommentId)
         }
