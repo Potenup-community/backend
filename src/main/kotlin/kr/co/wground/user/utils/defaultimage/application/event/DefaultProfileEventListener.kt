@@ -28,6 +28,5 @@ class DefaultProfileEventListener(
             email = event.userEmail,
             name = event.userName,
         )
-
     }
 }
