@@ -104,8 +104,11 @@ class PostService(
 
     fun getSummary(userId: UserId, pageable: Pageable): Slice<PostSummaryDto> {
         val posts = postRepository.findAllByPageable(pageable)
+
         val postIds = posts.map { it.id }.toSet()
-        val writers = userRepository.findAllById(postIds)
+        val writerIds = posts.map { it.writerId }.toSet()
+        
+        val writers = userRepository.findAllById(writerIds)
         val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
         val commentsCountById = commentRepository.countByPostIds(postIds.toList())
 
