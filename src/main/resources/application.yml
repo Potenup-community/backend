@@ -2,6 +2,9 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: wantedground-community-api
+
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -52,3 +55,18 @@ app:
     max-gif-bytes: ${MAX_GIF_BYTES}
     allowed-mime-types: ${ALLOWED_MIME_TYPES}
     cache-period: ${CACHE_PERIOD}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
