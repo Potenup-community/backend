@@ -56,7 +56,7 @@ class User(
 ) {
     @Column(nullable = false)
     @Embedded
-    var userProfile: UserProfile? = null
+    var userProfile: UserProfile = UserProfile.default()
         protected set
 
     @Enumerated(EnumType.STRING)
@@ -83,6 +83,14 @@ class User(
     @PreUpdate
     fun onPreUpdate() {
         modifiedAt = LocalDateTime.now()
+    }
+
+    fun updateUserProfile(userProfile: UserProfile) {
+        this.userProfile = userProfile
+    }
+
+    fun accessProfile():String {
+        return this.userProfile.profileImageUrl
     }
 
     fun logout() {

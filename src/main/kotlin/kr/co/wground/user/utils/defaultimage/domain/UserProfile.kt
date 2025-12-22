@@ -1,20 +1,19 @@
 package kr.co.wground.user.utils.defaultimage.domain
 
 import jakarta.persistence.Embeddable
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import kr.co.wground.global.common.UserId
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_FILE_NAME
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_PROFILE_NAME
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_STORAGE_PATH
 import java.time.LocalDateTime
 
 @Embeddable
-class UserProfile (
+class UserProfile(
     originalProfileName: String,
     currentFileName: String,
     val profileImageUrl: String,
     storagePath: String,
-    modifiedAt: LocalDateTime = LocalDateTime.now(),
+    modifiedProfileAt: LocalDateTime = LocalDateTime.now(),
 ) {
     var originalProfileName: String = originalProfileName
         protected set
@@ -25,10 +24,11 @@ class UserProfile (
     var storagePath: String = storagePath
         protected set
 
-    var modifiedAt: LocalDateTime = modifiedAt
+    var modifiedProfileAt: LocalDateTime = modifiedProfileAt
         protected set
 
     companion object {
+
         fun create(
             originalProfileName: String,
             currentFileName: String,
@@ -40,26 +40,22 @@ class UserProfile (
                 currentFileName = currentFileName,
                 profileImageUrl = profileImageUrl,
                 storagePath = storagePath,
+                modifiedProfileAt = LocalDateTime.now(),
+            )
+        }
+
+        fun default(): UserProfile {
+            return UserProfile(
+                originalProfileName = DEFAULT_PROFILE_NAME,
+                currentFileName = DEFAULT_FILE_NAME,
+                profileImageUrl = DEFAULT_AVATAR_PATH,
+                storagePath = DEFAULT_STORAGE_PATH,
+                modifiedProfileAt = LocalDateTime.now()
             )
         }
     }
 
     fun getStoragesUrl(): String {
         return "$storagePath/$currentFileName"
-    }
-
-    fun updateProfile(
-        newOriginalProfileName: String,
-        newCurrentProfileName: String,
-        newStoragePath: String
-    ) {
-        this.originalProfileName = newOriginalProfileName
-        this.currentFileName = newCurrentProfileName
-        this.storagePath = newStoragePath
-        updateModifiedAt(LocalDateTime.now())
-    }
-
-    fun updateModifiedAt(modifiedAt: LocalDateTime) {
-        this.modifiedAt = modifiedAt
     }
 }
