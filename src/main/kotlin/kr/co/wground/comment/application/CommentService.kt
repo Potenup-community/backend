@@ -15,6 +15,9 @@ import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -54,16 +57,26 @@ class CommentService(
     }
 
     @Transactional(readOnly = true)
-    fun getCommentsByPost(postId: PostId, userId: CurrentUserId): List<CommentSummaryDto> {
+    fun getCommentsByPost(
+        postId: PostId,
+        pageable: Pageable,
+        userId: CurrentUserId
+    ): Slice<CommentSummaryDto> {
         validateExistTargetPost(postId)
 
-        val comments = commentRepository.findByPostId(postId)
-        if (comments.isEmpty()) return emptyList()
+        val parentSlice = commentRepository.findByPostIdAndParentIdIsNull(postId, pageable)
+        if (parentSlice.isEmpty) return SliceImpl(emptyList(), pageable, parentSlice.hasNext())
 
-        val usersById = loadUsersByComments(comments)
-        val reactionCountByCommentId = fetchReactionCounts(comments, userId.value)
+        val parentIds = parentSlice.content.map { it.id }
+        val replies = commentRepository.findByPostIdAndParentIdIn(postId, parentIds)
 
-        return CommentSummaryTreeBuilder.from(comments, usersById, reactionCountByCommentId).build()
+        val allComments = parentSlice.content + replies
+        val usersById = loadUsersByComments(allComments)
+        val reactionCountByCommentId = fetchReactionCounts(allComments, userId.value)
+
+        val tree = CommentSummaryTreeBuilder.from(allComments, usersById, reactionCountByCommentId).build()
+
+        return SliceImpl(tree, pageable, parentSlice.hasNext())
     }
 
     private fun validateExistTargetPost(postId: PostId) {
