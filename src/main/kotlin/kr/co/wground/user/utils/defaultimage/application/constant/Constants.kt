@@ -9,4 +9,8 @@ object AvatarConstants {
     const val TRANSLATE_OFFSET_X = 10
     const val TRANSLATE_RANGE_Y = 10
     const val TRANSLATE_OFFSET_Y = 5
+    const val DEFAULT_AVATAR_PATH = "/assets/images/default_avatar.svg"
+    const val DEFAULT_PROFILE_NAME = "default_avatar"
+    const val DEFAULT_FILE_NAME = "default_avatar.svg"
+    const val DEFAULT_STORAGE_PATH = "/var/www/static"
 }

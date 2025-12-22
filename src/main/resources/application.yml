@@ -52,3 +52,11 @@ app:
     max-gif-bytes: ${MAX_GIF_BYTES}
     allowed-mime-types: ${ALLOWED_MIME_TYPES}
     cache-period: ${CACHE_PERIOD}
+  avatar:
+    upload-path: ${LOCAL_PROFILE_DIR}
+    webPathPrefix: ${PUBLIC_PROFILE_PATH}
+    retry-max-attempts: ${RETRY_MAX}
+    retry-delay: ${RETRY_DELAY}
+    default-size: ${PROFILE_SIZE}
+    image-quality: ${PROFILE_QUALITY}
+    placeholder-path: ${PROFILE_PLACEHOLDER}

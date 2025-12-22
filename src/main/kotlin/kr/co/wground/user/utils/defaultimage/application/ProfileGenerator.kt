@@ -22,22 +22,29 @@ class ProfileGenerator {
         val translateY = (hash % AvatarConstants.TRANSLATE_RANGE_Y) - AvatarConstants.TRANSLATE_OFFSET_Y
 
         return """
-            <svg viewBox="0 0 ${AvatarConstants.VIEWBOX_SIZE} ${AvatarConstants.VIEWBOX_SIZE}" fill="none" xmlns="http://www.w3.org/2000/svg" width="$size" height="$size">
-                <mask id="mask__beam" maskUnits="userSpaceOnUse" x="0" y="0" width="${AvatarConstants.VIEWBOX_SIZE}" height="${AvatarConstants.VIEWBOX_SIZE}">
-                    <rect width="${AvatarConstants.VIEWBOX_SIZE}" height="${AvatarConstants.VIEWBOX_SIZE}" rx="${AvatarConstants.DEFAULT_RADIUS}" fill="white" />
-                </mask>
-                <g mask="url(#mask__beam)">
-                    <rect width="${AvatarConstants.VIEWBOX_SIZE}" height="${AvatarConstants.VIEWBOX_SIZE}" fill="$color1" />
-                    <rect x="0" y="0" width="${AvatarConstants.VIEWBOX_SIZE}" height="${AvatarConstants.VIEWBOX_SIZE}" 
-                          transform="translate($translateX $translateY) rotate($rotate ${AvatarConstants.CENTER_COORD} ${AvatarConstants.CENTER_COORD}) scale(1.2)" fill="$color2" rx="${AvatarConstants.VIEWBOX_SIZE}" />
-                    <g transform="translate(${translateX / 2} ${translateY / 2}) rotate($rotate ${AvatarConstants.CENTER_COORD} ${AvatarConstants.CENTER_COORD})">
-                        <path d="M13,19 a1,0.75 0 0,0 10,0" fill="white" />
-                        <rect x="11" y="14" width="1.5" height="2" rx="1" fill="white" />
-                        <rect x="23" y="14" width="1.5" height="2" rx="1" fill="white" />
-                    </g>
+            <svg viewBox="0 0 ${AvatarConstants.VIEWBOX_SIZE} ${AvatarConstants.VIEWBOX_SIZE}" 
+             fill="none" 
+             xmlns="http://www.w3.org/2000/svg" 
+             width="100%" 
+             height="100%"
+             preserveAspectRatio="xMidYMid meet">
+            <mask id="mask__beam" maskUnits="userSpaceOnUse" x="0" y="0" width="${AvatarConstants.VIEWBOX_SIZE}" height="${AvatarConstants.VIEWBOX_SIZE}">
+                <rect width="${AvatarConstants.VIEWBOX_SIZE}" height="${AvatarConstants.VIEWBOX_SIZE}" rx="${AvatarConstants.DEFAULT_RADIUS}" fill="white" />
+            </mask>
+            <g mask="url(#mask__beam)">
+                <rect width="${AvatarConstants.VIEWBOX_SIZE}" height="${AvatarConstants.VIEWBOX_SIZE}" fill="$color1" />
+                <rect x="0" y="0" width="${AvatarConstants.VIEWBOX_SIZE}" height="${AvatarConstants.VIEWBOX_SIZE}" 
+                      transform="translate($translateX $translateY) rotate($rotate ${AvatarConstants.CENTER_COORD} ${AvatarConstants.CENTER_COORD}) scale(1.2)" 
+                      fill="$color2" 
+                      rx="${AvatarConstants.VIEWBOX_SIZE}" />
+                <g transform="translate(${translateX / 2} ${translateY / 2}) rotate($rotate ${AvatarConstants.CENTER_COORD} ${AvatarConstants.CENTER_COORD})">
+                    <path d="M13,19 a1,0.75 0 0,0 10,0" fill="white" />
+                    <rect x="11" y="14" width="1.5" height="2" rx="1" fill="white" />
+                    <rect x="23" y="14" width="1.5" height="2" rx="1" fill="white" />
                 </g>
-            </svg>
-        """.trimIndent()
+            </g>
+        </svg>
+    """.trimIndent()
     }
 
     private fun getHash(userId: UserId, email: String, name: String): Long {

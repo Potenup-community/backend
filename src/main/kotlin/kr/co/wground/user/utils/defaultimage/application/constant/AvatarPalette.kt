@@ -9,7 +9,7 @@ enum class AvatarPalette(val colors: List<String>) {
 
     companion object {
         fun fromHash(hash: Long): AvatarPalette {
-            val index = (abs(hash / 10) % entries.size).toInt()
+            val index = (abs(hash) % entries.size).toInt()
             return entries[index]
         }
     }
