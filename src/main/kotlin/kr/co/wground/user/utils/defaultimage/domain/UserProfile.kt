@@ -1,23 +1,19 @@
 package kr.co.wground.user.utils.defaultimage.domain
 
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import kr.co.wground.global.common.UserId
+import jakarta.persistence.Embeddable
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_FILE_NAME
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_PROFILE_NAME
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_STORAGE_PATH
 import java.time.LocalDateTime
 
-@Entity
-class UserProfile private constructor(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
-    val userId: UserId,
+@Embeddable
+class UserProfile(
     originalProfileName: String,
     currentFileName: String,
-    profileImageUrl: String,
-    val relativePath: String,
-    modifiedAt: LocalDateTime = LocalDateTime.now(),
+    val imageUrl: String,
+    storagePath: String,
+    modifiedProfileAt: LocalDateTime = LocalDateTime.now(),
 ) {
     var originalProfileName: String = originalProfileName
         protected set
@@ -25,42 +21,41 @@ class UserProfile private constructor(
     var currentFileName: String = currentFileName
         protected set
 
-    var profileImageUrl: String = profileImageUrl
+    var storagePath: String = storagePath
         protected set
 
-    var modifiedAt: LocalDateTime = modifiedAt
+    var modifiedProfileAt: LocalDateTime = modifiedProfileAt
         protected set
 
     companion object {
+
         fun create(
-            userId: UserId,
             originalProfileName: String,
             currentFileName: String,
             profileImageUrl: String,
-            relativePath: String
+            storagePath: String
         ): UserProfile {
             return UserProfile(
-                userId = userId,
                 originalProfileName = originalProfileName,
                 currentFileName = currentFileName,
-                profileImageUrl = profileImageUrl,
-                relativePath = relativePath,
+                imageUrl = profileImageUrl,
+                storagePath = storagePath,
+                modifiedProfileAt = LocalDateTime.now(),
+            )
+        }
+
+        fun default(): UserProfile {
+            return UserProfile(
+                originalProfileName = DEFAULT_PROFILE_NAME,
+                currentFileName = DEFAULT_FILE_NAME,
+                imageUrl = DEFAULT_AVATAR_PATH,
+                storagePath = DEFAULT_STORAGE_PATH,
+                modifiedProfileAt = LocalDateTime.now()
             )
         }
     }
 
-    fun getAccessUrl(): String{
-        return "$relativePath/$currentFileName"
-    }
-
-    fun updateProfile(newOriginalProfileName: String, newCurrentProfileName: String, newProfileImageUrl: String) {
-        this.originalProfileName = newOriginalProfileName
-        this.currentFileName = newCurrentProfileName
-        this.profileImageUrl = newProfileImageUrl
-        updateModifiedAt(LocalDateTime.now())
-    }
-
-    fun updateModifiedAt(modifiedAt: LocalDateTime) {
-        this.modifiedAt = modifiedAt
+    fun getStoragesUrl(): String {
+        return "$storagePath/$currentFileName"
     }
 }

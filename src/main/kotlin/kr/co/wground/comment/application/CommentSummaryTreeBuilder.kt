@@ -5,6 +5,7 @@ import kr.co.wground.comment.domain.Comment
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.user.domain.User
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
 
 private const val DELETED_COMMENT_TAG = "[삭제된 댓글]"
 private const val UNKNOWN_USER_NAME_TAG = "탈퇴한 사용자"
@@ -43,7 +44,7 @@ class CommentSummaryTreeBuilder private constructor(
             content = content,
             authorId = comment.writerId,
             authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
-            authorProfileImageUrl = author?.profileImageUrl,
+            authorProfileImageUrl = author?.accessProfile(),
             createdAt = comment.createdAt,
             reactionCount = reactionCountByCommentId[comment.id] ?: 0,
             isDeleted = comment.isDeleted,

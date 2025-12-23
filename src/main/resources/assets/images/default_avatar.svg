@@ -1,0 +1,15 @@
+<svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+    <mask id="mask__beam_default" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36">
+        <rect width="36" height="36" rx="20" fill="white"/>
+    </mask>
+    <g mask="url(#mask__beam_default)">
+        <rect width="36" height="36" fill="#A7E8F0"/>
+        <rect x="0" y="0" width="36" height="36" transform="translate(4 4) rotate(45 18 18) scale(1.2)" fill="#FBD5E1" rx="36"/>
+        <g transform="translate(2 2) rotate(0 18 18)">
+            <path d="M13,19 a1,0.75 0 0,0 10,0" fill="white"/>
+            <rect x="11" y="14" width="1.5" height="2" rx="1" fill="black"/>
+            <rect x="23" y="14" width="1.5" height="2" rx="1" fill="black"/>
+        </g>
+    </g>
+</svg>
+

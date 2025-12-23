@@ -1,6 +1,7 @@
 package kr.co.wground.user.domain
 
 import jakarta.persistence.Column
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.EnumType
@@ -16,6 +17,7 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
+import kr.co.wground.user.utils.defaultimage.domain.UserProfile
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 
@@ -32,8 +34,6 @@ class User(
 
     @Column(unique = true)
     val email: String,
-
-    profileImageUrl: String,
 
     @Column(nullable = false)
     val name: String,
@@ -55,7 +55,8 @@ class User(
 
 ) {
     @Column(nullable = false)
-    var profileImageUrl: String = profileImageUrl
+    @Embedded
+    var userProfile: UserProfile = UserProfile.default()
         protected set
 
     @Enumerated(EnumType.STRING)
@@ -82,6 +83,14 @@ class User(
     @PreUpdate
     fun onPreUpdate() {
         modifiedAt = LocalDateTime.now()
+    }
+
+    fun updateUserProfile(userProfile: UserProfile) {
+        this.userProfile = userProfile
+    }
+
+    fun accessProfile():String {
+        return this.userProfile.imageUrl
     }
 
     fun logout() {
