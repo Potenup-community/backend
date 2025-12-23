@@ -47,7 +47,7 @@ class CommentSummaryTreeBuilder private constructor(
             authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
             authorProfileImageUrl = author?.profileImageUrl,
             createdAt = comment.createdAt,
-            commentReactionStats = reactionStatsByCommentId[comment.id] ?: CommentReactionStats.empty(comment.id),
+            commentReactionStats = reactionStatsByCommentId[comment.id] ?: CommentReactionStats.emptyOf(comment.id),
             isDeleted = comment.isDeleted,
             replies = replies
         )
