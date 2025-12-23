@@ -5,6 +5,8 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.response.ProfileResourceResponse
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
 import kr.co.wground.user.utils.defaultimage.application.constant.AvatarProperties
 import kr.co.wground.user.utils.defaultimage.domain.UserProfile
 import org.springframework.core.io.FileSystemResource
@@ -67,7 +69,7 @@ class ProfileService(
             FileSystemResource(properties.placeholderPath)
         }
 
-        val filename = resource.filename
+        val filename = resource.filename ?: DEFAULT_AVATAR_PATH
 
         //미래를 위한 분기처리
         val contentType = when {
