@@ -47,7 +47,7 @@ class CommentServiceTest {
         val postId = 1L
         val pageable = PageRequest.of(0, 10)
         val currentUserId = CurrentUserId(1L)
-        
+
         `when`(postRepository.existsById(postId)).thenReturn(true)
 
         val parent1 = Comment.create(1L, postId, null, "p1")
@@ -57,7 +57,6 @@ class CommentServiceTest {
             userId = 1L,
             trackId = 100L,
             email = "user1@test.com",
-            profileImageUrl = "https://cdn.test.com/user1.png",
             name = "유저1",
             phoneNumber = "010-1111-1111",
             provider = "KAKAO",
@@ -69,7 +68,6 @@ class CommentServiceTest {
             userId = 2L,
             trackId = 100L,
             email = "user2@test.com",
-            profileImageUrl = "https://cdn.test.com/user2.png",
             name = "유저2",
             phoneNumber = "010-2222-2222",
             provider = "KAKAO",
