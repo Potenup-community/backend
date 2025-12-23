@@ -3,9 +3,10 @@ package kr.co.wground.comment.presentation
 import jakarta.validation.Valid
 import java.net.URI
 import kr.co.wground.comment.application.CommentService
-import kr.co.wground.comment.application.dto.CommentSummaryDto
 import kr.co.wground.comment.presentation.request.CommentCreateRequest
 import kr.co.wground.comment.presentation.request.CommentUpdateRequest
+import kr.co.wground.comment.presentation.response.CommentsResponse
+import kr.co.wground.comment.presentation.response.CommentSummaryResponse
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
@@ -58,8 +59,12 @@ class CommentController(
     fun getComments(
         @PathVariable postId: PostId,
         writerId: CurrentUserId
-    ): ResponseEntity<List<CommentSummaryDto>> {
+    ): ResponseEntity<CommentsResponse> {
         val result = commentService.getCommentsByPost(postId, writerId)
-        return ResponseEntity.ok(result)
+
+        return ResponseEntity.ok(
+            CommentsResponse(result.map { CommentSummaryResponse.from(it) }
+            )
+        )
     }
 }
