@@ -14,6 +14,6 @@ class DashboardService(
         val userCount = userRepository.count()
         val postCount = postRepository.count()
 
-        return DashboardOverviewDto(userCount, postCount)
+        return DashboardOverviewDto(postCount, userCount)
     }
 }
