@@ -31,7 +31,8 @@ class SecurityConfig(
                     "/api/v1/profiles/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                ).permitAll()
+                    "/actuator/**"
+                    ).permitAll()
                     .anyRequest().authenticated()
             }
             .formLogin { it.disable() }

@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: depth-api
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -60,3 +62,18 @@ app:
     default-size: ${PROFILE_SIZE}
     image-quality: ${PROFILE_QUALITY}
     placeholder-path: ${PROFILE_PLACEHOLDER}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      show-details: never
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
