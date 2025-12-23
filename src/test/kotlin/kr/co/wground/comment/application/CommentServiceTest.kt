@@ -47,8 +47,7 @@ class CommentServiceTest {
         val postId = 1L
         val pageable = PageRequest.of(0, 10)
         val currentUserId = CurrentUserId(1L)
-
-
+        
         `when`(postRepository.existsById(postId)).thenReturn(true)
 
         val parent1 = Comment.create(1L, postId, null, "p1")
@@ -98,7 +97,6 @@ class CommentServiceTest {
         `when`(userRepository.findAllById(anyList()))
             .thenReturn(listOf(user1, user2))
 
-        // reaction stats empty
         `when`(reactionQueryService.getCommentReactionStats(anySet(), eq(currentUserId.value)))
             .thenReturn(emptyMap())
 
