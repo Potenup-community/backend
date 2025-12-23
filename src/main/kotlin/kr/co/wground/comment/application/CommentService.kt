@@ -13,6 +13,7 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
+import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.domain.Pageable
@@ -72,9 +73,9 @@ class CommentService(
 
         val allComments = parentSlice.content + replies
         val usersById = loadUsersByComments(allComments)
-        val reactionCountByCommentId = fetchReactionCounts(allComments, userId.value)
+        val reactionStatsByCommentId = fetchReactionCounts(allComments, userId.value)
 
-        val tree = CommentSummaryTreeBuilder.from(allComments, usersById, reactionCountByCommentId).build()
+        val tree = CommentSummaryTreeBuilder.from(allComments, usersById, reactionStatsByCommentId).build()
 
         return SliceImpl(tree, pageable, parentSlice.hasNext())
     }
@@ -111,7 +112,7 @@ class CommentService(
         return userRepository.findAllById(writerIds).associateBy { it.userId }
     }
 
-    private fun fetchReactionCounts(comments: List<Comment>, userId: UserId): Map<CommentId, Int> {
+    private fun fetchReactionCounts(comments: List<Comment>, userId: UserId): Map<CommentId, CommentReactionStats> {
         val commentIds = comments.map { it.id }.toSet()
         if (commentIds.isEmpty()) return emptyMap()
         // 크기 제한으로 배치 조회
@@ -121,7 +122,7 @@ class CommentService(
                 reactionQueryService.getCommentReactionStats(chunk.toSet(), userId).entries
             }
             .associate { (commentId, stats) ->
-                commentId to stats.totalCount
+                commentId to stats
             }
     }
 }
