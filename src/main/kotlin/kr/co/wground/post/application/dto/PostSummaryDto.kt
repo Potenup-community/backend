@@ -26,12 +26,14 @@ data class PostSummaryDto(
     data class PostReactionSummaryDto(
         val reactionType: ReactionType,
         val count: Int,
+        val reactedByMe: Boolean,
     )
 }
 
 fun PostReactionStatsRow.toDto() = PostReactionSummaryDto(
     reactionType = reactionType,
-    count = count.toInt()
+    count = count.toInt(),
+    reactedByMe = reactedByMe
 )
 
 fun Slice<Post>.toDtos(

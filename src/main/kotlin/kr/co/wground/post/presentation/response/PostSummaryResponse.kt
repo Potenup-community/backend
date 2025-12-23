@@ -28,6 +28,7 @@ data class PostSummaryDetail(
     data class PostReactionSummaryDetail(
         val reactionType: ReactionType,
         val count: Int,
+        val reactedByMe: Boolean,
     )
 }
 
@@ -40,7 +41,13 @@ fun PostSummaryDto.toResponseDetail() = PostSummaryDetail(
     topic = topic,
     highlightType = highlightType,
     commentsCount = commentsCount,
-    reactions = reactions.map { PostReactionSummaryDetail(it.reactionType, it.count) }
+    reactions = reactions.map {
+        PostReactionSummaryDetail(
+            reactionType = it.reactionType,
+            count = it.count,
+            reactedByMe = it.reactedByMe
+        )
+    }
 )
 
 fun Slice<PostSummaryDto>.toResponse(): PostSummaryResponse {
