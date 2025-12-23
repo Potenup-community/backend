@@ -4,6 +4,8 @@ import kr.co.wground.comment.application.dto.CommentSummaryDto
 import kr.co.wground.comment.domain.Comment
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.reaction.application.dto.CommentReactionStats
+import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
 
@@ -13,18 +15,18 @@ private const val UNKNOWN_USER_NAME_TAG = "탈퇴한 사용자"
 class CommentSummaryTreeBuilder private constructor(
     private val groupedByParent: Map<CommentId?, List<Comment>>,
     private val usersById: Map<UserId, User>,
-    private val reactionCountByCommentId: Map<CommentId, Int>,
+    private val reactionStatsByCommentId: Map<CommentId, CommentReactionStats>,
 ) {
     companion object {
         fun from(
             comments: List<Comment>,
             usersById: Map<UserId, User>,
-            reactionCountByCommentId: Map<CommentId, Int>,
+            reactionStatsByCommentId: Map<CommentId, CommentReactionStats>,
         ): CommentSummaryTreeBuilder {
             val grouped = comments
                 .sortedWith(compareBy<Comment> { it.createdAt }.thenBy { it.id })
                 .groupBy { it.parentId }
-            return CommentSummaryTreeBuilder(grouped, usersById, reactionCountByCommentId)
+            return CommentSummaryTreeBuilder(grouped, usersById, reactionStatsByCommentId)
         }
     }
 
@@ -46,7 +48,7 @@ class CommentSummaryTreeBuilder private constructor(
             authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
             authorProfileImageUrl = author?.accessProfile(),
             createdAt = comment.createdAt,
-            reactionCount = reactionCountByCommentId[comment.id] ?: 0,
+            commentReactionStats = reactionStatsByCommentId[comment.id] ?: CommentReactionStats.emptyOf(comment.id),
             isDeleted = comment.isDeleted,
             replies = replies
         )

@@ -3,6 +3,7 @@ package kr.co.wground.comment.application.dto
 import java.time.LocalDateTime
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.reaction.application.dto.CommentReactionStats
 
 data class CommentSummaryDto(
     val commentId: CommentId,
@@ -11,7 +12,7 @@ data class CommentSummaryDto(
     val authorName: String,
     val authorProfileImageUrl: String?,
     val createdAt: LocalDateTime,
-    val reactionCount: Int,
+    val commentReactionStats: CommentReactionStats,
     val isDeleted: Boolean,
     val replies: List<CommentSummaryDto>,
 ) {
@@ -23,7 +24,7 @@ data class CommentSummaryDto(
             authorName: String,
             authorProfileImageUrl: String?,
             createdAt: LocalDateTime,
-            reactionCount: Int = 0,
+            commentReactionStats: CommentReactionStats,
             isDeleted: Boolean,
             replies: List<CommentSummaryDto>,
         ): CommentSummaryDto {
@@ -34,7 +35,7 @@ data class CommentSummaryDto(
                 authorName = authorName,
                 authorProfileImageUrl = authorProfileImageUrl,
                 createdAt = createdAt,
-                reactionCount = reactionCount,
+                commentReactionStats = commentReactionStats,
                 isDeleted = isDeleted,
                 replies = replies,
             )

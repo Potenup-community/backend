@@ -13,6 +13,7 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
+import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.domain.Pageable
@@ -56,6 +57,10 @@ class CommentService(
         comment.deleteContent()
     }
 
+    /**
+     * 댓글 조회(페이징)
+     * 나중에 필요해 질 것 같아서 유지
+     */
     @Transactional(readOnly = true)
     fun getCommentsByPost(
         postId: PostId,
@@ -72,11 +77,28 @@ class CommentService(
 
         val allComments = parentSlice.content + replies
         val usersById = loadUsersByComments(allComments)
-        val reactionCountByCommentId = fetchReactionCounts(allComments, userId.value)
+        val reactionStatsByCommentId = fetchReactionCounts(allComments, userId.value)
 
-        val tree = CommentSummaryTreeBuilder.from(allComments, usersById, reactionCountByCommentId).build()
+        val tree = CommentSummaryTreeBuilder.from(allComments, usersById, reactionStatsByCommentId).build()
 
         return SliceImpl(tree, pageable, parentSlice.hasNext())
+    }
+
+    /**
+     * 댓글 조회(전체 조회)
+     */
+    @Transactional(readOnly = true)
+    fun getCommentsByPost(
+        postId: PostId,
+        userId: CurrentUserId
+    ): List<CommentSummaryDto> {
+        validateExistTargetPost(postId)
+
+        val allComments = commentRepository.findAllByPostId(postId)
+        val usersById = loadUsersByComments(allComments)
+        val reactionStatsByCommentId = fetchReactionCounts(allComments, userId.value)
+
+        return CommentSummaryTreeBuilder.from(allComments, usersById, reactionStatsByCommentId).build()
     }
 
     private fun validateExistTargetPost(postId: PostId) {
@@ -111,7 +133,7 @@ class CommentService(
         return userRepository.findAllById(writerIds).associateBy { it.userId }
     }
 
-    private fun fetchReactionCounts(comments: List<Comment>, userId: UserId): Map<CommentId, Int> {
+    private fun fetchReactionCounts(comments: List<Comment>, userId: UserId): Map<CommentId, CommentReactionStats> {
         val commentIds = comments.map { it.id }.toSet()
         if (commentIds.isEmpty()) return emptyMap()
         // 크기 제한으로 배치 조회
@@ -121,7 +143,7 @@ class CommentService(
                 reactionQueryService.getCommentReactionStats(chunk.toSet(), userId).entries
             }
             .associate { (commentId, stats) ->
-                commentId to stats.totalCount
+                commentId to stats
             }
     }
 }

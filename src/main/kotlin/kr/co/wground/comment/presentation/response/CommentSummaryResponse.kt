@@ -3,13 +3,14 @@ package kr.co.wground.comment.presentation.response
 import java.time.LocalDateTime
 import kr.co.wground.comment.application.dto.CommentSummaryDto
 import kr.co.wground.global.common.CommentId
+import kr.co.wground.reaction.application.dto.CommentReactionStats
 
 data class CommentSummaryResponse(
     val commentId: CommentId,
     val content: String,
     val author: CommentAuthorResponse,
     val createdAt: LocalDateTime,
-    val reactionCount: Int,
+    val commentReactionStats: CommentReactionStats,
     val isDeleted: Boolean,
     val replies: List<CommentSummaryResponse>,
 ) {
@@ -24,7 +25,7 @@ data class CommentSummaryResponse(
                     profileImageUrl = dto.authorProfileImageUrl,
                 ),
                 createdAt = dto.createdAt,
-                reactionCount = dto.reactionCount,
+                commentReactionStats = dto.commentReactionStats,
                 isDeleted = dto.isDeleted,
                 replies = dto.replies.map { from(it) },
             )
