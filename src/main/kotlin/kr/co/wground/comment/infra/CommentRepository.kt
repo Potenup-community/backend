@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 interface CommentRepository : JpaRepository<Comment, Long>, CommentRepositoryCustom {
     fun findByPostIdAndParentIdIsNull(postId: PostId, pageable: Pageable): Slice<Comment>
     fun findByPostIdAndParentIdIn(postId: PostId, parentIds: List<Long>): List<Comment>
+    fun findAllByPostId(postId: Long): MutableList<Comment>
 }
