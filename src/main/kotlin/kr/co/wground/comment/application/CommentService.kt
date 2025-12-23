@@ -57,6 +57,10 @@ class CommentService(
         comment.deleteContent()
     }
 
+    /**
+     * 댓글 조회(페이징)
+     * 나중에 필요해 질 것 같아서 유지
+     */
     @Transactional(readOnly = true)
     fun getCommentsByPost(
         postId: PostId,
@@ -78,6 +82,23 @@ class CommentService(
         val tree = CommentSummaryTreeBuilder.from(allComments, usersById, reactionStatsByCommentId).build()
 
         return SliceImpl(tree, pageable, parentSlice.hasNext())
+    }
+
+    /**
+     * 댓글 조회(전체 조회)
+     */
+    @Transactional(readOnly = true)
+    fun getCommentsByPost(
+        postId: PostId,
+        userId: CurrentUserId
+    ): List<CommentSummaryDto> {
+        validateExistTargetPost(postId)
+
+        val allComments = commentRepository.findAllByPostId(postId)
+        val usersById = loadUsersByComments(allComments)
+        val reactionStatsByCommentId = fetchReactionCounts(allComments, userId.value)
+
+        return CommentSummaryTreeBuilder.from(allComments, usersById, reactionStatsByCommentId).build()
     }
 
     private fun validateExistTargetPost(postId: PostId) {
