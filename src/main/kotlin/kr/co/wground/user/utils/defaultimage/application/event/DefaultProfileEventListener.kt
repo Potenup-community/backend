@@ -1,5 +1,6 @@
 package kr.co.wground.user.utils.defaultimage.application.event
 
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.user.utils.defaultimage.application.ProfileService
 import org.springframework.retry.annotation.Backoff
 import org.springframework.retry.annotation.Retryable
@@ -20,7 +21,8 @@ class DefaultProfileEventListener(
     @Retryable(
         retryFor = [Exception::class],
         maxAttemptsExpression = "#{avatarProperties.retryMaxAttempts}",
-        backoff = Backoff(delayExpression = "#{avatarProperties.retryDelay}")
+        backoff = Backoff(delayExpression = "#{avatarProperties.retryDelay}") ,
+        noRetryFor = [BusinessException::class],
     )
     fun handleDefaultProfile(event: UserProfileEvent){
         profileService.createDefaultProfile(

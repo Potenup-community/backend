@@ -27,7 +27,7 @@ class WebConfig(
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         registry.addResourceHandler("/assets/**")
-            .addResourceLocations("classpath:/static/assets/")
+            .addResourceLocations("classpath:/assets/")
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
