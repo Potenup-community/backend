@@ -90,7 +90,7 @@ class User(
     }
 
     fun accessProfile():String {
-        return this.userProfile.profileImageUrl
+        return this.userProfile.imageUrl
     }
 
     fun logout() {

@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 class UserProfile(
     originalProfileName: String,
     currentFileName: String,
-    val profileImageUrl: String,
+    val imageUrl: String,
     storagePath: String,
     modifiedProfileAt: LocalDateTime = LocalDateTime.now(),
 ) {
@@ -38,7 +38,7 @@ class UserProfile(
             return UserProfile(
                 originalProfileName = originalProfileName,
                 currentFileName = currentFileName,
-                profileImageUrl = profileImageUrl,
+                imageUrl = profileImageUrl,
                 storagePath = storagePath,
                 modifiedProfileAt = LocalDateTime.now(),
             )
@@ -48,7 +48,7 @@ class UserProfile(
             return UserProfile(
                 originalProfileName = DEFAULT_PROFILE_NAME,
                 currentFileName = DEFAULT_FILE_NAME,
-                profileImageUrl = DEFAULT_AVATAR_PATH,
+                imageUrl = DEFAULT_AVATAR_PATH,
                 storagePath = DEFAULT_STORAGE_PATH,
                 modifiedProfileAt = LocalDateTime.now()
             )

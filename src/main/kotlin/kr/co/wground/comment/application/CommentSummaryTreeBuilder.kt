@@ -44,7 +44,7 @@ class CommentSummaryTreeBuilder private constructor(
             content = content,
             authorId = comment.writerId,
             authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
-            authorProfileImageUrl = author?.accessProfile() ?: DEFAULT_AVATAR_PATH,
+            authorProfileImageUrl = author?.accessProfile(),
             createdAt = comment.createdAt,
             reactionCount = reactionCountByCommentId[comment.id] ?: 0,
             isDeleted = comment.isDeleted,
