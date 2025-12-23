@@ -24,4 +24,5 @@ enum class UserServiceErrorCode(
     PAGE_NUMBER_IS_OVER_TOTAL_PAGE(HttpStatus.BAD_REQUEST,"U-0013","최대 페이지 수를 넘었습니다."),
     PAGE_NUMBER_MIN_ERROR(HttpStatus.BAD_REQUEST,"U-0014","최소 페이지 수에 해당하지 않습니다."),
     CANT_REQUEST_NEXT_PAGE_IN_ZERO_ELEMENT(HttpStatus.BAD_REQUEST,"U-0015","해당 속성에 해당되는 유저가 없습니다. 다음 페이지는 요청 될 수 없습니다."),
+    PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND,"U-0016","해당 유저의 프로필 정보가 존재하지 않습니다."),
 }

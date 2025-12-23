@@ -6,9 +6,9 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.event.SignUpEvent
 import kr.co.wground.user.application.operations.event.toReturnUserId
 import kr.co.wground.user.application.operations.event.toUserEntity
-import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.SignUpRequest
+import kr.co.wground.user.utils.defaultimage.application.event.UserProfileEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 class SignUpServiceImpl(
     private val userRepository: UserRepository,
     private val googleTokenVerifier: GoogleTokenVerifier,
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: ApplicationEventPublisher,
 ) : SignUpService {
 
     override fun addUser(request: SignUpRequest) {
@@ -29,6 +29,7 @@ class SignUpServiceImpl(
 
         val savedUser = userRepository.save(newUser)
 
+        eventPublisher.publishEvent(UserProfileEvent(savedUser.userId,savedUser.email,savedUser.name))
         eventPublisher.publishEvent(SignUpEvent(savedUser.toReturnUserId()))
     }
 
