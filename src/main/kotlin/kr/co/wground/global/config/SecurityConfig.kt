@@ -28,7 +28,6 @@ class SecurityConfig(
                     "/api/v1/users/signup",
                     "/api/v1/auth/refresh",
                     "/api/v1/auth/login",
-                    "/api/v1/profiles/**",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
                     "/actuator/**"

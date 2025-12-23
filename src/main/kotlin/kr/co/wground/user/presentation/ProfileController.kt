@@ -15,7 +15,7 @@ import org.springframework.web.context.request.WebRequest
 import java.util.concurrent.TimeUnit
 
 @RestController
-@RequestMapping("/api/v1/profiles")
+@RequestMapping("/api/v1/users/profiles")
 class ProfileController(
     private val profileService: ProfileService,
 ) {
