@@ -3,13 +3,13 @@ package kr.co.wground.track.application
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.track.application.dto.CreateTrackDto
+import kr.co.wground.track.application.dto.TrackQueryDto
+import kr.co.wground.track.application.dto.TrackQueryDto.Companion.toTrackQueryDto
 import kr.co.wground.track.application.dto.UpdateTrackDto
 import kr.co.wground.track.application.event.TrackChangedEvent
 import kr.co.wground.track.application.exception.TrackServiceErrorCode
 import kr.co.wground.track.domain.Track
 import kr.co.wground.track.infra.TrackRepository
-import kr.co.wground.track.presentation.response.TrackQueryResponse
-import kr.co.wground.track.presentation.response.TrackQueryResponse.Companion.toTrackQueryResponse
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -21,7 +21,7 @@ class TrackServiceImpl(
     private val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : TrackService {
-    override fun createTrack(createTrack: CreateTrackDto): List<TrackQueryResponse> {
+    override fun createTrack(createTrack: CreateTrackDto): List<TrackQueryDto> {
         val savedTrack = trackRepository.save(createTrack.toEntity())
 
         //스케줄러 만료 변환 날짜 등록
@@ -69,7 +69,7 @@ class TrackServiceImpl(
             ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
     }
 
-    override fun getAllTrackResponses(): List<TrackQueryResponse> {
-        return trackRepository.findAllByOrderByEndDateDesc().map{ it.toTrackQueryResponse()}
+    override fun getAllTrackResponses(): List<TrackQueryDto> {
+        return trackRepository.findAllByOrderByEndDateDesc().map{ it.toTrackQueryDto()}
     }
 }

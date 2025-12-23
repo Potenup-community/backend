@@ -1,10 +1,10 @@
-package kr.co.wground.track.presentation.response
+package kr.co.wground.track.application.dto
 
 import kr.co.wground.track.domain.Track
 import kr.co.wground.track.domain.constant.TrackStatus
 import java.time.LocalDate
 
-data class TrackQueryResponse private constructor(
+data class TrackQueryDto private constructor(
     val trackId: Long,
     val trackName: String,
     val startDate: LocalDate,
@@ -12,8 +12,8 @@ data class TrackQueryResponse private constructor(
     val trackStatus: TrackStatus
 ) {
     companion object {
-        fun Track.toTrackQueryResponse(): TrackQueryResponse {
-            return TrackQueryResponse(
+        fun Track.toTrackQueryDto(): TrackQueryDto {
+            return TrackQueryDto(
                 trackId = this.trackId,
                 trackName = this.trackName,
                 startDate = this.startDate,
