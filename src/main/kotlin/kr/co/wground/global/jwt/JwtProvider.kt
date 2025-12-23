@@ -80,7 +80,7 @@ class JwtProvider(
                 .parseSignedClaims(token)
                 .payload
         } catch (e: ExpiredJwtException) {
-            throw BusinessException(UserServiceErrorCode.TOKEN_EXPIRED)
+            throw e
         } catch (e: Exception) {
             throw BusinessException(invalidErrorCode)
         }
