@@ -3,15 +3,12 @@ package kr.co.wground.comment.presentation
 import jakarta.validation.Valid
 import java.net.URI
 import kr.co.wground.comment.application.CommentService
+import kr.co.wground.comment.application.dto.CommentSummaryDto
 import kr.co.wground.comment.presentation.request.CommentCreateRequest
 import kr.co.wground.comment.presentation.request.CommentUpdateRequest
-import kr.co.wground.comment.presentation.response.CommentSliceResponse
-import kr.co.wground.comment.presentation.response.toResponse
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
-import org.springframework.data.domain.Pageable
-import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -60,11 +57,9 @@ class CommentController(
     @GetMapping("/{postId}")
     fun getComments(
         @PathVariable postId: PostId,
-        writerId: CurrentUserId,
-        @PageableDefault(size = 20, sort = ["createdAt", "id"])
-        pageable: Pageable,
-    ): CommentSliceResponse = commentService
-        .getCommentsByPost(postId, pageable, writerId)
-        .toResponse()
-
+        writerId: CurrentUserId
+    ): ResponseEntity<List<CommentSummaryDto>> {
+        val result = commentService.getCommentsByPost(postId, writerId)
+        return ResponseEntity.ok(result)
+    }
 }
