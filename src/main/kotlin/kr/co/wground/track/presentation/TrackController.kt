@@ -3,11 +3,12 @@ package kr.co.wground.track.presentation
 import jakarta.validation.Valid
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.track.application.TrackService
+import kr.co.wground.track.application.dto.TrackQueryDto
 import kr.co.wground.track.presentation.request.CreateTrackRequest
 import kr.co.wground.track.presentation.request.UpdateTrackRequest
 import kr.co.wground.track.presentation.request.toCreateTrackDto
 import kr.co.wground.track.presentation.request.toUpdateTrackDto
-import kr.co.wground.track.presentation.response.TrackQueryResponse
+import kr.co.wground.track.presentation.response.TrackListResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -25,9 +26,9 @@ class TrackController(
     private val trackService: TrackService,
 ) {
     @PostMapping
-    fun createTrack(@RequestBody @Valid createTrack: CreateTrackRequest): ResponseEntity<List<TrackQueryResponse>> {
+    fun createTrack(@RequestBody @Valid createTrack: CreateTrackRequest): ResponseEntity<TrackListResponse<TrackQueryDto>> {
         val response = trackService.createTrack(createTrack.toCreateTrackDto())
-        return ResponseEntity.status(HttpStatus.CREATED).body(response)
+        return ResponseEntity.status(HttpStatus.CREATED).body(TrackListResponse(response))
     }
 
     @PatchMapping("/{id}")
@@ -48,8 +49,8 @@ class TrackController(
     }
 
     @GetMapping
-    fun getTracks(): ResponseEntity<List<TrackQueryResponse>> {
+    fun getTracks(): ResponseEntity<TrackListResponse<TrackQueryDto>> {
         val responses = trackService.getAllTrackResponses()
-        return ResponseEntity.ok(responses)
+        return ResponseEntity.ok(TrackListResponse(responses))
     }
 }

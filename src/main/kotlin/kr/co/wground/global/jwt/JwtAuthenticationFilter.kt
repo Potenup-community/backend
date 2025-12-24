@@ -1,5 +1,6 @@
 package kr.co.wground.global.jwt
 
+import io.jsonwebtoken.ExpiredJwtException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -66,17 +67,12 @@ class JwtAuthenticationFilter(
         try {
             val userId = jwtProvider.validateAccessToken(accessToken)
             setAuthentication(userId)
-        } catch (ex: BusinessException) {
-            if (ex.code == UserServiceErrorCode.TOKEN_EXPIRED.code) {
-                try {
-                    val refreshToken = resolveTokenFromCookie(request, TokenType.REFRESH) ?: throw ex
-                    rePublishAndAuthenticate(refreshToken, response)
-                } catch (e: BusinessException) {
-                    handlerExceptionResolver.resolveException(request, response, null, e)
-                    return
-                }
-            } else {
-                handlerExceptionResolver.resolveException(request, response, null, ex)
+        } catch (ex: ExpiredJwtException) {
+            try {
+                val refreshToken = resolveTokenFromCookie(request, TokenType.REFRESH) ?: throw ex
+                rePublishAndAuthenticate(refreshToken, response)
+            } catch (e: BusinessException) {
+                handlerExceptionResolver.resolveException(request, response, null, e)
                 return
             }
         }

@@ -7,9 +7,7 @@ import kr.co.wground.global.jwt.constant.CSRF
 import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.common.LoginService
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.presentation.request.LoginRequest
-import kr.co.wground.user.presentation.response.LoginResponse
 import kr.co.wground.user.presentation.response.RoleResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
@@ -21,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.time.Duration
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -79,7 +78,7 @@ class AuthController(
             .httpOnly(true)
             .secure(true)
             .path("/")
-            .maxAge(duration)
+            .maxAge(Duration.ofMillis(duration))
             .sameSite(CSRF)
             // .domain("www.depth.co.kr")
             .build()
