@@ -1,5 +1,6 @@
 package kr.co.wground.post.presentation.request
 
+import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
@@ -9,6 +10,8 @@ import kr.co.wground.post.domain.enums.Topic
 import java.util.UUID
 
 data class PostUpdateRequest(
+    @field:NotNull
+    val draftId: UUID,
     val topic: Topic? = null,
     @field:Size(max = 50, message = "제목은 50자까지 작성할 수 있습니다.")
     val title: String? = null,
@@ -18,6 +21,7 @@ data class PostUpdateRequest(
 ) {
     fun toDto(id: PostId, writerId: UserId) = PostUpdateDto(
         postId = id,
+        draftId = draftId,
         title = title,
         content = content,
         writerId = writerId,

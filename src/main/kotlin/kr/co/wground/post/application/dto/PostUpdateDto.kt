@@ -8,6 +8,7 @@ import java.util.UUID
 
 data class PostUpdateDto(
     val postId: PostId,
+    val draftId: UUID,
     val title: String? = null,
     val content: String? = null,
     val writerId: WriterId,
