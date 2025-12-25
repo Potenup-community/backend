@@ -8,6 +8,8 @@ import kr.co.wground.image.application.dto.UploadImageDto
 import kr.co.wground.image.domain.ImageFile
 import kr.co.wground.image.exception.DeleteImageErrorCode
 import kr.co.wground.image.infra.ImageRepository
+import kr.co.wground.image.infra.dto.MarkOrphanByDraftDto
+import kr.co.wground.image.infra.dto.MarkUsedByDraftDto
 import kr.co.wground.image.policy.UploadPolicy
 import kr.co.wground.image.validator.ImageUploadValidator
 import org.slf4j.LoggerFactory
@@ -61,17 +63,23 @@ class ImageStorageService(
         val urls = extractUploadUrls(dto.markdown)
         val usedRelativePaths = urls.map { toRelativePath(it) }.toSet()
 
-        val currentlyLinked = imageRepository.findAllByDraftIdAndOwnerId(dto.draftId, dto.ownerId)
+        MarkUsedByDraftDto(
+            ownerId = dto.ownerId,
+            draftId = dto.draftId,
+            postId = dto.postId,
+            paths = usedRelativePaths,
+        ).also {
+            imageRepository.markUsedAndFillPostIdByDraft(it)
+        }
 
-        //TODO(Repository에 in 쿼리로 마크하는 부분으로 수정 예정 -> 이유는 현재 모든 엔티티를 들고와서 어플리케이션에서 작업중 하지만 그것보다 그냥 바로 in query를 하는것이 더 나을 수 있음
-        currentlyLinked.filter { it.relativePath in usedRelativePaths }
-            .forEach {
-                it.markUsed()
-                it.fillPostId(dto.postId)
-            }
-
-        currentlyLinked.filter { it.relativePath !in usedRelativePaths }
-            .forEach {it.markOrphan()}
+        MarkOrphanByDraftDto(
+            postId = dto.postId,
+            ownerId = dto.ownerId,
+            draftId = dto.draftId,
+            paths = usedRelativePaths,
+        ).also {
+            imageRepository.markOrphanByDraftNotInPaths(it)
+        }
     }
 
     fun deleteByRelativePath(relativePath: String) {
