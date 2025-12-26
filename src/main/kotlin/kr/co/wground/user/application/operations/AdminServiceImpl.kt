@@ -9,9 +9,8 @@ import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserInfoDto
-import kr.co.wground.user.presentation.request.DecisionStatusRequest
-import kr.co.wground.user.presentation.request.UserSearchRequest
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
+import kr.co.wground.user.application.operations.dto.DecisionDto
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -27,19 +26,18 @@ class AdminServiceImpl(
     val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : UserOperations {
-    fun decisionSignup(request: DecisionStatusRequest) {
-        val requestSign = signupRepository.findByIdOrNull(request.id)
+    fun decisionSignup(decisionDto: DecisionDto) {
+        val requestSign = signupRepository.findByIdOrNull(decisionDto.userId)
             ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
 
-        requestSign.decide(request.requestStatus)
+        requestSign.decide(decisionDto.requestStatus)
 
-        val event = DecideUserStatusEvent.from(requestSign.userId, request.requestStatus, request.role)
+        val event = DecideUserStatusEvent.from(decisionDto.userId, decisionDto.requestStatus, decisionDto.role)
         eventPublisher.publishEvent(event)
     }
 
     @Transactional(readOnly = true)
-    fun findUsersByConditions(conditions: UserSearchRequest, pageable: Pageable): Page<AdminSearchUserDto> {
-        val conditionDto = ConditionDto.from(conditions)
+    fun findUsersByConditions(conditionDto: ConditionDto, pageable: Pageable): Page<AdminSearchUserDto> {
         val userInfos = userRepository.searchUsers(conditionDto, pageable)
 
         validatePageBounds(userInfos, pageable)
@@ -70,12 +68,12 @@ class AdminServiceImpl(
         val totalPages = userInfos.totalPages
         val totalElements = userInfos.totalElements
 
-        validateMinPage(pageable, requestedPage)
+        validateMinPage(requestedPage)
         validateOverPage(totalPages, totalElements, requestedPage)
         validateElementZeroNextPage(totalElements, requestedPage)
     }
 
-    private fun validateMinPage(pageable: Pageable, requestedPage: Int) {
+    private fun validateMinPage(requestedPage: Int) {
         if (requestedPage < 0) {
             throw BusinessException(UserServiceErrorCode.PAGE_NUMBER_MIN_ERROR)
         }
