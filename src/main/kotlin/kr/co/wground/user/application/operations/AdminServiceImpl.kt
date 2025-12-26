@@ -1,6 +1,7 @@
 package kr.co.wground.user.application.operations
 
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.UserId
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
@@ -27,8 +28,8 @@ class AdminServiceImpl(
     val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : UserOperations {
-    fun decisionSignup(request: DecisionStatusRequest) {
-        val requestSign = signupRepository.findByIdOrNull(request.id)
+    fun decisionSignup(userId: UserId,request: DecisionStatusRequest) {
+        val requestSign = signupRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
 
         requestSign.decide(request.requestStatus)
