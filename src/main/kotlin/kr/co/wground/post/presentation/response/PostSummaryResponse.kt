@@ -54,6 +54,6 @@ fun Slice<PostSummaryDto>.toResponse(): PostSummaryResponse {
     return PostSummaryResponse(
         contents = this.content.map { it.toResponseDetail() },
         hasNext = this.hasNext(),
-        nextPage = if (this.hasNext()) this.number + 1 else null
+        nextPage = if (this.hasNext()) this.number + 2 else null
     )
 }
