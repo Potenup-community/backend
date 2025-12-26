@@ -54,6 +54,7 @@ app:
     max-gif-bytes: ${MAX_GIF_BYTES}
     allowed-mime-types: ${ALLOWED_MIME_TYPES}
     cache-period: ${CACHE_PERIOD}
+    base-url: ${BASE_URL}
   avatar:
     upload-path: ${LOCAL_PROFILE_DIR}
     webPathPrefix: ${PUBLIC_PROFILE_PATH}

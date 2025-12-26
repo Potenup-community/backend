@@ -9,7 +9,8 @@ class UploadPolicy(
     allowedMimeTypes: String,
     val localDir: String,
     val publicBasePath: String,
-    val cachePeriod: Int
+    val cachePeriod: Int,
+    val baseUrl: String
 ) {
     val allowedMimeTypeSet: Set<String> =
         allowedMimeTypes.split(",").map { it.trim().lowercase() }.toSet()

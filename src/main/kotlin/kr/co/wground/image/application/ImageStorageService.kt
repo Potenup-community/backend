@@ -109,15 +109,28 @@ class ImageStorageService(
     private fun extractUploadUrls(markdown: String): Set<String> {
         return MD_IMAGE_URL_REGEX.findAll(markdown)
             .map { it.groupValues[1].trim() }
-            .filter { it.startsWith(props.publicBasePath) }
+            .filter {
+                it.startsWith(props.publicBasePath) || it.startsWith(fullPublicPrefix())
+            }
             .toSet()
     }
 
     private fun toRelativePath(url: String): String {
-        return url.removePrefix(props.publicBasePath).trimStart('/') // tmp/1/uuid.jpg
+        val full = fullPublicPrefix()
+        val removed = when {
+            url.startsWith(full) -> url.removePrefix(full)
+            url.startsWith(props.publicBasePath) -> url.removePrefix(props.publicBasePath)
+            else -> url
+        }
+        return removed.trimStart('/')
     }
 
-    private fun uploadedUrl(relativePath: String): String = "${props.publicBasePath.trimEnd('/')}/$relativePath"
+    private fun uploadedUrl(relativePath: String): String {
+        val base = props.baseUrl.trimEnd('/')
+        val path = props.publicBasePath.trimEnd('/')
+        val rel  = relativePath.trimStart('/')
+        return if (base.isBlank()) "$path/$rel" else "$base$path/$rel"
+    }
     private fun relativePath(ownerId: OwnerId, id: String, ext: String) ="tmp/$ownerId/$id.$ext"
 
     private fun extFromMime(mime: String?): String? = when (mime?.lowercase()) {
@@ -127,5 +140,8 @@ class ImageStorageService(
         "image/webp" -> "webp"
         else -> null
     }
+
+    private fun fullPublicPrefix(): String =
+        "${props.baseUrl.trimEnd('/')}${props.publicBasePath}"
 }
 
