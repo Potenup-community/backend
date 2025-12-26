@@ -67,6 +67,15 @@ class PostService(
             content = dto.content,
             type = dto.highlightType
         )
+
+        dto.content?.let {
+            sendSyncImageEvent(
+                postId = foundPost.id,
+                ownerId = dto.writerId,
+                draftId = dto.draftId,
+                content = dto.content
+            )
+        }
     }
 
     private fun sendSyncImageEvent(
