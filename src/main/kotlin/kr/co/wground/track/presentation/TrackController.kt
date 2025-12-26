@@ -48,7 +48,7 @@ class TrackController(
         return ResponseEntity.noContent().build()
     }
 
-    @GetMapping
+    @GetMapping("/all")
     fun getTracks(): ResponseEntity<TrackListResponse<TrackQueryDto>> {
         val responses = trackService.getAllTrackResponses()
         return ResponseEntity.ok(TrackListResponse(responses))
