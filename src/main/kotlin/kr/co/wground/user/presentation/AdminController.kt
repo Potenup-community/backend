@@ -5,6 +5,8 @@ import kr.co.wground.user.application.operations.AdminServiceImpl
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.UserSearchRequest
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
+import kr.co.wground.user.application.operations.dto.ConditionDto
+import kr.co.wground.user.application.operations.dto.DecisionDto
 import kr.co.wground.user.presentation.response.UserPageResponse
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -29,7 +31,7 @@ class AdminController(
         @PathVariable userId: UserId,
         @RequestBody request: DecisionStatusRequest
     ): ResponseEntity<Unit> {
-        adminServiceImpl.decisionSignup(userId,request)
+        adminServiceImpl.decisionSignup(DecisionDto.from(userId,request))
         return ResponseEntity.noContent().build()
     }
 
@@ -38,7 +40,7 @@ class AdminController(
         @ModelAttribute condition: UserSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): ResponseEntity<UserPageResponse<AdminSearchUserDto>> {
-        val userInfos = adminServiceImpl.findUsersByConditions(condition, pageable)
+        val userInfos = adminServiceImpl.findUsersByConditions(ConditionDto.from(condition), pageable)
         val response = UserPageResponse.fromAdminSearchUserDto(userInfos)
         return ResponseEntity.ok(response)
     }
