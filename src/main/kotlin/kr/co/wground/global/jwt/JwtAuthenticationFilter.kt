@@ -13,9 +13,7 @@ import kr.co.wground.global.jwt.constant.TOKEN_START
 import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.common.LoginService
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.infra.UserRepository
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.http.HttpHeaders
 import org.springframework.http.ResponseCookie
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -31,7 +29,6 @@ import java.time.Duration
 class JwtAuthenticationFilter(
     private val jwtProvider: JwtProvider,
     private val handlerExceptionResolver: HandlerExceptionResolver,
-    private val userRepository: UserRepository,
     private val loginService: LoginService,
     @Value("\${jwt.expiration-ms}")
     private val accessExpirationMs: Long,
@@ -65,16 +62,20 @@ class JwtAuthenticationFilter(
         }
 
         try {
-            val userId = jwtProvider.validateAccessToken(accessToken)
-            setAuthentication(userId)
+            val (userId, role) = jwtProvider.getUserIdAndRole(accessToken, TokenType.ACCESS)
+            setAuthentication(userId, role)
         } catch (ex: ExpiredJwtException) {
             try {
-                val refreshToken = resolveTokenFromCookie(request, TokenType.REFRESH) ?: throw ex
+                val refreshToken = resolveTokenFromCookie(request, TokenType.REFRESH)
+                    ?: throw BusinessException(UserServiceErrorCode.REFRESH_TOKEN_NOT_FOUND)
                 rePublishAndAuthenticate(refreshToken, response)
             } catch (e: BusinessException) {
                 handlerExceptionResolver.resolveException(request, response, null, e)
                 return
             }
+        } catch (ex: BusinessException) {
+            handlerExceptionResolver.resolveException(request, response, null, ex)
+            return
         }
 
         filterChain.doFilter(request, response)
@@ -89,16 +90,13 @@ class JwtAuthenticationFilter(
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString())
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString())
 
-        setAuthentication(tokenResponse.userId)
+        setAuthentication(tokenResponse.userId, tokenResponse.userRole.name)
     }
 
-    private fun setAuthentication(userId: UserId) {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
-
-        val principle = UserPrincipal(userId)
-        val authorities = listOf(SimpleGrantedAuthority("ROLE_${user.role.name}"))
-        val authentication = UsernamePasswordAuthenticationToken(principle, null, authorities)
+    private fun setAuthentication(userId: UserId, role: String) {
+        val principal = UserPrincipal(userId, role)
+        val authorities = listOf(SimpleGrantedAuthority("ROLE_${role}"))
+        val authentication = UsernamePasswordAuthenticationToken(principal, null, authorities)
 
         SecurityContextHolder.getContext().authentication = authentication
     }
