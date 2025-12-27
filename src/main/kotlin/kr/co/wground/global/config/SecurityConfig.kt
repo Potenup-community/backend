@@ -3,6 +3,8 @@ package kr.co.wground.global.config
 import kr.co.wground.exception.handler.CustomAccessDeniedHandler
 import kr.co.wground.exception.handler.CustomAuthenticationEntryPoint
 import kr.co.wground.global.jwt.JwtAuthenticationFilter
+import kr.co.wground.image.policy.UploadPolicy
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -18,6 +20,9 @@ class SecurityConfig(
     private val customAuthenticationEntryPoint: CustomAuthenticationEntryPoint,
     private val customAccessDeniedHandler: CustomAccessDeniedHandler,
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
+    private val uploadPolicy: UploadPolicy,
+    @Value("\${app.base-url}")
+    private val baseURL: String,
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
@@ -26,6 +31,7 @@ class SecurityConfig(
             .authorizeHttpRequests {
                 it.requestMatchers(
                     "/api/v1/users/signup",
+                    "${baseURL}${uploadPolicy.publicBasePath}/**",
                     "/api/v1/auth/refresh",
                     "/api/v1/auth/login",
                     "/api/v1/admin/tracks",
@@ -52,6 +58,7 @@ class SecurityConfig(
         return WebSecurityCustomizer { web ->
             web.ignoring()
                 .requestMatchers("/assets/**")
+                .requestMatchers("${uploadPolicy.publicBasePath}/**")
         }
     }
 }

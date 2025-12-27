@@ -1,6 +1,8 @@
 package kr.co.wground.global.config
 
 import kr.co.wground.global.config.resolver.UserIdArgumentResolver
+import kr.co.wground.image.policy.UploadPolicy
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
@@ -10,7 +12,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @Configuration
 class WebConfig(
-    private val userIdArgumentResolver: UserIdArgumentResolver
+    private val userIdArgumentResolver: UserIdArgumentResolver,
+    private val uploadPolicy: UploadPolicy,
+    @Value("\${app.base-url}")
+    private val baseURL: String,
 ) : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         registry
@@ -29,6 +34,10 @@ class WebConfig(
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         registry.addResourceHandler("/assets/**")
             .addResourceLocations("classpath:/assets/")
+
+        registry.addResourceHandler("${baseURL}${uploadPolicy.publicBasePath}/**")
+            .addResourceLocations("file:${uploadPolicy.localDir}/")
+            .setCachePeriod(uploadPolicy.cachePeriod)
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {

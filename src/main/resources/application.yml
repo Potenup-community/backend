@@ -47,6 +47,7 @@ google:
     client-id: ${GOOGLE_CLIENT_KEY}
 
 app:
+  base-url: ${BASE_URL}
   upload:
     local-dir: ${LOCAL_UPLOAD_DIR}
     public-base-path: ${PUBLIC_BASE_PATH}
