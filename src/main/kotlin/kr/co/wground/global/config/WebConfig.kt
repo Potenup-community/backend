@@ -32,7 +32,7 @@ class WebConfig(
         registry.addResourceHandler("/assets/**")
             .addResourceLocations("classpath:/assets/")
 
-        registry.addResourceHandler("${uploadPolicy.baseUrl}${uploadPolicy.publicBasePath}/**")
+        registry.addResourceHandler("${uploadPolicy.publicBasePath}/**")
             .addResourceLocations("file:${uploadPolicy.localDir}/")
             .setCachePeriod(uploadPolicy.cachePeriod)
     }
