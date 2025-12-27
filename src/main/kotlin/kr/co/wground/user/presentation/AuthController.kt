@@ -59,7 +59,6 @@ class AuthController(
     fun getAuthStatus(
         authentication: Authentication,
     ): ResponseEntity<AuthStatusResponse> {
-        val role = authentication.authorities.first().authority
         val principal = authentication.principal as UserPrincipal
 
         return ResponseEntity.ok(
