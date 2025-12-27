@@ -4,7 +4,6 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.event.SignUpEvent
-import kr.co.wground.user.application.operations.event.toReturnUserId
 import kr.co.wground.user.application.operations.event.toUserEntity
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.SignUpRequest
@@ -30,7 +29,7 @@ class SignUpServiceImpl(
         val savedUser = userRepository.save(newUser)
 
         eventPublisher.publishEvent(UserProfileEvent(savedUser.userId,savedUser.email,savedUser.name))
-        eventPublisher.publishEvent(SignUpEvent(savedUser.toReturnUserId()))
+        eventPublisher.publishEvent(SignUpEvent(savedUser.userId))
     }
 
     private fun validateExistUser(email: String) {
