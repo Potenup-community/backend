@@ -24,6 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.servlet.HandlerExceptionResolver
 import org.springframework.web.util.WebUtils
 import java.time.Duration
+import kr.co.wground.global.jwt.constant.ROLE_PREFIX
 
 @Component
 class JwtAuthenticationFilter(
@@ -95,7 +96,7 @@ class JwtAuthenticationFilter(
 
     private fun setAuthentication(userId: UserId, role: String) {
         val principal = UserPrincipal(userId, role)
-        val authorities = listOf(SimpleGrantedAuthority("ROLE_${role}"))
+        val authorities = listOf(SimpleGrantedAuthority("${ROLE_PREFIX}${role}"))
         val authentication = UsernamePasswordAuthenticationToken(principal, null, authorities)
 
         SecurityContextHolder.getContext().authentication = authentication
