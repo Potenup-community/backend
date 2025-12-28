@@ -4,8 +4,10 @@ import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQuery
 import com.querydsl.jpa.impl.JPAQueryFactory
+import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.domain.QRequestSignup.requestSignup
+import kr.co.wground.user.domain.QUser
 import kr.co.wground.user.domain.QUser.user
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
@@ -56,6 +58,18 @@ class CustomUserRepositoryImpl(
         val countQuery = getUserCountQuery(condition,predicatesArray)
 
         return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchOne() ?: 0L }
+    }
+
+    override fun updateRefreshToken(refreshToken: String, userId: UserId) {
+        queryFactory.update(
+            user
+        ).set(
+            user.refreshToken.previousToken, user.refreshToken.token
+        ).set(
+            user.refreshToken.token, refreshToken
+        ).where(
+            user.userId.eq(userId)
+        )
     }
 
     private fun getUserCountQuery(

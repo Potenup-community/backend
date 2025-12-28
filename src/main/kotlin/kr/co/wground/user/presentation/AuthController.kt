@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping
 
 @RestController
 @RequestMapping("/api/v1/auth")
-class AuthController(
+class  AuthController(
     private val memberService: LoginService,
     @Value("\${jwt.expiration-ms}")
     private val accessExpirationMs: Long,
@@ -72,7 +72,7 @@ class AuthController(
 
     private fun setCookie(token: String, type: TokenType, maxAge: Long? = null): ResponseCookie {
         val duration = maxAge ?: when (type) {
-            TokenType.ACCESS -> accessExpirationMs
+            TokenType.ACCESS -> refreshExpirationMs
             TokenType.REFRESH -> refreshExpirationMs
         }
 
