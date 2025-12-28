@@ -2,6 +2,7 @@ package kr.co.wground.dashboard.application
 
 import kr.co.wground.dashboard.application.dto.DashboardOverviewDto
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.stereotype.Service
 
@@ -11,7 +12,7 @@ class DashboardService(
     private val postRepository: PostRepository
 ) {
     fun getDashboardOverview(): DashboardOverviewDto {
-        val userCount = userRepository.count()
+        val userCount = userRepository.countByStatus(UserStatus.ACTIVE)
         val postCount = postRepository.count()
 
         return DashboardOverviewDto(postCount, userCount)
