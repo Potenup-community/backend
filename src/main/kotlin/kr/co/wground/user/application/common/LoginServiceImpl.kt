@@ -63,12 +63,12 @@ class LoginServiceImpl(
 
         return if (user.refreshToken.token == hashedRequest) {
             val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role)
-            val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
+            //val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
 
-            userRepository.updateRefreshToken(newAccessToken, user.userId)
+            userRepository.updateRefreshToken(request, user.userId)
             //user.updateRefreshToken(refreshTokenHasher.hash(newRefreshToken))
 
-            TokenResponse(user.userId, user.role, newAccessToken, newRefreshToken)
+            TokenResponse(user.userId, user.role, newAccessToken, request)
         } else {
             val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role)
 
