@@ -11,6 +11,7 @@ data class LoginResponse(
 
 data class TokenResponse(
     val userId: UserId,
+    val userRole: UserRole,
     val accessToken: String,
     val refreshToken: String
 )

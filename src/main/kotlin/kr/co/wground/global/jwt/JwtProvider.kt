@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component
 import java.util.Date
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
+import kr.co.wground.user.domain.constant.UserRole
 
 
 @Component
@@ -27,6 +28,7 @@ class JwtProvider(
     private companion object {
         private const val CLAIM_USER_ID = "userId"
         private const val CLAIM_TOKEN_TYPE = "tokenType"
+        private const val CLAIM_USER_ROLE = "role"
     }
 
     private val secretKey: SecretKey = SecretKeySpec(
@@ -38,28 +40,19 @@ class JwtProvider(
             .getAlgorithm()
     )
 
-    fun createAccessToken(userId: UserId): String {
-        return createToken(userId, TokenType.ACCESS, accessTokenExpired)
+    fun createAccessToken(userId: UserId, role: UserRole): String {
+        return createToken(userId, role, TokenType.ACCESS, accessTokenExpired)
     }
 
 
-    fun createRefreshToken(userId: UserId): String {
-        return createToken(userId, TokenType.REFRESH, refreshTokenExpired)
+    fun createRefreshToken(userId: UserId, role: UserRole): String {
+        return createToken(userId, role, TokenType.REFRESH, refreshTokenExpired)
     }
 
-    fun validateAccessToken(token: String): Long {
-        val claims = parseClaims(token, TokenType.ACCESS, UserServiceErrorCode.INVALID_ACCESS_TOKEN)
-        return extractUserId(claims, UserServiceErrorCode.INVALID_ACCESS_TOKEN)
-    }
-
-    fun validateRefreshToken(token: String): Long {
-        val claims = parseClaims(token, TokenType.REFRESH, UserServiceErrorCode.INVALID_REFRESH_TOKEN)
-        return extractUserId(claims, UserServiceErrorCode.INVALID_REFRESH_TOKEN)
-    }
-
-    private fun createToken(userId: UserId, tokenType: TokenType, expiredMs: Long): String {
+    private fun createToken(userId: UserId, role: UserRole, tokenType: TokenType, expiredMs: Long): String {
         return Jwts.builder()
             .claim(CLAIM_USER_ID, userId)
+            .claim(CLAIM_USER_ROLE, role.name)
             .claim(CLAIM_TOKEN_TYPE, tokenType.name)
             .issuedAt(Date(System.currentTimeMillis()))
             .expiration(Date(System.currentTimeMillis() + expiredMs))
@@ -97,4 +90,19 @@ class JwtProvider(
             ?: throw BusinessException(invalidErrorCode)
     }
 
+    fun getUserIdAndRole(token: String, tokenType: TokenType): Pair<Long, String> {
+        val errorCode = if (tokenType == TokenType.ACCESS){
+            UserServiceErrorCode.INVALID_ACCESS_TOKEN
+        }else {
+            UserServiceErrorCode.INVALID_REFRESH_TOKEN
+        }
+
+        val claims = parseClaims(token, tokenType, errorCode)
+        val userId = extractUserId(claims, errorCode)
+
+        val role = claims.get(CLAIM_USER_ROLE, String::class.java)
+            ?: throw BusinessException(errorCode)
+
+        return userId to role
+    }
 }
