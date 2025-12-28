@@ -48,7 +48,7 @@ class LoginServiceImpl(
     override fun refreshAccessToken(request: String): TokenResponse {
         val userIdAndRole = jwtProvider.getUserIdAndRole(request, TokenType.REFRESH)
 
-        val user = userRepository.findByIdWithLock(userIdAndRole.first)
+        val user = userRepository.findByIdOrNull(userIdAndRole.first)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
         if (user.status != UserStatus.ACTIVE) {
@@ -65,8 +65,7 @@ class LoginServiceImpl(
             val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role)
             //val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
 
-            userRepository.updateRefreshToken(request, user.userId)
-            //user.updateRefreshToken(refreshTokenHasher.hash(newRefreshToken))
+            user.updateRefreshToken(refreshTokenHasher.hash(request))
 
             TokenResponse(user.userId, user.role, newAccessToken, request)
         } else {
