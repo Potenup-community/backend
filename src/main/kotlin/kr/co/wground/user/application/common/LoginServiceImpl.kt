@@ -48,25 +48,31 @@ class LoginServiceImpl(
     override fun refreshAccessToken(request: String): TokenResponse {
         val userIdAndRole = jwtProvider.getUserIdAndRole(request, TokenType.REFRESH)
 
-        val user = userRepository.findByIdOrNull(userIdAndRole.first)
+        val user = userRepository.findByIdWithLock(userIdAndRole.first)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
         if (user.status != UserStatus.ACTIVE) {
             throw BusinessException(UserServiceErrorCode.INACTIVE_USER)
         }
 
-        val hashedRefreshToken = refreshTokenHasher.hash(request)
+        val hashedRequest = refreshTokenHasher.hash(request)
 
-        if (!user.validateRefreshToken(hashedRefreshToken)) {
+        if (!user.validateRefreshToken(hashedRequest)) {
             throw BusinessException(UserServiceErrorCode.INVALID_REFRESH_TOKEN)
         }
 
-        val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role)
-        val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
+        return if (user.refreshToken.token == hashedRequest) {
+            val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role)
+            val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
 
-        user.updateRefreshToken(refreshTokenHasher.hash(newRefreshToken))
+            user.updateRefreshToken(refreshTokenHasher.hash(newRefreshToken))
 
-        return TokenResponse(user.userId, user.role, newAccessToken, newRefreshToken)
+            TokenResponse(user.userId, user.role, newAccessToken, newRefreshToken)
+        } else {
+            val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role)
+
+            TokenResponse(user.userId, user.role, newAccessToken, request)
+        }
     }
 
     @Transactional
