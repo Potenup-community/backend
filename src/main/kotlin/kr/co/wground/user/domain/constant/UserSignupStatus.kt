@@ -1,0 +1,11 @@
+package kr.co.wground.user.domain.constant
+
+enum class UserSignupStatus {
+    PENDING,
+    ACCEPTED,
+    REJECTED,
+;
+    fun isAcceptedStatus(): Boolean {
+        return this == UserSignupStatus.ACCEPTED
+    }
+}
