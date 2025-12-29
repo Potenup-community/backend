@@ -51,7 +51,7 @@ class User(
 
     val deletedAt: LocalDateTime? = null,
 
-    role: UserRole = UserRole.BLOCKED,
+    role: UserRole = UserRole.MEMBER,
 
     status: UserStatus = UserStatus.BLOCKED
 

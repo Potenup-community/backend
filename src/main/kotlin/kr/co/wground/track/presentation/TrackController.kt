@@ -49,7 +49,13 @@ class TrackController(
     }
 
     @GetMapping
-    fun getTracks(): ResponseEntity<TrackListResponse<TrackQueryDto>> {
+    fun getTracksExceptAdmin(): ResponseEntity<TrackListResponse<TrackQueryDto>> {
+        val responses = trackService.getTracksExceptAdmin()
+        return ResponseEntity.ok(TrackListResponse(responses))
+    }
+
+    @GetMapping("/all")
+    fun getAllTracks(): ResponseEntity<TrackListResponse<TrackQueryDto>> {
         val responses = trackService.getAllTrackResponses()
         return ResponseEntity.ok(TrackListResponse(responses))
     }
