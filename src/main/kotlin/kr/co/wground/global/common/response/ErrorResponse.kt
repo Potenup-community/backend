@@ -13,10 +13,10 @@ data class ErrorResponse private constructor(
     )
 
     companion object {
-        fun of(errorCode: ErrorCode, errors: List<CustomError> = emptyList()): ErrorResponse {
+        fun of(errorCode: ErrorCode, errors: List<CustomError> = emptyList(), additionalInfo: String = ""): ErrorResponse {
             return ErrorResponse(
                 code = errorCode.code,
-                message = errorCode.message,
+                message = errorCode.message + if (additionalInfo.isEmpty()) "" else ", $additionalInfo",
                 errors = errors,
             )
         }
