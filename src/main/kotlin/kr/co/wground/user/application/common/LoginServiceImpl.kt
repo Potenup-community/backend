@@ -1,5 +1,6 @@
 package kr.co.wground.user.application.common
 
+import com.github.benmanes.caffeine.cache.Cache
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.auth.GoogleTokenVerifier
 import kr.co.wground.global.common.UserId
@@ -23,6 +24,7 @@ class LoginServiceImpl(
     private val googleTokenVerifier: GoogleTokenVerifier,
     private val jwtProvider: JwtProvider,
     private val refreshTokenHasher: RefreshTokenHasher,
+    private val rotationCache: Cache<String, TokenResponse>
 ) : LoginService {
 
     @Transactional
@@ -45,34 +47,45 @@ class LoginServiceImpl(
     }
 
     @Transactional
-    override fun refreshAccessToken(request: String): TokenResponse {
-        val userIdAndRole = jwtProvider.getUserIdAndRole(request, TokenType.REFRESH)
+    override fun refreshAccessToken(requestToken: String): TokenResponse {
+        val hashedRequest = refreshTokenHasher.hash(requestToken)
 
-        val user = userRepository.findByIdOrNull(userIdAndRole.first)
+        rotationCache.getIfPresent(hashedRequest)?.let {
+            return it
+        }
+
+        val (userId, role) = jwtProvider.getUserIdAndRole(requestToken, TokenType.REFRESH)
+
+        val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
         if (user.status != UserStatus.ACTIVE) {
             throw BusinessException(UserServiceErrorCode.INACTIVE_USER)
         }
 
-        val hashedRequest = refreshTokenHasher.hash(request)
-
         if (!user.validateRefreshToken(hashedRequest)) {
             throw BusinessException(UserServiceErrorCode.INVALID_REFRESH_TOKEN)
         }
 
-        return if (user.refreshToken.token == hashedRequest) {
+        val response = if (user.refreshToken.token == hashedRequest) {
             val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role)
-            //val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
+            val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
 
-            user.updateRefreshToken(refreshTokenHasher.hash(request))
+            user.updateRefreshToken(refreshTokenHasher.hash(newRefreshToken))
 
-            TokenResponse(user.userId, user.role, newAccessToken, request)
+            TokenResponse(user.userId, user.role, newAccessToken, newRefreshToken)
         } else {
             val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role)
+            val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
 
-            TokenResponse(user.userId, user.role, newAccessToken, request)
+            user.updateRefreshToken(refreshTokenHasher.hash(newRefreshToken))
+
+            TokenResponse(user.userId, user.role, newAccessToken, newRefreshToken)
         }
+
+        rotationCache.put(hashedRequest, response)
+
+        return response
     }
 
     @Transactional

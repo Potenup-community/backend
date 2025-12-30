@@ -8,5 +8,4 @@ import org.springframework.data.domain.Pageable
 
 interface CustomUserRepository {
     fun searchUsers(condition: ConditionDto, pageable: Pageable): Page<UserInfoDto>
-    fun updateRefreshToken(refreshToken: String, userId: UserId)
 }
