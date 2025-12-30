@@ -60,18 +60,6 @@ class CustomUserRepositoryImpl(
         return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchOne() ?: 0L }
     }
 
-    override fun updateRefreshToken(refreshToken: String, userId: UserId) {
-        queryFactory.update(
-            user
-        ).set(
-            user.refreshToken.previousToken, user.refreshToken.token
-        ).set(
-            user.refreshToken.token, refreshToken
-        ).where(
-            user.userId.eq(userId)
-        )
-    }
-
     private fun getUserCountQuery(
         condition: ConditionDto,
         predicates: Array<BooleanExpression?>
