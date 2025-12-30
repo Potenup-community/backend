@@ -1,5 +1,6 @@
 package kr.co.wground.user.infra
 
+import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.infra.dto.UserInfoDto
 import org.springframework.data.domain.Page

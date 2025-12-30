@@ -8,8 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface TrackRepository : JpaRepository<Track, Long>  {
+interface TrackRepository : JpaRepository<Track, Long>, CustomTrackRepository {
     fun findAllByTrackStatus(status: TrackStatus, pageRequest: Pageable): Page<Track>
-    fun findAllByOrderByEndDateDesc(): List<Track>
-    fun findAllByTrackIdNot(trackId: Long): List<Track>
+    fun findAllByTrackIdNotOrderByEndDateDesc(trackId: Long): List<Track>
 }

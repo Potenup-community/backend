@@ -48,9 +48,9 @@ class RequestSignup(
             UserSignupStatus.PENDING ->
                 targetStatus == UserSignupStatus.ACCEPTED || targetStatus == UserSignupStatus.REJECTED
             UserSignupStatus.ACCEPTED ->
-                targetStatus == UserSignupStatus.REJECTED
+                targetStatus == UserSignupStatus.REJECTED || targetStatus == UserSignupStatus.ACCEPTED
             UserSignupStatus.REJECTED ->
-                targetStatus == UserSignupStatus.ACCEPTED
+                targetStatus == UserSignupStatus.ACCEPTED || targetStatus == UserSignupStatus.REJECTED
             else -> false
         }
 
