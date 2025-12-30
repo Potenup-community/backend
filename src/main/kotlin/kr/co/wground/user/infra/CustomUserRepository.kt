@@ -1,6 +1,5 @@
 package kr.co.wground.user.infra
 
-import jakarta.persistence.StoredProcedureQuery
 import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.infra.dto.UserInfoDto
