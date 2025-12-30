@@ -27,7 +27,7 @@ class AdminServiceImpl(
     private val eventPublisher: ApplicationEventPublisher
 ) : UserOperations {
     fun decisionSignup(decisionDto: DecisionDto) {
-        val requestSign = signupRepository.findByIdOrNull(decisionDto.userId)
+        val requestSign = signupRepository.findByUserId(decisionDto.userId)
             ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
 
         requestSign.decide(decisionDto.requestStatus)
