@@ -21,6 +21,9 @@ class TrackServiceImpl(
     private val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : TrackService {
+    companion object {
+        private const val ADMIN_TRACK = 1L
+    }
     override fun createTrack(createTrack: CreateTrackDto): List<TrackQueryDto> {
         val savedTrack = trackRepository.save(createTrack.toEntity())
 
@@ -71,5 +74,9 @@ class TrackServiceImpl(
 
     override fun getAllTrackResponses(): List<TrackQueryDto> {
         return trackRepository.findAllByOrderByEndDateDesc().map{ it.toTrackQueryDto()}
+    }
+
+    override fun getTracksExceptAdmin(): List<TrackQueryDto> {
+        return trackRepository.findAllByTrackIdNotOrderByEndDateDesc(ADMIN_TRACK).map{ it.toTrackQueryDto()}
     }
 }

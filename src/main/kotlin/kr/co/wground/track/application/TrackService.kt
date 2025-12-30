@@ -10,4 +10,5 @@ interface TrackService {
     fun updateTrack(updateTrack: UpdateTrackDto)
     fun deleteTrack(trackId: TrackId)
     fun getAllTrackResponses(): List<TrackQueryDto>
+    fun getTracksExceptAdmin(): List<TrackQueryDto>
 }
