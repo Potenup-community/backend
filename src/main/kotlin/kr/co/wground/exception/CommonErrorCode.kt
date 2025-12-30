@@ -9,6 +9,7 @@ enum class CommonErrorCode(
 ) : ErrorCode {
     //Validation
     INVALID_INPUT(HttpStatus.BAD_REQUEST, "V-0001", "요청 값이 올바르지 않습니다."),
+    MAX_UPLOAD_SIZE_EXCEEDED(HttpStatus.BAD_REQUEST, "V-0002", "업로드된 파일 크기가 너무 큽니다."),
 
     //AccessDenied
     ACCESS_DENIED_ROLE(HttpStatus.FORBIDDEN, "A-0001", "접근 권한이 없습니다."),

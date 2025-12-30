@@ -18,5 +18,5 @@ interface TrackRepository : JpaRepository<Track, Long> {
     SELECT t FROM Track t 
     ORDER BY CASE WHEN t.trackId = 1 THEN 0 ELSE 1 END ASC, t.endDate DESC
     """)
-    fun findAllByOrderByEndDateDesc(): List<Track>
+    fun findAllTracks(): List<Track>
 }

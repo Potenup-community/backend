@@ -73,7 +73,7 @@ class TrackServiceImpl(
     }
 
     override fun getAllTrackResponses(): List<TrackQueryDto> {
-        return trackRepository.findAllByOrderByEndDateDesc().map{ it.toTrackQueryDto()}
+        return trackRepository.findAllTracks().map{ it.toTrackQueryDto()}
     }
 
     override fun getTracksExceptAdmin(): List<TrackQueryDto> {
