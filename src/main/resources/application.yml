@@ -65,10 +65,14 @@ app:
     placeholder-path: ${PROFILE_PLACEHOLDER}
 
 management:
+  server:
+    # 포트 인바운드 규칙 반드시 제한할 것
+    port: 9091
   endpoints:
     web:
+      base-path: ${ACTUATOR_BASE_PATH}
       exposure:
-        include: health, info, prometheus
+        include: health, info, prometheus, metrics, loggers
   endpoint:
     health:
       show-details: never
