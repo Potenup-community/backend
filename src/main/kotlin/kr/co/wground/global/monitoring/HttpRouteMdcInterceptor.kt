@@ -8,7 +8,7 @@ import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.HandlerMapping
 
 @Component
-class RouteMdcInterceptor : HandlerInterceptor {
+class HttpRouteMdcInterceptor : HandlerInterceptor {
     override fun preHandle(
         request: HttpServletRequest,
         response: HttpServletResponse,
