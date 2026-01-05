@@ -1,11 +1,13 @@
 package kr.co.wground.global.config
 
 import kr.co.wground.global.config.resolver.UserIdArgumentResolver
+import kr.co.wground.global.monitoring.RouteMdcInterceptor
 import kr.co.wground.image.policy.UploadPolicy
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class WebConfig(
     private val userIdArgumentResolver: UserIdArgumentResolver,
     private val uploadPolicy: UploadPolicy,
+    private val routeMdcInterceptor: RouteMdcInterceptor
 ) : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         registry
@@ -45,5 +48,9 @@ class WebConfig(
         resolvers.add(userIdArgumentResolver)
 
         super.addArgumentResolvers(resolvers)
+    }
+
+    override fun addInterceptors(registry: InterceptorRegistry) {
+        registry.addInterceptor(routeMdcInterceptor)
     }
 }
