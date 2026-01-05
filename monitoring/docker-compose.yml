@@ -1,4 +1,5 @@
 services:
+
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -12,3 +13,23 @@ services:
       - "3030:3000"
     depends_on:
       - prometheus
+
+  loki:
+    image: grafana/loki:3.0.0
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  alloy:
+    image: grafana/alloy:latest
+    ports:
+      - "12345:12345" # Alloy UI
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - ./logs:/var/log/app:ro
+    depends_on:
+      - loki
