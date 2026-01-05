@@ -16,10 +16,10 @@ class HttpMethodAndStatusMdcFilter : OncePerRequestFilter() {
         filterChain: FilterChain
     ) {
         try {
-            MDC.put("http.method", request.method)
+            MDC.put("http_method", request.method)
             filterChain.doFilter(request, response)
         } finally {
-            MDC.put("http.status", response.status.toString())
+            MDC.put("http_status", response.status.toString())
             MDC.clear() // 누수 방지를 위해
         }
     }

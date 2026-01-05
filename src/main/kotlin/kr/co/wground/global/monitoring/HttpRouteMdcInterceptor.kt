@@ -16,7 +16,7 @@ class HttpRouteMdcInterceptor : HandlerInterceptor {
     ): Boolean {
         val route = request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE) as? String
         if (route != null) {
-            MDC.put("http.route", route)
+            MDC.put("http_route", route)
         }
         return true
     }
