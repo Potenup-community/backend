@@ -48,6 +48,7 @@
             <includeMdcKeyName>http_method</includeMdcKeyName>
             <includeMdcKeyName>http_route</includeMdcKeyName>
             <includeMdcKeyName>http_status</includeMdcKeyName>
+            <includeMdcKeyName>elapsed_time_ms</includeMdcKeyName>
         </encoder>
     </appender>
 
