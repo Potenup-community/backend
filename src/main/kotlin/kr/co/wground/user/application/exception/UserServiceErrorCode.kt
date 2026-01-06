@@ -26,4 +26,5 @@ enum class UserServiceErrorCode(
     CANT_REQUEST_NEXT_PAGE_IN_ZERO_ELEMENT(HttpStatus.BAD_REQUEST,"U-0015","해당 속성에 해당되는 유저가 없습니다. 다음 페이지는 요청 될 수 없습니다."),
     PROFILE_NOT_FOUND(HttpStatus.NOT_FOUND,"U-0016","해당 유저의 프로필 정보가 존재하지 않습니다."),
     INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST,"U-0017", "변경 하려는 상태가 기존 상태와 같습니다."),
+    FIND_IDS_SIZE_DIFFERENT_REQUEST_IDS_SIZE(HttpStatus.CONFLICT, "U-0018", "요청한 ID값과 조회된 ID값의 크기가 다릅니다.")
 }

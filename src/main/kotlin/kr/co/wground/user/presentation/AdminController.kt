@@ -7,6 +7,7 @@ import kr.co.wground.user.presentation.request.UserSearchRequest
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.DecisionDto
+import kr.co.wground.user.presentation.request.MultipleDecisionRequest
 import kr.co.wground.user.presentation.response.UserPageResponse
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -31,7 +32,13 @@ class AdminController(
         @PathVariable userId: UserId,
         @RequestBody request: DecisionStatusRequest
     ): ResponseEntity<Unit> {
-        adminServiceImpl.decisionSignup(DecisionDto.from(userId,request))
+        adminServiceImpl.decisionSignup(DecisionDto.single(userId,request))
+        return ResponseEntity.noContent().build()
+    }
+
+    @PutMapping("/users/decisions")
+    fun multipleDecision(@RequestBody request: MultipleDecisionRequest): ResponseEntity<Unit> {
+        adminServiceImpl.decisionSignup(DecisionDto.from(request))
         return ResponseEntity.noContent().build()
     }
 

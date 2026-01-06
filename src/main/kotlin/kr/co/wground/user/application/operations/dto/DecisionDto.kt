@@ -4,18 +4,27 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
+import kr.co.wground.user.presentation.request.MultipleDecisionRequest
 
 data class DecisionDto(
-    val userId: UserId,
-    val role : UserRole?,
-    val requestStatus : UserSignupStatus
-){
-    companion object{
-        fun from(userId: UserId, decisionRequest: DecisionStatusRequest) : DecisionDto{
+    val userIds: List<UserId>,
+    val role: UserRole?,
+    val requestStatus: UserSignupStatus
+) {
+    companion object {
+        fun single(userId: UserId, decisionRequest: DecisionStatusRequest): DecisionDto {
             return DecisionDto(
-                userId = userId,
+                userIds = listOf(userId),
                 role = decisionRequest.role,
                 requestStatus = decisionRequest.requestStatus
+            )
+        }
+
+        fun from(request: MultipleDecisionRequest): DecisionDto{
+            return DecisionDto(
+                userIds = request.ids,
+                role = request.role,
+                requestStatus = request.requestStatus
             )
         }
     }
