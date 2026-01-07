@@ -20,13 +20,13 @@ class HttpMethodAndStatusMdcFilter : OncePerRequestFilter() {
         filterChain: FilterChain
     ) {
 
-        val beginTimeNs = System.nanoTime()
+        val beginTimeNs = System.currentTimeMillis()
 
         try {
             MDC.put("http_method", request.method)
             filterChain.doFilter(request, response)
         } finally {
-            val elapsedTimeMs = (System.nanoTime() - beginTimeNs) / 1_000_000
+            val elapsedTimeMs = System.currentTimeMillis()
             MDC.put("http_status", response.status.toString())
             MDC.put("elapsed_time_ms", elapsedTimeMs)
 
