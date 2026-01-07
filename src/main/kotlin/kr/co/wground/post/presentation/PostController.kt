@@ -28,22 +28,22 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/posts")
 class PostController(
     private val postService: PostService,
-) {
+): PostApi {
     @PostMapping
-    fun writePost(@Valid @RequestBody request: PostCreateRequest, writer: CurrentUserId): ResponseEntity<Unit> {
+    override fun writePost(@Valid @RequestBody request: PostCreateRequest, writer: CurrentUserId): ResponseEntity<Unit> {
         val createPost = postService.createPost(request.toDto(writer.value))
         val location = "/api/v1/posts/${createPost}"
         return ResponseEntity.created(URI.create(location)).build()
     }
 
     @DeleteMapping("/{id}")
-    fun deletePost(@PathVariable id: PostId, writer: CurrentUserId): ResponseEntity<Unit> {
+    override fun deletePost(@PathVariable id: PostId, writer: CurrentUserId): ResponseEntity<Unit> {
         postService.deletePost(id, writer.value)
         return ResponseEntity.noContent().build()
     }
 
     @PatchMapping("/{id}")
-    fun updatePost(
+    override fun updatePost(
         @PathVariable id: PostId,
         @Valid @RequestBody request: PostUpdateRequest,
         writer: CurrentUserId
@@ -53,7 +53,7 @@ class PostController(
     }
 
     @GetMapping("/summary")
-    fun getPostSummary(
+    override fun getPostSummary(
         @PageableDefault(size = 20) pageable: Pageable,
         @RequestParam topic: Topic?,
         userId: CurrentUserId
@@ -62,7 +62,7 @@ class PostController(
     }
 
     @GetMapping("/{id}")
-    fun getPost(@PathVariable id: PostId): PostDetailResponse {
+    override fun getPost(@PathVariable id: PostId): PostDetailResponse {
         return postService.getPostDetail(id).toResponse()
     }
 }
