@@ -3,7 +3,7 @@
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter" />
     <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter" />
     <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter" />
-    <property name="LOG_PATH" value="logs" />
+    <property name="LOG_PATH" value="monitoring/logs" />
 
     <property name="CONSOLE_LOG_PATTERN"
               value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%-5level) %clr([%thread]){magenta} %clr(%logger{36}){cyan} - %msg%n" />
@@ -18,14 +18,38 @@
     </appender>
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+
         <file>${LOG_PATH}/app.log</file>
+
         <encoder>
             <pattern>${FILE_LOG_PATTERN}</pattern>
             <charset>UTF-8</charset>
         </encoder>
+
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_PATH}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory> </rollingPolicy>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+    </appender>
+
+    <appender name="FILE_JSON" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/app-json.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/app-json.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- traceId/spanId 및 커스텀 MDC 키 -->
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>http_method</includeMdcKeyName>
+            <includeMdcKeyName>http_route</includeMdcKeyName>
+            <includeMdcKeyName>http_status</includeMdcKeyName>
+            <includeMdcKeyName>elapsed_time_ms</includeMdcKeyName>
+        </encoder>
     </appender>
 
     <springProfile name="dev | default">
@@ -36,6 +60,7 @@
 
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
+            <appender-ref ref="FILE_JSON" />
         </root>
     </springProfile>
 
@@ -47,6 +72,7 @@
         <root level="INFO">
             <appender-ref ref="CONSOLE" />
             <appender-ref ref="FILE" />
+            <appender-ref ref="FILE_JSON" />
         </root>
     </springProfile>
 
