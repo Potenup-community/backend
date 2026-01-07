@@ -3,10 +3,10 @@ package kr.co.wground.user.application.operations.event
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.infra.UserRepository
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
@@ -17,25 +17,29 @@ class UserEventListener(
 ) {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     fun handle(event: DecideUserStatusEvent) {
-        val user = userRepository.findByIdOrNull(event.userId)
-            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+        val users = userRepository.findByUserIdIn(event.userId)
 
-        user.decide(event.decision,event.role)
+        validateUser(users)
+        validateIdsSize(event.userId.size, users.size)
+
+        users.forEach { user -> user.decide(event.decision, event.role) }
+    }
+
+    private fun validateIdsSize(requestSize: Int, findSize: Int) {
+        if (requestSize != findSize) {
+            throw BusinessException(UserServiceErrorCode.FIND_IDS_SIZE_DIFFERENT_REQUEST_IDS_SIZE)
+        }
+    }
+
+    private fun validateUser(users: List<User>) {
+        if (users.isEmpty()) {
+            throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+        }
     }
 }
 
 data class DecideUserStatusEvent(
-    val userId: UserId,
+    val userId: List<UserId>,
     val decision: UserSignupStatus,
     val role: UserRole?
-){
-    companion object {
-        fun from(userId : UserId, status : UserSignupStatus, role: UserRole?): DecideUserStatusEvent{
-            return DecideUserStatusEvent(
-                userId = userId,
-                decision = status,
-                role = role
-            )
-        }
-    }
-}
+)
