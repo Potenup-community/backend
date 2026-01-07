@@ -56,7 +56,6 @@ class User(
     status: UserStatus = UserStatus.BLOCKED
 
 ) {
-    @Column(nullable = false)
     @Embedded
     var userProfile: UserProfile = UserProfile.default()
         protected set
