@@ -51,12 +51,11 @@ class User(
 
     val deletedAt: LocalDateTime? = null,
 
-    role: UserRole = UserRole.BLOCKED,
+    role: UserRole = UserRole.MEMBER,
 
     status: UserStatus = UserStatus.BLOCKED
 
 ) {
-    @Column(nullable = false)
     @Embedded
     var userProfile: UserProfile = UserProfile.default()
         protected set

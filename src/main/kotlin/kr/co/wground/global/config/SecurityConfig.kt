@@ -20,6 +20,7 @@ class SecurityConfig(
     private val customAccessDeniedHandler: CustomAccessDeniedHandler,
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val uploadPolicy: UploadPolicy,
+    private val actuatorPolicy: ActuatorPolicy,
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
@@ -32,7 +33,7 @@ class SecurityConfig(
                     "/api/v1/admin/tracks",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                    "/actuator/**"
+                    "${actuatorPolicy.basePath}/**"
                     ).permitAll()
                     .anyRequest().authenticated()
             }

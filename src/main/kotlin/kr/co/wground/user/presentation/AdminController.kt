@@ -1,12 +1,13 @@
 package kr.co.wground.user.presentation
 
 import kr.co.wground.global.common.UserId
-import kr.co.wground.user.application.operations.AdminServiceImpl
+import kr.co.wground.user.application.operations.AdminService
 import kr.co.wground.user.presentation.request.DecisionStatusRequest
 import kr.co.wground.user.presentation.request.UserSearchRequest
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.DecisionDto
+import kr.co.wground.user.presentation.request.MultipleDecisionRequest
 import kr.co.wground.user.presentation.response.UserPageResponse
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -24,14 +25,20 @@ import org.springframework.web.bind.annotation.RestController
 @PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/v1/admin")
 class AdminController(
-    private val adminServiceImpl: AdminServiceImpl
+    private val adminService: AdminService
 ) {
     @PutMapping("/users/{userId}/decision")
     fun decisionSignUp(
         @PathVariable userId: UserId,
         @RequestBody request: DecisionStatusRequest
     ): ResponseEntity<Unit> {
-        adminServiceImpl.decisionSignup(DecisionDto.from(userId,request))
+        adminService.decisionSignup(DecisionDto.single(userId,request))
+        return ResponseEntity.noContent().build()
+    }
+
+    @PutMapping("/users/decisions")
+    fun multipleDecision(@RequestBody request: MultipleDecisionRequest): ResponseEntity<Unit> {
+        adminService.decisionSignup(DecisionDto.from(request))
         return ResponseEntity.noContent().build()
     }
 
@@ -40,7 +47,7 @@ class AdminController(
         @ModelAttribute condition: UserSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): ResponseEntity<UserPageResponse<AdminSearchUserDto>> {
-        val userInfos = adminServiceImpl.findUsersByConditions(ConditionDto.from(condition), pageable)
+        val userInfos = adminService.findUsersByConditions(ConditionDto.from(condition), pageable)
         val response = UserPageResponse.fromAdminSearchUserDto(userInfos)
         return ResponseEntity.ok(response)
     }

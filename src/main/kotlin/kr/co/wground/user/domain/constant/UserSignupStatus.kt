@@ -4,8 +4,4 @@ enum class UserSignupStatus {
     PENDING,
     ACCEPTED,
     REJECTED,
-;
-    fun isAcceptedStatus(): Boolean {
-        return this == UserSignupStatus.ACCEPTED
-    }
 }

@@ -39,13 +39,23 @@ class RequestSignup(
     }
 
     fun decide(status: UserSignupStatus) {
-        validateUserStatus()
+        validateUserStatus(status)
         requestStatus = status
     }
 
-    private fun validateUserStatus() {
-        if (this.requestStatus.isAcceptedStatus()) {
-            throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
+    private fun validateUserStatus(targetStatus: UserSignupStatus) {
+        val isValid = when (requestStatus) {
+            UserSignupStatus.PENDING ->
+                targetStatus == UserSignupStatus.ACCEPTED || targetStatus == UserSignupStatus.REJECTED
+            UserSignupStatus.ACCEPTED ->
+                targetStatus == UserSignupStatus.REJECTED || targetStatus == UserSignupStatus.ACCEPTED
+            UserSignupStatus.REJECTED ->
+                targetStatus == UserSignupStatus.ACCEPTED || targetStatus == UserSignupStatus.REJECTED
+            else -> false
+        }
+
+        if (!isValid) {
+            throw BusinessException(UserServiceErrorCode.INVALID_STATUS_TRANSITION)
         }
     }
 }

@@ -43,3 +43,7 @@ out/
 .DS_Store
 
 *.env
+*.log
+*.alloy
+docker-compose.yml
+prometheus.yml

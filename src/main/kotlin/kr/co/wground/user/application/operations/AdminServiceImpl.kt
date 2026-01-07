@@ -4,17 +4,18 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
+import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
+import kr.co.wground.user.application.operations.dto.DecisionDto
 import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
+import kr.co.wground.user.domain.RequestSignup
+import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserInfoDto
-import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
-import kr.co.wground.user.application.operations.dto.DecisionDto
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -25,19 +26,26 @@ class AdminServiceImpl(
     val userRepository: UserRepository,
     val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
-) : UserOperations {
-    fun decisionSignup(decisionDto: DecisionDto) {
-        val requestSign = signupRepository.findByIdOrNull(decisionDto.userId)
-            ?: throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
+) : AdminService {
+    override fun decisionSignup(decisionDto: DecisionDto) {
+        val requests = signupRepository.findByUserIdIn(decisionDto.userIds)
 
-        requestSign.decide(decisionDto.requestStatus)
+        validateSignupSize(requests)
+        validateBulkIds(decisionDto.userIds.size, requests.size)
 
-        val event = DecideUserStatusEvent.from(decisionDto.userId, decisionDto.requestStatus, decisionDto.role)
-        eventPublisher.publishEvent(event)
+        requests.forEach { request -> request.decide(decisionDto.requestStatus) }
+
+        eventPublisher.publishEvent(
+            DecideUserStatusEvent(
+                decisionDto.userIds,
+                decisionDto.requestStatus,
+                decisionDto.role
+            )
+        )
     }
 
     @Transactional(readOnly = true)
-    fun findUsersByConditions(conditionDto: ConditionDto, pageable: Pageable): Page<AdminSearchUserDto> {
+    override fun findUsersByConditions(conditionDto: ConditionDto, pageable: Pageable): Page<AdminSearchUserDto> {
         val userInfos = userRepository.searchUsers(conditionDto, pageable)
 
         validatePageBounds(userInfos, pageable)
@@ -79,7 +87,7 @@ class AdminServiceImpl(
         }
     }
 
-    fun validateOverPage(
+    private fun validateOverPage(
         totalPages: Int,
         totalElements: Long,
         requestedPage: Int
@@ -92,6 +100,18 @@ class AdminServiceImpl(
     private fun validateElementZeroNextPage(totalElements: Long, requestedPage: Int) {
         if (totalElements == 0L && requestedPage > 0) {
             throw BusinessException(UserServiceErrorCode.CANT_REQUEST_NEXT_PAGE_IN_ZERO_ELEMENT)
+        }
+    }
+
+    private fun validateBulkIds(requestsSize: Int, entitySize: Int) {
+        if (requestsSize != entitySize) {
+            throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
+        }
+    }
+
+    private fun validateSignupSize(requests: List<RequestSignup>){
+        if(requests.isEmpty()){
+            throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
         }
     }
 }

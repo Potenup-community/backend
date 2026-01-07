@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
+import org.springframework.web.multipart.MaxUploadSizeExceededException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -34,6 +35,13 @@ class GlobalExceptionHandler {
     fun handleBusinessException(e: BusinessException): ResponseEntity<ErrorResponse> {
         val body = ErrorResponse.of(e)
         return ResponseEntity.status(e.httpStatus).body(body)
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException::class)
+    fun handleMaxUploadSizeExceededException(e: MaxUploadSizeExceededException): ResponseEntity<ErrorResponse> {
+        val errorCode = CommonErrorCode.MAX_UPLOAD_SIZE_EXCEEDED
+        val body = ErrorResponse.of(errorCode = errorCode, additionalInfo = "허용된 최대 파일 크기 = " + e.maxUploadSize)
+        return ResponseEntity.status(errorCode.httpStatus).body(body)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
