@@ -10,4 +10,5 @@ interface UserRepository : JpaRepository<User, Long>, CustomUserRepository{
     fun existsUserByEmail(email:String): Boolean
     fun countByStatus(status: UserStatus): Long
     fun findByUserIdIn(userIds: List<UserId>): List<User>
+    fun existsByPhoneNumber(phoneNumber: String): Boolean
 }

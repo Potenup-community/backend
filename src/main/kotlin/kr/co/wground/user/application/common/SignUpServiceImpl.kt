@@ -25,6 +25,7 @@ class SignUpServiceImpl(
         val newUser = request.toUserEntity(email)
 
         validateExistUser(newUser.email)
+        validatePhoneNumber(newUser.phoneNumber)
 
         val savedUser = userRepository.save(newUser)
 
@@ -35,6 +36,12 @@ class SignUpServiceImpl(
     private fun validateExistUser(email: String) {
         if (userRepository.existsUserByEmail(email)) {
             throw BusinessException(UserServiceErrorCode.ALREADY_SIGNED_USER)
+        }
+    }
+
+    private fun validatePhoneNumber(phoneNumber: String) {
+        if(userRepository.existsByPhoneNumber(phoneNumber)){
+            throw BusinessException(UserServiceErrorCode.DUPLICATED_PHONE_NUMBER)
         }
     }
 }
