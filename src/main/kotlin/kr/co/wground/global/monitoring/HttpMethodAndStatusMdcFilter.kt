@@ -30,7 +30,11 @@ class HttpMethodAndStatusMdcFilter : OncePerRequestFilter() {
             MDC.put("elapsed_time_ms", elapsedTimeMs)
 
             // 응답 이후 로그를 한 번 찍어서 http status 및 요청 처리 시간 기록
-            logger.info("HTTP_RESPONSE_LOG")
+            if (response.status % 100 == 5) {
+                logger.error("HTTP_ERROR_RESPONSE")
+            } else {
+                logger.info("HTTP_RESPONSE")
+            }
 
             MDC.clear() // 누수 방지를 위해
         }
