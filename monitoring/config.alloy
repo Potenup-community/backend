@@ -29,6 +29,7 @@ loki.process "parse_and_label" {
       http_route = "",
       http_method = "",
       http_status = "",
+      elapsed_time_ms = "",
     }
   }
 
