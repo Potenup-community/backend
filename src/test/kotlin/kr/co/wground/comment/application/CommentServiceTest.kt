@@ -1,5 +1,7 @@
 package kr.co.wground.comment.application
 
+
+import java.util.Optional
 import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.global.config.resolver.CurrentUserId
@@ -18,22 +20,20 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.anyList
+import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anySet
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.SliceImpl
-import java.util.Optional
-import kotlin.collections.emptyMap
-import kotlin.jvm.java
 
 class CommentServiceTest {
     private val commentRepository = mock(CommentRepository::class.java)
     private val postRepository = mock(PostRepository::class.java)
     private val userRepository = mock(UserRepository::class.java)
     private val reactionQueryService = mock(ReactionQueryService::class.java)
-    lateinit var commentService: CommentService
+    private lateinit var commentService: CommentService
 
     @BeforeEach
     fun setUp() {
@@ -47,8 +47,6 @@ class CommentServiceTest {
         val postId = 1L
         val pageable = PageRequest.of(0, 10)
         val currentUserId = CurrentUserId(1L)
-
-        `when`(postRepository.existsById(postId)).thenReturn(true)
 
         val parent1 = Comment.create(1L, postId, null, "p1")
         val parent2 = Comment.create(2L, postId, null, "p2")
@@ -83,6 +81,9 @@ class CommentServiceTest {
             highlightType = HighlightType.NONE
         )
 
+        `when`(commentRepository.findAllByPostId(postId))
+            .thenReturn(mutableListOf(parent1, parent2))
+
         `when`(commentRepository.findByPostIdAndParentIdIsNull(postId, pageable))
             .thenReturn(SliceImpl(listOf(parent1, parent2), pageable, false))
 
@@ -99,13 +100,102 @@ class CommentServiceTest {
             .thenReturn(emptyMap())
 
         // when
-        val result = commentService.getCommentsByPost(postId, pageable, currentUserId)
+        val result = commentService.getCommentsByPost(postId, currentUserId)
 
         // then
-        assertThat(result.content).hasSize(2)
-        result.content.forEach { dto ->
+        assertThat(result).hasSize(2)
+        result.forEach { dto ->
             assertThat(dto.commentReactionStats)
                 .isEqualTo(CommentReactionStats.emptyOf(dto.commentId))
         }
+    }
+
+    @DisplayName("전체 댓글 조회 시 여러 유저의 트랙 이름이 조회된다.")
+    @Test
+    fun getCommentsByPost_whenTrackNamesByUserIds_shouldLoadTrackName_() {
+        // given
+        givenPostExists(1L)
+        givenComments(
+            listOf(
+                comment(1L, 10L, 1L),
+                comment(2L, 20L, 1L)
+            )
+        )
+        givenUserTrackNames(
+            mapOf(10L to "트랙A", 20L to "트랙B")
+        )
+        givenEmptyReactionStats(1L)
+
+        // when
+        val result = commentService.getCommentsByPost(1L, CurrentUserId(1L))
+
+        // then
+        assertThat(result.first().trackName).isEqualTo("트랙A")
+    }
+
+    private fun givenPostExists(postId: Long) {
+        val post = Post.from(
+            writerId = 1L,
+            topic = Topic.KNOWLEDGE,
+            title = "title",
+            content = "content",
+            highlightType = HighlightType.NONE
+        )
+        `when`(postRepository.findById(postId))
+            .thenReturn(Optional.of(post))
+    }
+
+    private fun givenComments(comments: List<Comment>) {
+        `when`(commentRepository.findAllByPostId(anyLong()))
+            .thenReturn(comments as MutableList<Comment>?)
+
+        val parentIds = comments
+            .filter { it.parentId == null }
+            .map { it.id }
+
+        `when`(commentRepository.findByPostIdAndParentIdIn(anyLong(), anyList()))
+            .thenReturn(comments.filter { it.parentId != null })
+    }
+
+    private fun givenUserTrackNames(userIdToTrack: Map<Long, String>) {
+        val users = userIdToTrack.keys.map {
+            User(
+                userId = it,
+                trackId = it * 10,
+                email = "$it@test.com",
+                name = "user$it",
+                phoneNumber = "010-0000-0000",
+                provider = "GOOGLE",
+                role = UserRole.ADMIN,
+                status = UserStatus.ACTIVE
+            )
+        }
+
+        `when`(userRepository.findAllById(anySet()))
+            .thenReturn(users)
+
+        `when`(userRepository.findUserAndTrackName(anyList()))
+            .thenReturn(userIdToTrack)
+    }
+
+    private fun givenEmptyReactionStats(currentUserId: Long) {
+        `when`(
+            reactionQueryService.getCommentReactionStats(anySet(), eq(currentUserId))
+        ).thenReturn(emptyMap())
+    }
+
+    private fun comment(
+        id: Long,
+        writerId: Long,
+        postId: Long,
+        parentId: Long? = null
+    ): Comment =
+        Comment.create(writerId, postId, parentId, "content")
+            .apply { setTestId(id) }
+
+    private fun Comment.setTestId(id: Long) {
+        val field = Comment::class.java.getDeclaredField("id")
+        field.isAccessible = true
+        field.set(this, id)
     }
 }
