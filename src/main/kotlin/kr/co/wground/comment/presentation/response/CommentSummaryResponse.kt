@@ -22,6 +22,7 @@ data class CommentSummaryResponse(
                 author = CommentAuthorResponse(
                     userId = dto.authorId,
                     name = dto.authorName,
+                    trackName = dto.trackName,
                     profileImageUrl = dto.authorProfileImageUrl,
                 ),
                 createdAt = dto.createdAt,

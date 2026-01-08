@@ -16,9 +16,6 @@ import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -57,36 +54,6 @@ class CommentService(
         comment.deleteContent()
     }
 
-    /**
-     * 댓글 조회(페이징)
-     * 나중에 필요해 질 것 같아서 유지
-     */
-    @Transactional(readOnly = true)
-    fun getCommentsByPost(
-        postId: PostId,
-        pageable: Pageable,
-        userId: CurrentUserId
-    ): Slice<CommentSummaryDto> {
-        validateExistTargetPost(postId)
-
-        val parentSlice = commentRepository.findByPostIdAndParentIdIsNull(postId, pageable)
-        if (parentSlice.isEmpty) return SliceImpl(emptyList(), pageable, parentSlice.hasNext())
-
-        val parentIds = parentSlice.content.map { it.id }
-        val replies = commentRepository.findByPostIdAndParentIdIn(postId, parentIds)
-
-        val allComments = parentSlice.content + replies
-        val usersById = loadUsersByComments(allComments)
-        val reactionStatsByCommentId = fetchReactionCounts(allComments, userId.value)
-
-        val tree = CommentSummaryTreeBuilder.from(allComments, usersById, reactionStatsByCommentId).build()
-
-        return SliceImpl(tree, pageable, parentSlice.hasNext())
-    }
-
-    /**
-     * 댓글 조회(전체 조회)
-     */
     @Transactional(readOnly = true)
     fun getCommentsByPost(
         postId: PostId,
@@ -96,9 +63,12 @@ class CommentService(
 
         val allComments = commentRepository.findAllByPostId(postId)
         val usersById = loadUsersByComments(allComments)
+        val trackNameByUserId = loadTrackNameByUserId(usersById.keys.toList())
         val reactionStatsByCommentId = fetchReactionCounts(allComments, userId.value)
 
-        return CommentSummaryTreeBuilder.from(allComments, usersById, reactionStatsByCommentId).build()
+        return CommentSummaryTreeBuilder
+            .from(allComments, usersById, trackNameByUserId, reactionStatsByCommentId)
+            .build()
     }
 
     private fun validateExistTargetPost(postId: PostId) {
@@ -131,6 +101,11 @@ class CommentService(
     ): Map<UserId, User> {
         val writerIds = comments.map { it.writerId }.toSet()
         return userRepository.findAllById(writerIds).associateBy { it.userId }
+    }
+
+    private fun loadTrackNameByUserId(userIds: List<UserId>): Map<UserId, String?> {
+        if (userIds.isEmpty()) return emptyMap()
+        return userRepository.findUserAndTrackName(userIds)
     }
 
     private fun fetchReactionCounts(comments: List<Comment>, userId: UserId): Map<CommentId, CommentReactionStats> {
