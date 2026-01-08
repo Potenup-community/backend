@@ -13,11 +13,13 @@ import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserInfoDto
+import kr.co.wground.user.utils.email.event.VerificationEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 @Transactional
@@ -42,6 +44,10 @@ class AdminServiceImpl(
                 decisionDto.role
             )
         )
+
+        if (decisionDto.requestStatus == UserSignupStatus.ACCEPTED) {
+            publishApprovalEmailEvents(decisionDto.userIds)
+        }
     }
 
     @Transactional(readOnly = true)
@@ -69,6 +75,24 @@ class AdminServiceImpl(
                 createdAt = userInfo.createdAt
             )
         }
+    }
+
+    private fun publishApprovalEmailEvents(userIds: List<Long>) {
+        val users = userRepository.findAllById(userIds)
+        if (users.isEmpty()) return
+
+        val trackIds = users.map { it.trackId }.toSet()
+        val tracks = trackRepository.findAllById(trackIds).associateBy { it.trackId }
+
+        val targets = users.map { user ->
+            VerificationEvent.VerificationTarget(
+                email = user.email,
+                username = user.name,
+                trackName = tracks[user.trackId]?.trackName ?: "PotenUp",
+                approveAt = LocalDateTime.now()
+            )
+        }
+        eventPublisher.publishEvent(VerificationEvent(targets))
     }
 
     private fun validatePageBounds(userInfos: Page<UserInfoDto>, pageable: Pageable) {
@@ -109,8 +133,8 @@ class AdminServiceImpl(
         }
     }
 
-    private fun validateSignupSize(requests: List<RequestSignup>){
-        if(requests.isEmpty()){
+    private fun validateSignupSize(requests: List<RequestSignup>) {
+        if (requests.isEmpty()) {
             throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
         }
     }
