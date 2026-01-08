@@ -78,23 +78,19 @@ class CustomUserRepositoryImpl(
         return countQuery
     }
 
-    override fun findUserAndTrackName(
-        userId: UserId
-    ): Pair<String?, String?> {
-        val result = queryFactory
-            .select(
-                user.name,
-                track.trackName
-            )
+    override fun findUserAndTrackName(userIds: List<UserId>): Map<Long, String?> {
+        val results = queryFactory
+            .select(user.userId, track.trackName)
             .from(user)
             .leftJoin(track).on(user.trackId.eq(track.trackId))
-            .where(user.userId.eq(userId))
-            .fetchOne()
+            .where(user.userId.`in`(userIds))
+            .fetch()
 
-        return Pair(
-            result?.get(user.name),
-            result?.get(track.trackName)
-        )
+        val resultMap = results.associate {
+            (it.get(user.userId) ?: 0L) to it.get(track.trackName)
+        }
+
+        return userIds.associateWith { id -> resultMap[id] }
     }
 
 
