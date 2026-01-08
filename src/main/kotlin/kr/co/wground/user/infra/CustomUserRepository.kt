@@ -8,4 +8,5 @@ import org.springframework.data.domain.Pageable
 
 interface CustomUserRepository {
     fun searchUsers(condition: ConditionDto, pageable: Pageable): Page<UserInfoDto>
+    fun findUserAndTrackName(userId: UserId): Pair<String?, String?>
 }
