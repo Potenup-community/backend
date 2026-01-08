@@ -2,16 +2,20 @@ package kr.co.wground.user.infra
 
 import com.querydsl.core.types.Projections
 import com.querydsl.core.types.dsl.BooleanExpression
+import com.querydsl.core.types.dsl.CaseBuilder
+import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.jpa.impl.JPAQuery
 import com.querydsl.jpa.impl.JPAQueryFactory
-import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.operations.dto.ConditionDto
+import kr.co.wground.user.application.operations.dto.RoleCount
+import kr.co.wground.user.application.operations.dto.SignupCount
+import kr.co.wground.user.application.operations.dto.StatusCount
 import kr.co.wground.user.domain.QRequestSignup.requestSignup
-import kr.co.wground.user.domain.QUser
 import kr.co.wground.user.domain.QUser.user
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
+import kr.co.wground.user.infra.dto.UserCountDto
 import kr.co.wground.user.infra.dto.UserInfoDto
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -60,6 +64,86 @@ class CustomUserRepositoryImpl(
         return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchOne() ?: 0L }
     }
 
+    override fun calculateCounts(conditionDto: ConditionDto): UserCountDto {
+        val basePredicates = predicates(conditionDto)
+
+        return UserCountDto(
+            totalCount = fetchTotalCount(basePredicates),
+            signupSummary = fetchSignupSummary(conditionDto),
+            statusSummary = conditionDto.status?.let { fetchStatusSummary(conditionDto) },
+            roleSummary = conditionDto.role?.let { fetchRoleSummary(conditionDto) },
+            academicSummary = null
+        )
+    }
+
+    private fun fetchTotalCount(predicates: Array<BooleanExpression?>): Long {
+        return createBaseQuery()
+            .select(user.count())
+            .where(*predicates)
+            .fetchOne() ?: 0L
+    }
+
+    private fun fetchSignupSummary(condition: ConditionDto): SignupCount {
+        val signupPredicates = predicates(condition.copy(requestStatus = null))
+
+        return createBaseQuery()
+            .select(
+                Projections.constructor(
+                    SignupCount::class.java,
+                    countIf(requestSignup.requestStatus.eq(UserSignupStatus.PENDING)),
+                    countIf(requestSignup.requestStatus.eq(UserSignupStatus.ACCEPTED)),
+                    countIf(requestSignup.requestStatus.eq(UserSignupStatus.REJECTED))
+                )
+            )
+            .where(*signupPredicates)
+            .fetchOne() ?: SignupCount(0, 0, 0)
+    }
+
+    private fun fetchStatusSummary(condition: ConditionDto): StatusCount? {
+        val statusPredicates = predicates(condition.copy(status = null))
+
+        return createBaseQuery()
+            .select(
+                Projections.constructor(
+                    StatusCount::class.java,
+                    countIf(user.status.eq(UserStatus.ACTIVE)),
+                    countIf(user.status.eq(UserStatus.BLOCKED))
+                )
+            )
+            .where(*statusPredicates)
+            .fetchOne()
+    }
+
+    private fun fetchRoleSummary(condition: ConditionDto): RoleCount? {
+        val rolePredicates = predicates(condition.copy(role = null))
+
+        return createBaseQuery()
+            .select(
+                Projections.constructor(
+                    RoleCount::class.java,
+                    countIf(user.role.eq(UserRole.MEMBER)),
+                    countIf(user.role.eq(UserRole.INSTRUCTOR)),
+                    countIf(user.role.eq(UserRole.ADMIN))
+                )
+            )
+            .where(*rolePredicates)
+            .fetchOne()
+    }
+
+
+    private fun createBaseQuery(): JPAQuery<*> {
+        return queryFactory
+            .from(user)
+            .leftJoin(requestSignup).on(user.userId.eq(requestSignup.userId))
+    }
+
+    private fun countIf(condition: BooleanExpression): NumberExpression<Long> {
+        return CaseBuilder()
+            .`when`(condition).then(1L)
+            .otherwise(0L)
+            .sum()
+    }
+
     private fun getUserCountQuery(
         condition: ConditionDto,
         predicates: Array<BooleanExpression?>
@@ -91,7 +175,7 @@ class CustomUserRepositoryImpl(
     }
 
     private fun providerEquals(provider: String?): BooleanExpression? {
-        return if(!provider.isNullOrBlank()) user.provider.contains(provider) else null
+        return if (!provider.isNullOrBlank()) user.provider.contains(provider) else null
     }
 
     private fun nameContains(name: String?): BooleanExpression? {

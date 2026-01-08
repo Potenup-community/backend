@@ -7,6 +7,7 @@ import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.DecisionDto
+import kr.co.wground.user.application.operations.dto.UserConditionCountDto
 import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.domain.RequestSignup
 import kr.co.wground.user.domain.constant.UserSignupStatus
@@ -69,6 +70,18 @@ class AdminServiceImpl(
                 createdAt = userInfo.createdAt
             )
         }
+    }
+
+    @Transactional(readOnly = true)
+    override fun countUserWithCondition(conditionDto: ConditionDto): UserConditionCountDto{
+        val counts = userRepository.calculateCounts(conditionDto)
+        return UserConditionCountDto(
+            totalCount = counts.totalCount,
+            signupSummary = counts.signupSummary,
+            roleSummary = counts.roleSummary,
+            statusSummary = counts.statusSummary,
+            academicSummary = counts.academicSummary
+        )
     }
 
     private fun validatePageBounds(userInfos: Page<UserInfoDto>, pageable: Pageable) {
