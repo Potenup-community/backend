@@ -86,9 +86,12 @@ class CustomUserRepositoryImpl(
             .where(user.userId.`in`(userIds))
             .fetch()
 
-        val resultMap = results.associate {
-            (it.get(user.userId) ?: 0L) to it.get(track.trackName)
-        }
+        val resultMap = results.mapNotNull { result ->
+            val id = result.get(user.userId)
+            val name = result.get(track.trackName)
+
+            if (id != null && name != null) id to name else null
+        }.toMap()
 
         return userIds.associateWith { id -> resultMap[id] }
     }
