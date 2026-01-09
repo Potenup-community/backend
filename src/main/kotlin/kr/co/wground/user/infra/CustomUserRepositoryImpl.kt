@@ -5,9 +5,9 @@ import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQuery
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.global.common.UserId
+import kr.co.wground.track.domain.QTrack.track
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.domain.QRequestSignup.requestSignup
-import kr.co.wground.user.domain.QUser
 import kr.co.wground.user.domain.QUser.user
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
@@ -55,7 +55,7 @@ class CustomUserRepositoryImpl(
             .orderBy(user.createdAt.desc())
             .fetch()
 
-        val countQuery = getUserCountQuery(condition,predicatesArray)
+        val countQuery = getUserCountQuery(condition, predicatesArray)
 
         return PageableExecutionUtils.getPage(content, pageable) { countQuery.fetchOne() ?: 0L }
     }
@@ -78,6 +78,22 @@ class CustomUserRepositoryImpl(
         return countQuery
     }
 
+    override fun findUserAndTrackName(userIds: List<UserId>): Map<Long, String?> {
+        val results = queryFactory
+            .select(user.userId, track.trackName)
+            .from(user)
+            .leftJoin(track).on(user.trackId.eq(track.trackId))
+            .where(user.userId.`in`(userIds))
+            .fetch()
+
+        val resultMap = results.associate {
+            (it.get(user.userId) ?: 0L) to it.get(track.trackName)
+        }
+
+        return userIds.associateWith { id -> resultMap[id] }
+    }
+
+
     private fun predicates(condition: ConditionDto): Array<BooleanExpression?> {
         return arrayOf(
             nameContains(condition.name),
@@ -91,7 +107,7 @@ class CustomUserRepositoryImpl(
     }
 
     private fun providerEquals(provider: String?): BooleanExpression? {
-        return if(!provider.isNullOrBlank()) user.provider.contains(provider) else null
+        return if (!provider.isNullOrBlank()) user.provider.contains(provider) else null
     }
 
     private fun nameContains(name: String?): BooleanExpression? {
