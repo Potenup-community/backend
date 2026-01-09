@@ -103,7 +103,7 @@ class CommentService(
         return userRepository.findAllById(writerIds).associateBy { it.userId }
     }
 
-    private fun loadTrackNameByUserId(userIds: List<UserId>): Map<UserId, String?> {
+    private fun loadTrackNameByUserId(userIds: List<UserId>): Map<UserId, String> {
         if (userIds.isEmpty()) return emptyMap()
         return userRepository.findUserAndTrackName(userIds)
     }
