@@ -133,8 +133,8 @@ class CustomUserRepositoryImpl(
                 Projections.constructor(
                     AcademicCount::class.java,
                     Expressions.constant(true),
-                    countIf(track.trackStatus.eq(TrackStatus.ENROLLED)),
-                    countIf(track.trackStatus.eq(TrackStatus.GRADUATED))
+                    countIf(track.trackStatus.eq(TrackStatus.GRADUATED)),
+                    countIf(track.trackStatus.eq(TrackStatus.ENROLLED))
                 )
             )
             .where(*trackStatusPredicates)
