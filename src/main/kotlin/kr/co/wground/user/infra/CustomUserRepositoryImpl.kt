@@ -12,6 +12,7 @@ import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.user.application.operations.constant.COUNT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.constant.ID_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.dto.AcademicCount
+import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.RoleCount
 import kr.co.wground.user.application.operations.dto.SignupCount
@@ -190,6 +191,22 @@ class CustomUserRepositoryImpl(
 
         return countQuery
     }
+
+    override fun findUserAndTrackName(userIds: List<UserId>): Map<Long, String?> {
+        val results = queryFactory
+            .select(user.userId, track.trackName)
+            .from(user)
+            .leftJoin(track).on(user.trackId.eq(track.trackId))
+            .where(user.userId.`in`(userIds))
+            .fetch()
+
+        val resultMap = results.associate {
+            (it.get(user.userId) ?: 0L) to it.get(track.trackName)
+        }
+
+        return userIds.associateWith { id -> resultMap[id] }
+    }
+
 
     private fun predicates(condition: ConditionDto): Array<BooleanExpression?> {
         return arrayOf(
