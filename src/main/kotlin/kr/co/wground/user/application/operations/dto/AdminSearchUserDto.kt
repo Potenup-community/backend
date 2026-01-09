@@ -1,6 +1,7 @@
 package kr.co.wground.user.application.operations.dto
 
 import kr.co.wground.global.common.UserId
+import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
@@ -13,6 +14,7 @@ data class AdminSearchUserDto(
     val phoneNumber: String,
     val trackName: String,
     val role: UserRole,
+    val trackStatus: TrackStatus,
     val status: UserStatus,
     val provider: String,
     val requestStatus: UserSignupStatus?,

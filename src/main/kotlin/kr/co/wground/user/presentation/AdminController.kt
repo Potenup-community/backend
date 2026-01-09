@@ -8,6 +8,7 @@ import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.DecisionDto
 import kr.co.wground.user.presentation.request.MultipleDecisionRequest
+import kr.co.wground.user.presentation.response.UserCountResponse
 import kr.co.wground.user.presentation.response.UserPageResponse
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -50,5 +51,11 @@ class AdminController(
         val userInfos = adminService.findUsersByConditions(ConditionDto.from(condition), pageable)
         val response = UserPageResponse.fromAdminSearchUserDto(userInfos)
         return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/users/count")
+    fun getUserCount(@ModelAttribute condition: UserSearchRequest): ResponseEntity<UserCountResponse>{
+        val userCount = adminService.countUserWithCondition(ConditionDto.from(condition))
+        return ResponseEntity.ok(UserCountResponse.from(userCount))
     }
 }
