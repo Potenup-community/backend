@@ -7,8 +7,8 @@ import kr.co.wground.user.application.operations.dto.StatusCount
 
 data class UserCountDto(
     val totalCount: Long,
-    val signupSummary: SignupCount? = null,
-    val roleSummary: RoleCount? = null,
-    val statusSummary: StatusCount? = null,
-    val academicSummary: AcademicCount? = null
+    val signupSummary: SignupCount,
+    val roleSummary: RoleCount,
+    val statusSummary: StatusCount,
+    val academicSummary: AcademicCount
 )

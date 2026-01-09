@@ -1,16 +1,13 @@
 package kr.co.wground.user.application.operations
 
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.DecisionDto
 import kr.co.wground.user.application.operations.dto.UserConditionCountDto
 import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.domain.RequestSignup
-import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserInfoDto
@@ -25,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional
 class AdminServiceImpl(
     val signupRepository: RequestSignupRepository,
     val userRepository: UserRepository,
-    val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : AdminService {
     override fun decisionSignup(decisionDto: DecisionDto) {
@@ -51,20 +47,16 @@ class AdminServiceImpl(
 
         validatePageBounds(userInfos, pageable)
 
-        val trackIds = userInfos.content.map { it.trackId }.toSet()
-        val tracks = trackRepository.findAllById(trackIds)
-
-        val trackNameMap = tracks.associate { it.trackId to it.trackName }
-
         return userInfos.map { userInfo ->
             AdminSearchUserDto(
                 userId = userInfo.userId,
                 name = userInfo.name,
                 email = userInfo.email,
                 phoneNumber = userInfo.phoneNumber,
-                trackName = (trackNameMap[userInfo.trackId] ?: NOT_ASSOCIATE),
+                trackName = userInfo.trackName,
                 role = userInfo.role,
                 status = userInfo.status,
+                trackStatus = userInfo.trackStatus,
                 provider = userInfo.provider,
                 requestStatus = userInfo.requestStatus,
                 createdAt = userInfo.createdAt
