@@ -3,10 +3,11 @@ package kr.co.wground.user.application.operations
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
+import kr.co.wground.user.application.operations.constant.COUNT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.DecisionDto
+import kr.co.wground.user.application.operations.dto.UserConditionCountDto
 import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.domain.RequestSignup
 import kr.co.wground.user.domain.constant.UserSignupStatus
@@ -19,7 +20,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
 
 @Service
 @Transactional
@@ -56,20 +56,16 @@ class AdminServiceImpl(
 
         validatePageBounds(userInfos, pageable)
 
-        val trackIds = userInfos.content.map { it.trackId }.toSet()
-        val tracks = trackRepository.findAllById(trackIds)
-
-        val trackNameMap = tracks.associate { it.trackId to it.trackName }
-
         return userInfos.map { userInfo ->
             AdminSearchUserDto(
                 userId = userInfo.userId,
                 name = userInfo.name,
                 email = userInfo.email,
                 phoneNumber = userInfo.phoneNumber,
-                trackName = (trackNameMap[userInfo.trackId] ?: NOT_ASSOCIATE),
+                trackName = userInfo.trackName,
                 role = userInfo.role,
                 status = userInfo.status,
+                trackStatus = userInfo.trackStatus,
                 provider = userInfo.provider,
                 requestStatus = userInfo.requestStatus,
                 createdAt = userInfo.createdAt
@@ -77,22 +73,23 @@ class AdminServiceImpl(
         }
     }
 
+    @Transactional(readOnly = true)
+    override fun countUserWithCondition(conditionDto: ConditionDto): UserConditionCountDto {
+        val counts = userRepository.calculateCounts(conditionDto)
+        return UserConditionCountDto(
+            totalCount = counts.totalCount,
+            signupSummary = counts.signupSummary,
+            roleSummary = counts.roleSummary,
+            statusSummary = counts.statusSummary,
+            academicSummary = counts.academicSummary
+        )
+    }
+
     private fun publishApprovalEmailEvents(userIds: List<Long>) {
-        val users = userRepository.findAllById(userIds)
-        if (users.isEmpty()) return
+        val users = userRepository.findAllApprovalTargets(userIds)
+        if (users.isEmpty()) throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        val trackIds = users.map { it.trackId }.toSet()
-        val tracks = trackRepository.findAllById(trackIds).associateBy { it.trackId }
-
-        val targets = users.map { user ->
-            VerificationEvent.VerificationTarget(
-                email = user.email,
-                username = user.name,
-                trackName = tracks[user.trackId]?.trackName ?: "PotenUp",
-                approveAt = LocalDateTime.now()
-            )
-        }
-        eventPublisher.publishEvent(VerificationEvent(targets))
+        eventPublisher.publishEvent(VerificationEvent(users))
     }
 
     private fun validatePageBounds(userInfos: Page<UserInfoDto>, pageable: Pageable) {
@@ -116,13 +113,13 @@ class AdminServiceImpl(
         totalElements: Long,
         requestedPage: Int
     ) {
-        if (totalElements > 0 && requestedPage >= totalPages) {
+        if (totalElements > COUNT_DEFAULT_VALUE && requestedPage >= totalPages) {
             throw BusinessException(UserServiceErrorCode.PAGE_NUMBER_IS_OVER_TOTAL_PAGE)
         }
     }
 
     private fun validateElementZeroNextPage(totalElements: Long, requestedPage: Int) {
-        if (totalElements == 0L && requestedPage > 0) {
+        if (totalElements == COUNT_DEFAULT_VALUE && requestedPage > COUNT_DEFAULT_VALUE) {
             throw BusinessException(UserServiceErrorCode.CANT_REQUEST_NEXT_PAGE_IN_ZERO_ELEMENT)
         }
     }
