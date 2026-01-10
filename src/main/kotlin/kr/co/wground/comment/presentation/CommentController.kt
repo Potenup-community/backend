@@ -5,8 +5,8 @@ import java.net.URI
 import kr.co.wground.comment.application.CommentService
 import kr.co.wground.comment.presentation.request.CommentCreateRequest
 import kr.co.wground.comment.presentation.request.CommentUpdateRequest
-import kr.co.wground.comment.presentation.response.CommentsResponse
 import kr.co.wground.comment.presentation.response.CommentSummaryResponse
+import kr.co.wground.comment.presentation.response.CommentsResponse
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
@@ -24,9 +24,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/comments")
 class CommentController(
     private val commentService: CommentService,
-) {
+) : CommentApi {
     @PostMapping
-    fun writeComment(
+    override fun writeComment(
         @Valid @RequestBody request: CommentCreateRequest,
         writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
@@ -36,7 +36,7 @@ class CommentController(
     }
 
     @PutMapping("/{id}")
-    fun updateComment(
+    override fun updateComment(
         @PathVariable id: CommentId,
         @Valid @RequestBody request: CommentUpdateRequest,
         writerId: CurrentUserId,
@@ -47,7 +47,7 @@ class CommentController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteComment(
+    override fun deleteComment(
         @PathVariable id: CommentId,
         writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
@@ -56,7 +56,7 @@ class CommentController(
     }
 
     @GetMapping("/{postId}")
-    fun getComments(
+    override fun getComments(
         @PathVariable postId: PostId,
         writerId: CurrentUserId
     ): ResponseEntity<CommentsResponse> {
