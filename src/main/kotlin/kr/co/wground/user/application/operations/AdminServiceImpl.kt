@@ -4,6 +4,7 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.constant.COUNT_DEFAULT_VALUE
+import kr.co.wground.user.application.operations.constant.ELEMENT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.DecisionDto
@@ -45,7 +46,7 @@ class AdminServiceImpl(
             )
         )
 
-        if (decisionDto.requestStatus == UserSignupStatus.ACCEPTED) {
+        if (UserSignupStatus.isAccepted(decisionDto.requestStatus)) {
             publishApprovalEmailEvents(decisionDto.userIds)
         }
     }
@@ -113,13 +114,13 @@ class AdminServiceImpl(
         totalElements: Long,
         requestedPage: Int
     ) {
-        if (totalElements > COUNT_DEFAULT_VALUE && requestedPage >= totalPages) {
+        if (totalElements > ELEMENT_DEFAULT_VALUE && requestedPage >= totalPages) {
             throw BusinessException(UserServiceErrorCode.PAGE_NUMBER_IS_OVER_TOTAL_PAGE)
         }
     }
 
     private fun validateElementZeroNextPage(totalElements: Long, requestedPage: Int) {
-        if (totalElements == COUNT_DEFAULT_VALUE && requestedPage > COUNT_DEFAULT_VALUE) {
+        if (totalElements == ELEMENT_DEFAULT_VALUE && requestedPage > ELEMENT_DEFAULT_VALUE) {
             throw BusinessException(UserServiceErrorCode.CANT_REQUEST_NEXT_PAGE_IN_ZERO_ELEMENT)
         }
     }
