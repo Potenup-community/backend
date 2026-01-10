@@ -1,16 +1,21 @@
 package kr.co.wground.user.application.operations
 
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.application.operations.constant.COUNT_DEFAULT_VALUE
+import kr.co.wground.user.application.operations.constant.ELEMENT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.DecisionDto
 import kr.co.wground.user.application.operations.dto.UserConditionCountDto
 import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.domain.RequestSignup
+import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.infra.RequestSignupRepository
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserInfoDto
+import kr.co.wground.user.utils.email.event.VerificationEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -22,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 class AdminServiceImpl(
     val signupRepository: RequestSignupRepository,
     val userRepository: UserRepository,
+    val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : AdminService {
     override fun decisionSignup(decisionDto: DecisionDto) {
@@ -39,6 +45,10 @@ class AdminServiceImpl(
                 decisionDto.role
             )
         )
+
+        if (UserSignupStatus.isAccepted(decisionDto.requestStatus)) {
+            publishApprovalEmailEvents(decisionDto.userIds)
+        }
     }
 
     @Transactional(readOnly = true)
@@ -65,7 +75,7 @@ class AdminServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun countUserWithCondition(conditionDto: ConditionDto): UserConditionCountDto{
+    override fun countUserWithCondition(conditionDto: ConditionDto): UserConditionCountDto {
         val counts = userRepository.calculateCounts(conditionDto)
         return UserConditionCountDto(
             totalCount = counts.totalCount,
@@ -74,6 +84,13 @@ class AdminServiceImpl(
             statusSummary = counts.statusSummary,
             academicSummary = counts.academicSummary
         )
+    }
+
+    private fun publishApprovalEmailEvents(userIds: List<Long>) {
+        val users = userRepository.findAllApprovalTargets(userIds)
+        if (users.isEmpty()) throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+
+        eventPublisher.publishEvent(VerificationEvent(users))
     }
 
     private fun validatePageBounds(userInfos: Page<UserInfoDto>, pageable: Pageable) {
@@ -97,13 +114,13 @@ class AdminServiceImpl(
         totalElements: Long,
         requestedPage: Int
     ) {
-        if (totalElements > 0 && requestedPage >= totalPages) {
+        if (totalElements > ELEMENT_DEFAULT_VALUE && requestedPage >= totalPages) {
             throw BusinessException(UserServiceErrorCode.PAGE_NUMBER_IS_OVER_TOTAL_PAGE)
         }
     }
 
     private fun validateElementZeroNextPage(totalElements: Long, requestedPage: Int) {
-        if (totalElements == 0L && requestedPage > 0) {
+        if (totalElements == ELEMENT_DEFAULT_VALUE && requestedPage > ELEMENT_DEFAULT_VALUE) {
             throw BusinessException(UserServiceErrorCode.CANT_REQUEST_NEXT_PAGE_IN_ZERO_ELEMENT)
         }
     }
@@ -114,8 +131,8 @@ class AdminServiceImpl(
         }
     }
 
-    private fun validateSignupSize(requests: List<RequestSignup>){
-        if(requests.isEmpty()){
+    private fun validateSignupSize(requests: List<RequestSignup>) {
+        if (requests.isEmpty()) {
             throw BusinessException(UserServiceErrorCode.REQUEST_SIGNUP_NOT_FOUND)
         }
     }
