@@ -13,7 +13,7 @@ import kr.co.wground.global.common.RecipientId
 import kr.co.wground.notification.domain.enums.NotificationStatus
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.vo.NotificationContent
-import java.time.Instant
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
@@ -30,8 +30,8 @@ class Notification(
     val type: NotificationType,
     status: NotificationStatus = NotificationStatus.UNREAD,
     @Column(updatable = false, nullable = false)
-    val createdAt: Instant = Instant.now(),
-    val expiresAt: Instant? //필요 할지 확인 필요
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val expiresAt: LocalDateTime? //필요 할지 확인 필요
 ) {
     var status = status
     protected set
@@ -41,6 +41,6 @@ class Notification(
         status = NotificationStatus.READ
     }
 
-    fun isExpired(now: Instant): Boolean =
+    fun isExpired(now: LocalDateTime): Boolean =
         expiresAt?.isBefore(now) ?: false
 }
