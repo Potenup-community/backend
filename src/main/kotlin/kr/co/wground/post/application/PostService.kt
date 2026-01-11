@@ -1,5 +1,6 @@
 package kr.co.wground.post.application
 
+import java.util.*
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
@@ -15,25 +16,24 @@ import kr.co.wground.post.application.dto.toDtos
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.post.exception.PostErrorCode
-import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
-import kr.co.wground.user.domain.User
-import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.infra.UserQueryRepository
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 @Service
 @Transactional
 class PostService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
-    private val userRepository: UserRepository,
+    private val userRepository: UserQueryRepository,
     private val postReactionRepository: PostReactionJpaRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) {
@@ -110,17 +110,17 @@ class PostService(
 
         val postIds = posts.map { it.id }.toSet()
         val writerIds = posts.map { it.writerId }.toSet()
-        
-        val writers = userRepository.findAllById(writerIds)
+
+        val writersById = userRepository.findUserDisplayInfos(writerIds.toList())
         val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
         val commentsCountById = commentRepository.countByPostIds(postIds.toList())
 
-        return posts.toDtos(writers, commentsCountById, postReactionStats)
+        return posts.toDtos(writersById, commentsCountById, postReactionStats)
     }
 
     fun getPostDetail(id: PostId): PostDetailDto {
         val foundCourse = findPostByIdOrThrow(id)
-        val writer = findUserByIdOrThrow(foundCourse.writerId)
+        val writer = findUserDisplayInfoByIdOrThrow(foundCourse.writerId)
 
         val reactionsByPostId = postReactionRepository.findPostReactionsByPostId(id)
 
@@ -134,8 +134,8 @@ class PostService(
         )
     }
 
-    private fun findUserByIdOrThrow(id: WriterId): User {
-        return userRepository.findByIdOrNull(id) ?:
-            throw BusinessException(PostErrorCode.NOT_FOUND_WRITER)
+    private fun findUserDisplayInfoByIdOrThrow(id: WriterId): UserDisplayInfoDto {
+        return userRepository.findUserDisplayInfos(listOf(id))[id]
+            ?: throw BusinessException(PostErrorCode.NOT_FOUND_WRITER)
     }
 }
