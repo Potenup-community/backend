@@ -1,5 +1,6 @@
 package kr.co.wground.comment.application
 
+import java.util.*
 import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.global.config.resolver.CurrentUserId
@@ -12,7 +13,8 @@ import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserStatus
-import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.infra.UserQueryRepository
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -24,14 +26,11 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.SliceImpl
-import java.util.Optional
-import kotlin.collections.emptyMap
-import kotlin.jvm.java
 
 class CommentServiceTest {
     private val commentRepository = mock(CommentRepository::class.java)
     private val postRepository = mock(PostRepository::class.java)
-    private val userRepository = mock(UserRepository::class.java)
+    private val userRepository = mock(UserQueryRepository::class.java)
     private val reactionQueryService = mock(ReactionQueryService::class.java)
     lateinit var commentService: CommentService
 
@@ -92,8 +91,23 @@ class CommentServiceTest {
         `when`(postRepository.findById(postId))
             .thenReturn(Optional.of(post))
 
-        `when`(userRepository.findAllById(anyList()))
-            .thenReturn(listOf(user1, user2))
+        `when`(userRepository.findUserDisplayInfos(anyList()))
+            .thenReturn(
+                mapOf(
+                    user1.userId to UserDisplayInfoDto(
+                        userId = user1.userId,
+                        name = user1.name,
+                        profileImageUrl = user1.accessProfile(),
+                        trackName = "트랙",
+                    ),
+                    user2.userId to UserDisplayInfoDto(
+                        userId = user2.userId,
+                        name = user2.name,
+                        profileImageUrl = user2.accessProfile(),
+                        trackName = "트랙",
+                    ),
+                )
+            )
 
         `when`(reactionQueryService.getCommentReactionStats(anySet(), eq(currentUserId.value)))
             .thenReturn(emptyMap())
