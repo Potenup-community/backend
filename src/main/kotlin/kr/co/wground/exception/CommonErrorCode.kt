@@ -17,4 +17,7 @@ enum class CommonErrorCode(
 
     // Server Error
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "I-0001", "서버 측에 오류가 발생하였습니다."),
+
+    //DB
+    ORDER_BY_PROPERTY_NOT_FOUND(HttpStatus.BAD_REQUEST, "D-0001", "Given sort order property is not found."),
 }
