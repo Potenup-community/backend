@@ -27,9 +27,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/admin")
 class AdminController(
     private val adminService: AdminService
-) {
+): AdminApi {
     @PutMapping("/users/{userId}/decision")
-    fun decisionSignUp(
+    override fun decisionSignUp(
         @PathVariable userId: UserId,
         @RequestBody request: DecisionStatusRequest
     ): ResponseEntity<Unit> {
@@ -38,13 +38,13 @@ class AdminController(
     }
 
     @PutMapping("/users/decisions")
-    fun multipleDecision(@RequestBody request: MultipleDecisionRequest): ResponseEntity<Unit> {
+    override fun multipleDecision(@RequestBody request: MultipleDecisionRequest): ResponseEntity<Unit> {
         adminService.decisionSignup(DecisionDto.from(request))
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/users")
-    fun getAllUsers(
+    override fun getAllUsers(
         @ModelAttribute condition: UserSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): ResponseEntity<UserPageResponse<AdminSearchUserDto>> {
@@ -54,7 +54,7 @@ class AdminController(
     }
 
     @GetMapping("/users/count")
-    fun getUserCount(@ModelAttribute condition: UserSearchRequest): ResponseEntity<UserCountResponse>{
+    override fun getUserCount(@ModelAttribute condition: UserSearchRequest): ResponseEntity<UserCountResponse>{
         val userCount = adminService.countUserWithCondition(ConditionDto.from(condition))
         return ResponseEntity.ok(UserCountResponse.from(userCount))
     }

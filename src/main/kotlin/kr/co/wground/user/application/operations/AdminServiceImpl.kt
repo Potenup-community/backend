@@ -3,7 +3,6 @@ package kr.co.wground.user.application.operations
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.application.operations.constant.COUNT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.constant.ELEMENT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto

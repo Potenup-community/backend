@@ -20,15 +20,15 @@ class UserController(
     private val userService : UserService,
     private val signUpService: SignUpService,
 
-){
+): UserApi{
     @GetMapping("/myInfo")
-    fun getMyInfo(userId : CurrentUserId) : ResponseEntity<UserResponse> {
+    override fun getMyInfo(userId : CurrentUserId) : ResponseEntity<UserResponse> {
         val response = userService.getMyInfo(userId.value)
         return ResponseEntity.ok(UserResponse.from(response))
     }
 
     @PostMapping("/signup")
-    fun requestSignUp(@Valid @RequestBody requestSignup: SignUpRequest): ResponseEntity<Unit> {
+    override fun requestSignUp(@Valid @RequestBody requestSignup: SignUpRequest): ResponseEntity<Unit> {
         signUpService.addUser(requestSignup)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }

@@ -25,15 +25,15 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/admin/tracks")
 class TrackController(
     private val trackService: TrackService,
-) {
+): TrackApi {
     @PostMapping
-    fun createTrack(@RequestBody @Valid createTrack: CreateTrackRequest): ResponseEntity<TrackListResponse<TrackQueryDto>> {
+    override fun createTrack(@RequestBody @Valid createTrack: CreateTrackRequest): ResponseEntity<TrackListResponse<TrackQueryDto>> {
         val response = trackService.createTrack(createTrack.toCreateTrackDto())
         return ResponseEntity.status(HttpStatus.CREATED).body(TrackListResponse(response))
     }
 
     @PatchMapping("/{id}")
-    fun updateTrack(
+    override fun updateTrack(
         @PathVariable("id") trackId: TrackId,
         @RequestBody @Valid updateTrack: UpdateTrackRequest
     ): ResponseEntity<Unit> {
@@ -42,7 +42,7 @@ class TrackController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteTrack(
+    override fun deleteTrack(
         @PathVariable("id") trackId: TrackId,
     ): ResponseEntity<Unit> {
         trackService.deleteTrack(trackId)
@@ -50,14 +50,14 @@ class TrackController(
     }
 
     @GetMapping
-    fun getTracksExceptAdmin(): ResponseEntity<TrackListResponse<TrackQueryDto>> {
+    override fun getTracksExceptAdmin(): ResponseEntity<TrackListResponse<TrackQueryDto>> {
         val responses = trackService.getTracksExceptAdmin()
         return ResponseEntity.ok(TrackListResponse(responses))
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all")
-    fun getAllTracks(): ResponseEntity<TrackListResponse<TrackQueryDto>> {
+    override fun getAllTracks(): ResponseEntity<TrackListResponse<TrackQueryDto>> {
         val responses = trackService.getAllTrackResponses()
         return ResponseEntity.ok(TrackListResponse(responses))
     }
