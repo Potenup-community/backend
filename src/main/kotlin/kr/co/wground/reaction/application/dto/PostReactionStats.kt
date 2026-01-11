@@ -10,9 +10,9 @@ data class PostReactionStats(
     val summaries: Map<ReactionType, ReactionSummary>
 ) {
     companion object {
-        fun emptyOf(commentId: CommentId) : PostReactionStats {
+        fun emptyOf(postId: PostId) : PostReactionStats {
             return PostReactionStats(
-                postId = commentId,
+                postId = postId,
                 totalCount = 0,
                 summaries = emptyMap()
             )
