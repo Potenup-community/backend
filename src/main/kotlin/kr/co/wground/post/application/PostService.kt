@@ -2,6 +2,7 @@ package kr.co.wground.post.application
 
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.SyncDraftImagesToPostEvent
+import kr.co.wground.common.UpdateReactionListener
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
@@ -15,17 +16,24 @@ import kr.co.wground.post.application.dto.toDtos
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.post.exception.PostErrorCode
+import kr.co.wground.post.infra.EventDedupRepository
 import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.post.infra.ProcessedEventEntity
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.event.TransactionPhase
+import org.springframework.transaction.event.TransactionalEventListener
 import java.util.UUID
 
 @Service
@@ -35,7 +43,8 @@ class PostService(
     private val commentRepository: CommentRepository,
     private val userRepository: UserRepository,
     private val postReactionRepository: PostReactionJpaRepository,
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: ApplicationEventPublisher,
+    private val eventDedupRepository: EventDedupRepository,
 ) {
     fun createPost(dto: PostCreateDto): Long {
         val postId = postRepository.save(dto.toDomain()).id
@@ -132,6 +141,25 @@ class PostService(
             commentsCount = commentsCount,
             reactions = reactionsByPostId
         )
+    }
+
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun updateReactionListener(updateReactionEvent: UpdateReactionListener) {
+        val isProcessed = eventDedupRepository.existsById(updateReactionEvent.eventId)
+        if (isProcessed) return
+
+        try {
+            eventDedupRepository.save(
+                ProcessedEventEntity(eventId = updateReactionEvent.eventId)
+            )
+        } catch (_: DataIntegrityViolationException) {
+            return
+        }
+
+        val post = findPostByIdOrThrow(updateReactionEvent.postId)
+        post.updateReactionCount(updateReactionEvent.delta)
     }
 
     private fun findUserByIdOrThrow(id: WriterId): User {
