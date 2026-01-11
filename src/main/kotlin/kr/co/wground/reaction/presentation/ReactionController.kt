@@ -85,7 +85,7 @@ class ReactionController(
     }
 
     @GetMapping("/posts")
-    fun getPostReactionStats(
+    fun getPostReactionStatsInBatch(
         @Valid
         @RequestBody
         request: PostReactionStatsBatchRequest,
