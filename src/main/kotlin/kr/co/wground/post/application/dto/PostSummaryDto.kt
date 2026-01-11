@@ -1,16 +1,18 @@
 package kr.co.wground.post.application.dto
 
+import java.time.LocalDateTime
 import kr.co.wground.comment.domain.vo.CommentCount
+import kr.co.wground.global.common.UserId
 import kr.co.wground.post.application.dto.PostSummaryDto.PostReactionSummaryDto
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.infra.querydsl.CustomPostReactionRepositoryImpl.PostReactionStatsRow
-import kr.co.wground.user.domain.User
+import kr.co.wground.user.application.operations.constant.UNKNOWN_USER_NAME_TAG
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
-import java.time.LocalDateTime
 
 data class PostSummaryDto(
     val postId: Long,
@@ -37,11 +39,10 @@ fun PostReactionStatsRow.toDto() = PostReactionSummaryDto(
 )
 
 fun Slice<Post>.toDtos(
-    writers: List<User>,
+    writersById: Map<UserId, UserDisplayInfoDto>,
     commentsCountById: List<CommentCount>,
     postReactionStats: List<PostReactionStatsRow>
 ): Slice<PostSummaryDto> {
-    val writerNameByIdMap = writers.associate { it.userId to it.name }
     val commentsCountByPostId = commentsCountById.associate { id -> id.postId to id.count }
     val reactionStatsByPostId = postReactionStats.groupBy { it.postId }
 
@@ -50,7 +51,7 @@ fun Slice<Post>.toDtos(
             postId = post.id,
             title = post.postBody.title,
             writerId = post.writerId,
-            writerName = writerNameByIdMap[post.writerId] ?: "",
+            writerName = writersById[post.writerId]?.name ?: UNKNOWN_USER_NAME_TAG,
             wroteAt = post.createdAt,
             topic = post.topic,
             highlightType = post.postStatus.highlightType,

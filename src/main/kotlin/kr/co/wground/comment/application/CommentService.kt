@@ -14,8 +14,8 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
-import kr.co.wground.user.domain.User
-import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.infra.UserQueryRepository
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 class CommentService(
     private val commentRepository: CommentRepository,
     private val postRepository: PostRepository,
-    private val userRepository: UserRepository,
+    private val userRepository: UserQueryRepository,
     private val reactionQueryService: ReactionQueryService,
 ) {
     @Transactional
@@ -128,9 +128,9 @@ class CommentService(
 
     private fun loadUsersByComments(
         comments: List<Comment>
-    ): Map<UserId, User> {
+    ): Map<UserId, UserDisplayInfoDto> {
         val writerIds = comments.map { it.writerId }.toSet()
-        return userRepository.findAllById(writerIds).associateBy { it.userId }
+        return userRepository.findUserDisplayInfos(writerIds.toList())
     }
 
     private fun fetchReactionCounts(comments: List<Comment>, userId: UserId): Map<CommentId, CommentReactionStats> {

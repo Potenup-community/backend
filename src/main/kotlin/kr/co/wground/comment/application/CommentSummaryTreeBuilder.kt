@@ -5,22 +5,20 @@ import kr.co.wground.comment.domain.Comment
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.application.dto.CommentReactionStats
-import kr.co.wground.reaction.domain.enums.ReactionType
-import kr.co.wground.user.domain.User
-import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
+import kr.co.wground.user.application.operations.constant.UNKNOWN_USER_NAME_TAG
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 
 private const val DELETED_COMMENT_TAG = "[삭제된 댓글]"
-private const val UNKNOWN_USER_NAME_TAG = "탈퇴한 사용자"
 
 class CommentSummaryTreeBuilder private constructor(
     private val groupedByParent: Map<CommentId?, List<Comment>>,
-    private val usersById: Map<UserId, User>,
+    private val usersById: Map<UserId, UserDisplayInfoDto>,
     private val reactionStatsByCommentId: Map<CommentId, CommentReactionStats>,
 ) {
     companion object {
         fun from(
             comments: List<Comment>,
-            usersById: Map<UserId, User>,
+            usersById: Map<UserId, UserDisplayInfoDto>,
             reactionStatsByCommentId: Map<CommentId, CommentReactionStats>,
         ): CommentSummaryTreeBuilder {
             val grouped = comments
@@ -46,7 +44,7 @@ class CommentSummaryTreeBuilder private constructor(
             content = content,
             authorId = comment.writerId,
             authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
-            authorProfileImageUrl = author?.accessProfile(),
+            authorProfileImageUrl = author?.profileImageUrl,
             createdAt = comment.createdAt,
             commentReactionStats = reactionStatsByCommentId[comment.id] ?: CommentReactionStats.emptyOf(comment.id),
             isDeleted = comment.isDeleted,
