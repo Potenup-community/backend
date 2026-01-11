@@ -52,6 +52,7 @@ class PostRepositoryTest(
             registry.add("spring.datasource.url") { mysql.jdbcUrl }
             registry.add("spring.datasource.username") { mysql.username }
             registry.add("spring.datasource.password") { mysql.password }
+            registry.add("spring.datasource.driver-class-name") { "com.mysql.cj.jdbc.Driver" }
 
             registry.add("spring.jpa.hibernate.ddl-auto") { "create-drop" }
             registry.add("spring.jpa.properties.hibernate.dialect") {

@@ -63,6 +63,7 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
+	testRuntimeOnly("com.mysql:mysql-connector-j")
 }
 
 kotlin {
