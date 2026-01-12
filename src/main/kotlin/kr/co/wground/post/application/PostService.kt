@@ -129,6 +129,7 @@ class PostService(
 
         return foundCourse.toDto(
             writerName = writer.name,
+            trackName = writer.trackName,
             commentsCount = commentsCount,
             reactions = reactionsByPostId
         )

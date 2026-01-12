@@ -25,6 +25,7 @@ data class PostDetailResponse(
     val highlightType: HighlightType?,
     val commentsCount: Int,
     val wroteAt: LocalDateTime,
+    val trackName: String,
     val reactions: List<PostReactionDetail> = emptyList(),
 ) {
     data class PostReactionDetail(
@@ -43,5 +44,6 @@ fun PostDetailDto.toResponse() = PostDetailResponse(
     highlightType = highlightType,
     commentsCount = commentsCount,
     wroteAt = wroteAt,
+    trackName = trackName,
     reactions = reactions.map { PostReactionDetail(it.reactionType, it.count) }
 )
