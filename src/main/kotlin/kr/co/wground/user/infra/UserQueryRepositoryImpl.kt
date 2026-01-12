@@ -7,12 +7,14 @@ import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.jpa.impl.JPAQuery
 import com.querydsl.jpa.impl.JPAQueryFactory
+import java.time.LocalDateTime
+import kr.co.wground.global.common.UserId
 import kr.co.wground.track.domain.QTrack.track
 import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.user.application.operations.constant.COUNT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.constant.ID_DEFAULT_VALUE
+import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
 import kr.co.wground.user.application.operations.dto.AcademicCount
-import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.RoleCount
 import kr.co.wground.user.application.operations.dto.SignupCount
@@ -23,16 +25,18 @@ import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.dto.UserCountDto
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import kr.co.wground.user.infra.dto.UserInfoDto
+import kr.co.wground.user.utils.email.event.VerificationEvent
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.support.PageableExecutionUtils
 import org.springframework.stereotype.Repository
 
 @Repository
-class CustomUserRepositoryImpl(
+class UserQueryRepositoryImpl(
     private val queryFactory: JPAQueryFactory
-) : CustomUserRepository {
+) : UserQueryRepository {
     override fun searchUsers(
         condition: ConditionDto,
         pageable: Pageable
@@ -82,7 +86,8 @@ class CustomUserRepositoryImpl(
             signupSummary = fetchSignupSummary(conditionDto),
             statusSummary = conditionDto.status?.let { fetchStatusSummary(conditionDto) } ?: StatusCount.empty(),
             roleSummary = conditionDto.role?.let { fetchRoleSummary(conditionDto) } ?: RoleCount.empty(),
-            academicSummary = conditionDto.isGraduated?.let { fetchTrackStatusSummary(conditionDto) } ?: AcademicCount.empty()
+            academicSummary = conditionDto.isGraduated?.let { fetchTrackStatusSummary(conditionDto) }
+                ?: AcademicCount.empty()
         )
     }
 
@@ -192,24 +197,43 @@ class CustomUserRepositoryImpl(
         return countQuery
     }
 
-    override fun findUserAndTrackName(userIds: List<UserId>): Map<Long, String?> {
+    override fun findUserDisplayInfos(userIds: List<UserId>): Map<UserId, UserDisplayInfoDto> {
+        val trackNameExpr = track.trackName.coalesce(NOT_ASSOCIATE)
+
         val results = queryFactory
-            .select(user.userId, track.trackName)
+            .select(
+                Projections.constructor(
+                    UserDisplayInfoDto::class.java,
+                    user.userId,
+                    user.name,
+                    user.userProfile.imageUrl,
+                    trackNameExpr,
+                )
+            )
             .from(user)
             .leftJoin(track).on(user.trackId.eq(track.trackId))
             .where(user.userId.`in`(userIds))
             .fetch()
 
-        val resultMap = results.mapNotNull { result ->
-            val id = result.get(user.userId)
-            val name = result.get(track.trackName)
-
-            if (id != null && name != null) id to name else null
-        }.toMap()
-
-        return userIds.associateWith { id -> resultMap[id] }
+        return results.associateBy { it.userId }
     }
 
+    override fun findAllApprovalTargets(userIds: List<Long>): List<VerificationEvent.VerificationTarget> {
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    VerificationEvent.VerificationTarget::class.java,
+                    user.email,
+                    user.name,
+                    track.trackName.coalesce(NOT_ASSOCIATE),
+                    Expressions.constant(LocalDateTime.now())
+                )
+            )
+            .from(user)
+            .leftJoin(track).on(user.trackId.eq(track.trackId))
+            .where(user.userId.`in`(userIds))
+            .fetch()
+    }
 
     private fun predicates(condition: ConditionDto): Array<BooleanExpression?> {
         return arrayOf(

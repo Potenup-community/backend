@@ -6,14 +6,14 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
-import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.infra.UserCommandRepository
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
 class UserEventListener(
-    private val userRepository: UserRepository
+    private val userRepository: UserCommandRepository
 ) {
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     fun handle(event: DecideUserStatusEvent) {
