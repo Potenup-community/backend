@@ -130,8 +130,9 @@ class PostService(
         return foundCourse.toDto(
             writerName = writer.name,
             trackName = writer.trackName,
+            profileImageUrl = writer.profileImageUrl,
             commentsCount = commentsCount,
-            reactions = reactionsByPostId
+            reactions = reactionsByPostId,
         )
     }
 

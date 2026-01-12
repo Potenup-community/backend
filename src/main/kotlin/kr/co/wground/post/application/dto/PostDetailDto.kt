@@ -21,6 +21,7 @@ data class PostDetailDto(
     val commentsCount: Int,
     val wroteAt: LocalDateTime,
     val trackName: String,
+    val profileImageUrl: String,
     val reactions: List<PostReactionDetailDto> = emptyList(),
 ) {
     data class PostReactionDetailDto(
@@ -33,7 +34,8 @@ fun Post.toDto(
     writerName: String,
     commentsCount: Int,
     reactions: List<PostReaction>,
-    trackName: String
+    trackName: String,
+    profileImageUrl: String,
 ): PostDetailDto {
     return PostDetailDto(
         postId = id,
@@ -46,6 +48,7 @@ fun Post.toDto(
         commentsCount = commentsCount,
         wroteAt = createdAt,
         trackName = trackName,
+        profileImageUrl = profileImageUrl,
         reactions = reactions.groupingBy { it.reactionType }.eachCount()
             .map { (type, count) ->
                 PostReactionDetailDto(

@@ -56,6 +56,9 @@ data class PostSummaryDetail(
     @field:Schema(example = "BE 1기")
     val trackName: String,
 
+    @field:Schema(example = "https://example.com/profile.png")
+    val profileImageUrl: String,
+
     @field:Schema(description = "게시글 리액션 요약 목록")
     val reactions: List<PostReactionSummaryDetail> = emptyList(),
 ) {
@@ -85,6 +88,7 @@ fun PostSummaryDto.toResponseDetail() = PostSummaryDetail(
     highlightType = highlightType,
     commentsCount = commentsCount,
     trackName = trackName,
+    profileImageUrl = profileImageUrl,
     reactions = reactions.map {
         PostReactionSummaryDetail(
             reactionType = it.reactionType,
