@@ -14,11 +14,8 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
-import kr.co.wground.user.infra.CustomUserRepository
+import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -27,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 class CommentService(
     private val commentRepository: CommentRepository,
     private val postRepository: PostRepository,
-    private val userRepository: CustomUserRepository,
+    private val userRepository: UserRepository,
     private val reactionQueryService: ReactionQueryService,
 ) {
     @Transactional
@@ -57,36 +54,6 @@ class CommentService(
         comment.deleteContent()
     }
 
-    /**
-     * 댓글 조회(페이징)
-     * 나중에 필요해 질 것 같아서 유지
-     */
-    @Transactional(readOnly = true)
-    fun getCommentsByPost(
-        postId: PostId,
-        pageable: Pageable,
-        userId: CurrentUserId
-    ): Slice<CommentSummaryDto> {
-        validateExistTargetPost(postId)
-
-        val parentSlice = commentRepository.findByPostIdAndParentIdIsNull(postId, pageable)
-        if (parentSlice.isEmpty) return SliceImpl(emptyList(), pageable, parentSlice.hasNext())
-
-        val parentIds = parentSlice.content.map { it.id }
-        val replies = commentRepository.findByPostIdAndParentIdIn(postId, parentIds)
-
-        val allComments = parentSlice.content + replies
-        val usersById = loadUsersByComments(allComments)
-        val reactionStatsByCommentId = fetchReactionCounts(allComments, userId.value)
-
-        val tree = CommentSummaryTreeBuilder.from(allComments, usersById, reactionStatsByCommentId).build()
-
-        return SliceImpl(tree, pageable, parentSlice.hasNext())
-    }
-
-    /**
-     * 댓글 조회(전체 조회)
-     */
     @Transactional(readOnly = true)
     fun getCommentsByPost(
         postId: PostId,

@@ -1,8 +1,6 @@
 package kr.co.wground.comment.application
 
-import java.util.Optional
-import kotlin.collections.emptyMap
-import kotlin.jvm.java
+import java.util.*
 import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.global.config.resolver.CurrentUserId
@@ -15,7 +13,7 @@ import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserStatus
-import kr.co.wground.user.infra.CustomUserRepository
+import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -32,9 +30,9 @@ import org.springframework.data.domain.SliceImpl
 class CommentServiceTest {
     private val commentRepository = mock(CommentRepository::class.java)
     private val postRepository = mock(PostRepository::class.java)
-    private val userRepository = mock(CustomUserRepository::class.java)
+    private val userRepository = mock(UserRepository::class.java)
     private val reactionQueryService = mock(ReactionQueryService::class.java)
-    lateinit var commentService: CommentService
+    private lateinit var commentService: CommentService
 
     @BeforeEach
     fun setUp() {
@@ -84,6 +82,9 @@ class CommentServiceTest {
             highlightType = HighlightType.NONE
         )
 
+        `when`(commentRepository.findAllByPostId(postId))
+            .thenReturn(mutableListOf(parent1, parent2))
+
         `when`(commentRepository.findByPostIdAndParentIdIsNull(postId, pageable))
             .thenReturn(SliceImpl(listOf(parent1, parent2), pageable, false))
 
@@ -115,13 +116,72 @@ class CommentServiceTest {
             .thenReturn(emptyMap())
 
         // when
-        val result = commentService.getCommentsByPost(postId, pageable, currentUserId)
+        val result = commentService.getCommentsByPost(postId, currentUserId)
 
         // then
-        assertThat(result.content).hasSize(2)
-        result.content.forEach { dto ->
+        assertThat(result).hasSize(2)
+        result.forEach { dto ->
             assertThat(dto.commentReactionStats)
                 .isEqualTo(CommentReactionStats.emptyOf(dto.commentId))
         }
     }
+
+    @DisplayName("전체 댓글 조회 시 여러 유저의 트랙 이름이 조회된다.")
+    @Test
+    fun getCommentsByPost_whenTrackNamesByUserIds_shouldLoadTrackName() {
+        // given
+        val postId = 1L
+        val currentUserId = CurrentUserId(1L)
+
+        val comment1 = Comment.create(1L, postId, null, "p1")
+        val comment2 = Comment.create(2L, postId, null, "p2")
+
+        val post = Post.from(
+            writerId = 1L,
+            topic = Topic.KNOWLEDGE,
+            title = "테스트 게시글 제목",
+            content = "테스트 게시글 본문입니다.",
+            highlightType = HighlightType.NONE
+        )
+
+        `when`(postRepository.findById(postId)).thenReturn(Optional.of(post))
+        `when`(commentRepository.findAllByPostId(postId)).thenReturn(
+            listOf(
+                comment1,
+                comment2
+            ) as MutableList<Comment>?
+        )
+
+        `when`(userRepository.findUserDisplayInfos(anyList()))
+            .thenReturn(
+                mapOf(
+                    1L to UserDisplayInfoDto(
+                        userId = 1L,
+                        name = "유저1",
+                        profileImageUrl = "profile-1",
+                        trackName = "트랙1",
+                    ),
+                    2L to UserDisplayInfoDto(
+                        userId = 2L,
+                        name = "유저2",
+                        profileImageUrl = "profile-2",
+                        trackName = "트랙2",
+                    ),
+                )
+            )
+
+        `when`(reactionQueryService.getCommentReactionStats(anySet(), eq(currentUserId.value)))
+            .thenReturn(emptyMap())
+
+        // when
+        val result = commentService.getCommentsByPost(postId, currentUserId)
+
+        // then
+        assertThat(result).hasSize(2)
+        val trackNameByAuthorId = result.associate { it.authorId to it.trackName }
+        assertThat(trackNameByAuthorId[1L]).isEqualTo("트랙1")
+        assertThat(trackNameByAuthorId[2L]).isEqualTo("트랙2")
+    }
+
+
 }
