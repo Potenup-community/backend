@@ -29,7 +29,7 @@ class SignUpServiceImpl(
 
         val savedUser = userRepository.save(newUser)
 
-        eventPublisher.publishEvent(UserProfileEvent(savedUser.userId,savedUser.email,savedUser.name))
+        eventPublisher.publishEvent(UserProfileEvent(savedUser.userId, savedUser.email, savedUser.name))
         eventPublisher.publishEvent(SignUpEvent(savedUser.userId))
     }
 
@@ -40,7 +40,7 @@ class SignUpServiceImpl(
     }
 
     private fun validatePhoneNumber(phoneNumber: String) {
-        if(userRepository.existsByPhoneNumber(phoneNumber)){
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
             throw BusinessException(UserServiceErrorCode.DUPLICATED_PHONE_NUMBER)
         }
     }

@@ -21,7 +21,7 @@ class UserServiceImpl(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        if(user.status!= UserStatus.ACTIVE){
+        if (user.status != UserStatus.ACTIVE) {
             throw BusinessException(UserServiceErrorCode.INACTIVE_USER)
         }
         return MyInfoDto.from(user)

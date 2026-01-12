@@ -14,8 +14,8 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
-import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -63,12 +63,9 @@ class CommentService(
 
         val allComments = commentRepository.findAllByPostId(postId)
         val usersById = loadUsersByComments(allComments)
-        val trackNameByUserId = loadTrackNameByUserId(usersById.keys.toList())
         val reactionStatsByCommentId = fetchReactionCounts(allComments, userId.value)
 
-        return CommentSummaryTreeBuilder
-            .from(allComments, usersById, trackNameByUserId, reactionStatsByCommentId)
-            .build()
+        return CommentSummaryTreeBuilder.from(allComments, usersById, reactionStatsByCommentId).build()
     }
 
     private fun validateExistTargetPost(postId: PostId) {
@@ -98,14 +95,9 @@ class CommentService(
 
     private fun loadUsersByComments(
         comments: List<Comment>
-    ): Map<UserId, User> {
+    ): Map<UserId, UserDisplayInfoDto> {
         val writerIds = comments.map { it.writerId }.toSet()
-        return userRepository.findAllById(writerIds).associateBy { it.userId }
-    }
-
-    private fun loadTrackNameByUserId(userIds: List<UserId>): Map<UserId, String> {
-        if (userIds.isEmpty()) return emptyMap()
-        return userRepository.findUserAndTrackName(userIds)
+        return userRepository.findUserDisplayInfos(writerIds.toList())
     }
 
     private fun fetchReactionCounts(comments: List<Comment>, userId: UserId): Map<CommentId, CommentReactionStats> {

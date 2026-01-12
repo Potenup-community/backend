@@ -1,9 +1,7 @@
 package kr.co.wground.user.application.operations
 
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.application.operations.constant.COUNT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.constant.ELEMENT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
@@ -12,8 +10,8 @@ import kr.co.wground.user.application.operations.dto.UserConditionCountDto
 import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.domain.RequestSignup
 import kr.co.wground.user.domain.constant.UserSignupStatus
+import kr.co.wground.user.infra.CustomUserRepository
 import kr.co.wground.user.infra.RequestSignupRepository
-import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserInfoDto
 import kr.co.wground.user.utils.email.event.VerificationEvent
 import org.springframework.context.ApplicationEventPublisher
@@ -26,8 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class AdminServiceImpl(
     val signupRepository: RequestSignupRepository,
-    val userRepository: UserRepository,
-    val trackRepository: TrackRepository,
+    val userRepository: CustomUserRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : AdminService {
     override fun decisionSignup(decisionDto: DecisionDto) {

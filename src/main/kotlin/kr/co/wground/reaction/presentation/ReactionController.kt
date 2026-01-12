@@ -29,12 +29,12 @@ import org.springframework.web.bind.annotation.RestController
 class ReactionController(
     private val reactionCommandService: ReactionCommandService,
     private val reactionQueryService: ReactionQueryService,
-) {
+) : ReactionApi {
 
     // commands --------------------
 
     @PostMapping
-    fun react(
+    override fun react(
         @Valid @RequestBody request: ReactionRequest,
         user: CurrentUserId,
     ): ResponseEntity<Unit> {
@@ -50,7 +50,7 @@ class ReactionController(
     }
 
     @DeleteMapping
-    fun unreact(
+    override fun unreact(
         @Valid @RequestBody request: ReactionRequest,
         user: CurrentUserId,
     ): ResponseEntity<Unit> {
@@ -68,7 +68,7 @@ class ReactionController(
     // queries --------------------
 
     @GetMapping("/posts/{postId}")
-    fun getPostReactionStats(
+    override fun getPostReactionStats(
         @NotNull(message = "postId 가 null 입니다.")
         @Positive(message = "postId 는 0 또는 음수일 수 없습니다.")
         @PathVariable("postId")
@@ -85,7 +85,7 @@ class ReactionController(
     }
 
     @GetMapping("/posts")
-    fun getPostReactionStats(
+    override fun getPostReactionStatsInBatch(
         @Valid
         @RequestBody
         request: PostReactionStatsBatchRequest,
@@ -100,7 +100,7 @@ class ReactionController(
     }
 
     @GetMapping("/comments")
-    fun getCommentReactionStats(
+    override fun getCommentReactionStats(
         @Valid
         @RequestBody
         request: CommentReactionStatsBatchRequest,

@@ -24,7 +24,7 @@ data class CommentSummaryDto(
             authorId: UserId,
             authorName: String,
             trackName: String,
-            authorProfileImageUrl: String?,
+            authorProfileImageUrl: String,
             createdAt: LocalDateTime,
             commentReactionStats: CommentReactionStats,
             isDeleted: Boolean,

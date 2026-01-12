@@ -6,4 +6,5 @@ enum class Topic(
     NOTICE(description = "공지사항"),
     KNOWLEDGE(description = "지식줍줍"),
     EMPLOYMENT_TIP(description = "취업팁"),
+    SMALL_TALK(description = "자유 게시판"),
 }
