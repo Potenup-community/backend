@@ -9,6 +9,7 @@ import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.infra.querydsl.CustomPostReactionRepositoryImpl.PostReactionStatsRow
+import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
 import kr.co.wground.user.application.operations.constant.UNKNOWN_USER_NAME_TAG
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.data.domain.Slice
@@ -57,7 +58,7 @@ fun Slice<Post>.toDtos(
             topic = post.topic,
             highlightType = post.postStatus.highlightType,
             commentsCount = commentsCountByPostId[post.id] ?: 0,
-            trackName = writersById[post.writerId]?.trackName ?: "",
+            trackName = writersById[post.writerId]?.trackName ?: NOT_ASSOCIATE,
             reactions = reactionStatsByPostId[post.id]?.map { it.toDto() } ?: emptyList()
         )
     }
