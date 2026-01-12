@@ -22,7 +22,7 @@ data class CommentSummaryDto(
             content: String,
             authorId: UserId,
             authorName: String,
-            authorProfileImageUrl: String?,
+            authorProfileImageUrl: String,
             createdAt: LocalDateTime,
             commentReactionStats: CommentReactionStats,
             isDeleted: Boolean,
