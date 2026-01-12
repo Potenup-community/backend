@@ -19,7 +19,7 @@ import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
-import kr.co.wground.user.infra.CustomUserRepository
+import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional
 class PostService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
-    private val userRepository: CustomUserRepository,
+    private val userRepository: UserRepository,
     private val postReactionRepository: PostReactionJpaRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) {
@@ -129,8 +129,10 @@ class PostService(
 
         return foundCourse.toDto(
             writerName = writer.name,
+            trackName = writer.trackName,
+            profileImageUrl = writer.profileImageUrl,
             commentsCount = commentsCount,
-            reactions = reactionsByPostId
+            reactions = reactionsByPostId,
         )
     }
 
