@@ -10,8 +10,8 @@ import kr.co.wground.user.application.operations.dto.UserConditionCountDto
 import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.domain.RequestSignup
 import kr.co.wground.user.domain.constant.UserSignupStatus
+import kr.co.wground.user.infra.CustomUserRepository
 import kr.co.wground.user.infra.RequestSignupRepository
-import kr.co.wground.user.infra.UserQueryRepository
 import kr.co.wground.user.infra.dto.UserInfoDto
 import kr.co.wground.user.utils.email.event.VerificationEvent
 import org.springframework.context.ApplicationEventPublisher
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class AdminServiceImpl(
     val signupRepository: RequestSignupRepository,
-    val userRepository: UserQueryRepository,
+    val userRepository: CustomUserRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : AdminService {
     override fun decisionSignup(decisionDto: DecisionDto) {

@@ -6,7 +6,7 @@ import java.util.*
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.infra.UserCommandRepository
+import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.response.ProfileResourceResponse
 import kr.co.wground.user.utils.defaultimage.application.constant.AvatarProperties
 import kr.co.wground.user.utils.defaultimage.domain.UserProfile
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional
 class ProfileService(
     private val properties: AvatarProperties,
     private val profileGenerator: ProfileGenerator,
-    private val userRepository: UserCommandRepository,
+    private val userRepository: UserRepository,
 ) {
     companion object {
         private const val SVG_EXTENSION = ".svg"

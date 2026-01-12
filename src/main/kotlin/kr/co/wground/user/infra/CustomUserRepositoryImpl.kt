@@ -34,9 +34,9 @@ import org.springframework.data.support.PageableExecutionUtils
 import org.springframework.stereotype.Repository
 
 @Repository
-class UserQueryRepositoryImpl(
+class CustomUserRepositoryImpl(
     private val queryFactory: JPAQueryFactory
-) : UserQueryRepository {
+) : CustomUserRepository {
     override fun searchUsers(
         condition: ConditionDto,
         pageable: Pageable
