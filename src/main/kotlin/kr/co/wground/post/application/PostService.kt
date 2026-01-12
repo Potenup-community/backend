@@ -1,6 +1,6 @@
 package kr.co.wground.post.application
 
-import java.util.*
+import java.util.UUID
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
