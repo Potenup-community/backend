@@ -5,7 +5,7 @@ import kr.co.wground.global.auth.GoogleTokenVerifier
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.event.SignUpEvent
 import kr.co.wground.user.application.operations.event.toUserEntity
-import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.infra.UserCommandRepository
 import kr.co.wground.user.presentation.request.SignUpRequest
 import kr.co.wground.user.utils.defaultimage.application.event.UserProfileEvent
 import org.springframework.context.ApplicationEventPublisher
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional
 class SignUpServiceImpl(
-    private val userRepository: UserRepository,
+    private val userRepository: UserCommandRepository,
     private val googleTokenVerifier: GoogleTokenVerifier,
     private val eventPublisher: ApplicationEventPublisher,
 ) : SignUpService {

@@ -7,6 +7,7 @@ import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.jpa.impl.JPAQuery
 import com.querydsl.jpa.impl.JPAQueryFactory
+import java.time.LocalDateTime
 import kr.co.wground.global.common.UserId
 import kr.co.wground.track.domain.QTrack.track
 import kr.co.wground.track.domain.constant.TrackStatus
@@ -24,18 +25,18 @@ import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.dto.UserCountDto
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import kr.co.wground.user.infra.dto.UserInfoDto
 import kr.co.wground.user.utils.email.event.VerificationEvent
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.support.PageableExecutionUtils
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
 
 @Repository
-class CustomUserRepositoryImpl(
+class UserQueryRepositoryImpl(
     private val queryFactory: JPAQueryFactory
-) : CustomUserRepository {
+) : UserQueryRepository {
     override fun searchUsers(
         condition: ConditionDto,
         pageable: Pageable
@@ -196,20 +197,25 @@ class CustomUserRepositoryImpl(
         return countQuery
     }
 
-    override fun findUserAndTrackName(userIds: List<UserId>): Map<Long, String> {
+    override fun findUserDisplayInfos(userIds: List<UserId>): Map<UserId, UserDisplayInfoDto> {
+        val trackNameExpr = track.trackName.coalesce(NOT_ASSOCIATE)
+
         val results = queryFactory
-            .select(user.userId, track.trackName)
+            .select(
+                Projections.constructor(
+                    UserDisplayInfoDto::class.java,
+                    user.userId,
+                    user.name,
+                    user.userProfile.imageUrl,
+                    trackNameExpr,
+                )
+            )
             .from(user)
             .leftJoin(track).on(user.trackId.eq(track.trackId))
             .where(user.userId.`in`(userIds))
             .fetch()
 
-        return results.mapNotNull { result ->
-            val id = result.get(user.userId)
-            val trackName = result.get(track.trackName)
-
-            if (id != null && trackName != null) id to trackName else null
-        }.toMap()
+        return results.associateBy { it.userId }
     }
 
     override fun findAllApprovalTargets(userIds: List<Long>): List<VerificationEvent.VerificationTarget> {

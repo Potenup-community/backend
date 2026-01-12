@@ -1,28 +1,26 @@
 package kr.co.wground.user.utils.defaultimage.application
 
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
+import java.util.*
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.exception.UserServiceErrorCode
-import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.infra.UserCommandRepository
 import kr.co.wground.user.presentation.response.ProfileResourceResponse
-import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants
-import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
 import kr.co.wground.user.utils.defaultimage.application.constant.AvatarProperties
 import kr.co.wground.user.utils.defaultimage.domain.UserProfile
 import org.springframework.core.io.FileSystemResource
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.nio.file.Files
-import java.nio.file.StandardOpenOption
-import java.util.UUID
 
 @Service
 @Transactional
 class ProfileService(
     private val properties: AvatarProperties,
     private val profileGenerator: ProfileGenerator,
-    private val userRepository: UserRepository,
+    private val userRepository: UserCommandRepository,
 ) {
     companion object {
         private const val SVG_EXTENSION = ".svg"
@@ -38,7 +36,7 @@ class ProfileService(
         val svgContent = profileGenerator.generateSvg(userId, name, email, properties.defaultSize)
         val fileName = "${UUID.randomUUID()}$SVG_EXTENSION"
 
-        if(!Files.exists(properties.uploadPath)){
+        if (!Files.exists(properties.uploadPath)) {
             Files.createDirectories(properties.uploadPath)
         }
 
@@ -47,7 +45,7 @@ class ProfileService(
         val accessUrl = "${properties.webPathPrefix}/${userId}"
 
         val profile = UserProfile.create(
-            originalProfileName = DEFAULT_PROFILE+userId,
+            originalProfileName = DEFAULT_PROFILE + userId,
             currentFileName = fileName,
             profileImageUrl = accessUrl,
             storagePath = properties.uploadPath.toString()
@@ -69,14 +67,18 @@ class ProfileService(
             FileSystemResource(properties.placeholderPath)
         }
 
-        val filename = resource.filename ?: DEFAULT_AVATAR_PATH
+        val filename = resource.filename
 
         //미래를 위한 분기처리
         val contentType = when {
             filename.endsWith(".svg", ignoreCase = true) -> "image/svg+xml"
             filename.endsWith(".webp", ignoreCase = true) -> "image/webp"
             filename.endsWith(".png", ignoreCase = true) -> "image/png"
-            filename.endsWith(".jpg", ignoreCase = true) || filename.endsWith(".jpeg", ignoreCase = true) -> "image/jpeg"
+            filename.endsWith(".jpg", ignoreCase = true) || filename.endsWith(
+                ".jpeg",
+                ignoreCase = true
+            ) -> "image/jpeg"
+
             else -> "application/octet-stream"
         }
 

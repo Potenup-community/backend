@@ -5,9 +5,9 @@ import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserStatus
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface UserRepository : JpaRepository<User, Long>, CustomUserRepository{
+interface UserCommandRepository : JpaRepository<User, Long> {
     fun findByEmail(email: String): User?
-    fun existsUserByEmail(email:String): Boolean
+    fun existsUserByEmail(email: String): Boolean
     fun countByStatus(status: UserStatus): Long
     fun findByUserIdIn(userIds: List<UserId>): List<User>
     fun existsByPhoneNumber(phoneNumber: String): Boolean
