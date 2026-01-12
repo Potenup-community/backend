@@ -13,6 +13,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToOne
+import kr.co.wground.common.Delta
 import kr.co.wground.global.common.WriterId
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
@@ -40,6 +41,11 @@ class Post(
     @Embedded
     var postBody: PostBody = PostBody(title, content)
         protected set
+
+    var reactionCount: Int = 0
+        protected set
+
+    var recentViewCount: Int = 0
 
     @Enumerated(EnumType.STRING)
     var topic: Topic = topic
@@ -81,5 +87,9 @@ class Post(
 
     private fun modified() {
         this.modifiedAt = LocalDateTime.now()
+    }
+
+    fun updateReactionCount(delta: Delta) {
+        this.reactionCount += delta.value
     }
 }
