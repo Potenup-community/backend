@@ -6,5 +6,5 @@ data class CommentAuthorResponse(
     val userId: UserId,
     val name: String,
     val trackName: String,
-    val profileImageUrl: String?,
+    val profileImageUrl: String,
 )

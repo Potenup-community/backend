@@ -5,6 +5,7 @@ import kr.co.wground.comment.domain.Comment
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.application.dto.CommentReactionStats
+import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
 import kr.co.wground.user.application.operations.constant.UNKNOWN_USER_NAME_TAG
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
@@ -45,7 +46,7 @@ class CommentSummaryTreeBuilder private constructor(
             content = content,
             authorId = comment.writerId,
             authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
-            trackName = author?.trackName ?: "",
+            trackName = author?.trackName ?: NOT_ASSOCIATE,
             authorProfileImageUrl = author?.profileImageUrl ?: DEFAULT_AVATAR_PATH,
             createdAt = comment.createdAt,
             commentReactionStats = reactionStatsByCommentId[comment.id] ?: CommentReactionStats.emptyOf(comment.id),

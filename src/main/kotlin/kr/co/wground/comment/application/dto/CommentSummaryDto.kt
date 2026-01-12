@@ -11,7 +11,7 @@ data class CommentSummaryDto(
     val authorId: UserId,
     val authorName: String,
     val trackName: String,
-    val authorProfileImageUrl: String?,
+    val authorProfileImageUrl: String,
     val createdAt: LocalDateTime,
     val commentReactionStats: CommentReactionStats,
     val isDeleted: Boolean,
