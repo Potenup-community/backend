@@ -23,6 +23,7 @@ data class PostSummaryDto(
     val topic: Topic,
     val highlightType: HighlightType?,
     val commentsCount: Int,
+    val trackName: String,
     val reactions: List<PostReactionSummaryDto> = emptyList(),
 ) {
     data class PostReactionSummaryDto(
@@ -56,6 +57,7 @@ fun Slice<Post>.toDtos(
             topic = post.topic,
             highlightType = post.postStatus.highlightType,
             commentsCount = commentsCountByPostId[post.id] ?: 0,
+            trackName = writersById[post.writerId]?.trackName ?: "",
             reactions = reactionStatsByPostId[post.id]?.map { it.toDto() } ?: emptyList()
         )
     }
