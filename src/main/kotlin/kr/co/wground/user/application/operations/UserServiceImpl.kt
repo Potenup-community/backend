@@ -5,7 +5,7 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.dto.MyInfoDto
 import kr.co.wground.user.domain.constant.UserStatus
-import kr.co.wground.user.infra.UserCommandRepository
+import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional
 class UserServiceImpl(
-    private val userRepository: UserCommandRepository
+    private val userRepository: UserRepository
 ) : UserService {
 
     @Transactional(readOnly = true)

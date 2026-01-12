@@ -14,7 +14,7 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
-import kr.co.wground.user.infra.UserQueryRepository
+import kr.co.wground.user.infra.CustomUserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 class CommentService(
     private val commentRepository: CommentRepository,
     private val postRepository: PostRepository,
-    private val userRepository: UserQueryRepository,
+    private val userRepository: CustomUserRepository,
     private val reactionQueryService: ReactionQueryService,
 ) {
     @Transactional

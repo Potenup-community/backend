@@ -1,6 +1,6 @@
 package kr.co.wground.post.application
 
-import java.util.UUID
+import java.util.*
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
@@ -19,7 +19,7 @@ import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
-import kr.co.wground.user.infra.UserQueryRepository
+import kr.co.wground.user.infra.CustomUserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
@@ -33,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional
 class PostService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
-    private val userRepository: UserQueryRepository,
+    private val userRepository: CustomUserRepository,
     private val postReactionRepository: PostReactionJpaRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) {

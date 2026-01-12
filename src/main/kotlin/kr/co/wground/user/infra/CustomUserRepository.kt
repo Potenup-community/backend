@@ -9,7 +9,7 @@ import kr.co.wground.user.utils.email.event.VerificationEvent
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
-interface UserQueryRepository {
+interface CustomUserRepository {
     fun searchUsers(condition: ConditionDto, pageable: Pageable): Page<UserInfoDto>
     fun findUserDisplayInfos(userIds: List<UserId>): Map<UserId, UserDisplayInfoDto>
     fun calculateCounts(conditionDto: ConditionDto): UserCountDto
