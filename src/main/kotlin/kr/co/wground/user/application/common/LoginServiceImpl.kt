@@ -9,7 +9,7 @@ import kr.co.wground.global.jwt.RefreshTokenHasher
 import kr.co.wground.global.jwt.constant.TokenType
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserStatus
-import kr.co.wground.user.infra.UserCommandRepository
+import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.LoginRequest
 import kr.co.wground.user.presentation.response.LoginResponse
 import kr.co.wground.user.presentation.response.TokenResponse
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class LoginServiceImpl(
-    val userRepository: UserCommandRepository,
+    val userRepository: UserRepository,
     private val googleTokenVerifier: GoogleTokenVerifier,
     private val jwtProvider: JwtProvider,
     private val refreshTokenHasher: RefreshTokenHasher,

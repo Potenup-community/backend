@@ -15,7 +15,7 @@ import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserStatus
-import kr.co.wground.user.infra.UserQueryRepository
+import kr.co.wground.user.infra.CustomUserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -32,7 +32,7 @@ import org.springframework.data.domain.SliceImpl
 class CommentServiceTest {
     private val commentRepository = mock(CommentRepository::class.java)
     private val postRepository = mock(PostRepository::class.java)
-    private val userRepository = mock(UserQueryRepository::class.java)
+    private val userRepository = mock(CustomUserRepository::class.java)
     private val reactionQueryService = mock(ReactionQueryService::class.java)
     lateinit var commentService: CommentService
 
