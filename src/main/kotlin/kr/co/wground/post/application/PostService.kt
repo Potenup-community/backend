@@ -2,7 +2,7 @@ package kr.co.wground.post.application
 
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.SyncDraftImagesToPostEvent
-import kr.co.wground.common.UpdateReactionListener
+import kr.co.wground.common.UpdateReactionEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
@@ -146,7 +146,7 @@ class PostService(
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun updateReactionListener(updateReactionEvent: UpdateReactionListener) {
+    fun updateReactionListener(updateReactionEvent: UpdateReactionEvent) {
         val isProcessed = eventDedupRepository.existsById(updateReactionEvent.eventId)
         if (isProcessed) return
 
