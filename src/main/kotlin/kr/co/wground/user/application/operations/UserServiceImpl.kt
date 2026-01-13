@@ -18,7 +18,7 @@ class UserServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getMyInfo(userId: UserId): MyInfoDto {
-        val user = userRepository.findByIdOrNull(userId)
+        val user = userRepository.findUserAndTrack(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
         if(user.status!= UserStatus.ACTIVE){
