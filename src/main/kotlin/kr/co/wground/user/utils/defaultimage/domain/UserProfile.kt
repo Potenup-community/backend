@@ -1,6 +1,7 @@
 package kr.co.wground.user.utils.defaultimage.domain
 
 import jakarta.persistence.Embeddable
+import java.nio.file.Path
 import java.time.LocalDateTime
 
 @Embeddable
@@ -51,7 +52,10 @@ class UserProfile(
         }
     }
 
-    fun getStoragesUrl(): String {
-        return "$storagePath/$currentFileName"
+    fun getStoragesUrl(): String? {
+        val path = storagePath?.takeIf { it.isNotBlank() } ?: return null
+        val fileName = currentFileName?.let { it.takeIf { it.isNotBlank() } } ?: return null
+
+        return Path.of(path, fileName).toString()
     }
 }

@@ -8,12 +8,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
-import kr.co.wground.global.common.UserId
 import kr.co.wground.global.common.response.ErrorResponse
+import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.user.docs.UserSwaggerErrorExample
-import org.springframework.core.io.Resource
+import kr.co.wground.user.presentation.response.ProfileResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.context.request.WebRequest
+import org.springframework.web.multipart.MultipartFile
 
 @Tag(name = "Profile", description = "유저 프로필 이미지 API")
 interface ProfileApi {
@@ -50,8 +52,12 @@ interface ProfileApi {
             )
         ]
     )
-    fun getProfileImage(
-        @Parameter(description = "대상 유저 ID", example = "1") userId: UserId,
+    fun getMyProfile(
+        @Parameter(description = "대상 유저 ID(엑세스 토큰을 통해 추출)", example = "1") userId: CurrentUserId,
         @Parameter(hidden = true) request: WebRequest
-    ): ResponseEntity<Resource>
+    ): ResponseEntity<ProfileResponse>
+
+    fun uploadProfileImage(@RequestPart("file") file: MultipartFile, userId: CurrentUserId): ResponseEntity<Unit>
+
+    fun deleteProfile(userId: CurrentUserId): ResponseEntity<Unit>
 }

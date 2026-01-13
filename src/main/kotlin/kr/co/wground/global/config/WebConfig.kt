@@ -3,6 +3,7 @@ package kr.co.wground.global.config
 import kr.co.wground.global.config.resolver.UserIdArgumentResolver
 import kr.co.wground.global.monitoring.HttpRouteMdcInterceptor
 import kr.co.wground.image.policy.UploadPolicy
+import kr.co.wground.user.utils.defaultimage.policy.ProfilePolicy
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class WebConfig(
     private val userIdArgumentResolver: UserIdArgumentResolver,
     private val uploadPolicy: UploadPolicy,
+    private val profilePolicy: ProfilePolicy,
     private val httpRouteMdcInterceptor: HttpRouteMdcInterceptor
 ) : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
@@ -37,6 +39,10 @@ class WebConfig(
 
         registry.addResourceHandler("${uploadPolicy.publicBasePath}/**")
             .addResourceLocations("file:${uploadPolicy.localDir}/")
+            .setCachePeriod(uploadPolicy.cachePeriod)
+
+        registry.addResourceHandler("${profilePolicy.webPathPrefix}/**")
+            .addResourceLocations("file:${profilePolicy.localDir}/")
             .setCachePeriod(uploadPolicy.cachePeriod)
     }
 

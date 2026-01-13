@@ -20,7 +20,7 @@ data class MyInfoDto(
                 name = user.name,
                 email = user.email,
                 trackId = user.trackId,
-                profileImageUrl = user.userProfile.imageUrl,
+                profileImageUrl = user.accessProfile(),
                 role = user.role,
             )
         }
