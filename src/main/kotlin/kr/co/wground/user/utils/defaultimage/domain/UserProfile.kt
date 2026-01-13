@@ -6,19 +6,19 @@ import java.time.LocalDateTime
 
 @Embeddable
 class UserProfile(
-    originalProfileName: String?,
-    currentFileName: String?,
-    var imageUrl: String,
-    storagePath: String?,
+    originalProfileName: String? = null,
+    currentFileName: String? = null,
+    var imageUrl: String = "",
+    storagePath: String? = null,
     modifiedProfileAt: LocalDateTime = LocalDateTime.now(),
 ) {
-    var originalProfileName: String? = null
+    var originalProfileName: String? = originalProfileName
         protected set
 
-    var currentFileName: String? = null
+    var currentFileName: String? = currentFileName
         protected set
 
-    var storagePath: String? = null
+    var storagePath: String? = storagePath
         protected set
 
     var modifiedProfileAt: LocalDateTime = modifiedProfileAt
