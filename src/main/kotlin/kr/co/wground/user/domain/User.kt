@@ -102,6 +102,10 @@ class User(
         this.userProfile = userProfile
     }
 
+    fun accessProfile(): String{
+        return this.userProfile.imageUrl
+    }
+
     fun fixAccessProfile() {
         this.userProfile.imageUrl = DEFAULT_AVATAR_PATH + "/${this.userId}"
     }
