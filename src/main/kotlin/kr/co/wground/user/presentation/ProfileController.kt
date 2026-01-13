@@ -27,7 +27,7 @@ class ProfileController(
         return ResponseEntity.ok().body(ProfileResponse.from(user))
     }
 
-    @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping("/me", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     override fun uploadProfileImage(
         @RequestPart("file") file: MultipartFile,
         userId: CurrentUserId
