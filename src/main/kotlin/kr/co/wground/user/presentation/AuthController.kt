@@ -30,10 +30,10 @@ class  AuthController(
     private val accessExpirationMs: Long,
     @Value("\${jwt.refresh-expiration-ms}")
     private val refreshExpirationMs: Long,
-) {
+): AuthApi {
 
     @PostMapping("/login")
-    fun login(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<RoleResponse> {
+    override fun login(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<RoleResponse> {
         val response = memberService.login(loginRequest)
 
         return ResponseEntity.ok()
@@ -43,7 +43,7 @@ class  AuthController(
     }
 
     @DeleteMapping("/logout")
-    fun logout(userId: CurrentUserId): ResponseEntity<Unit> {
+    override fun logout(userId: CurrentUserId): ResponseEntity<Unit> {
         memberService.logout(userId.value)
 
         val expiredAccess = setCookie("", TokenType.ACCESS, 0)
@@ -56,7 +56,7 @@ class  AuthController(
     }
 
     @GetMapping("/me")
-    fun getAuthStatus(
+    override fun getAuthStatus(
         authentication: Authentication,
     ): ResponseEntity<AuthStatusResponse> {
         val principal = authentication.principal as UserPrincipal

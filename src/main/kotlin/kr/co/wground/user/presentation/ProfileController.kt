@@ -18,9 +18,9 @@ import java.util.concurrent.TimeUnit
 @RequestMapping("/api/v1/users/profiles")
 class ProfileController(
     private val profileService: ProfileService,
-) {
+): ProfileApi {
     @GetMapping("/{userId}")
-    fun getProfileImage(@PathVariable userId: UserId, request: WebRequest): ResponseEntity<Resource> {
+    override fun getProfileImage(@PathVariable userId: UserId, request: WebRequest): ResponseEntity<Resource> {
         val imageResponse = profileService.getProfileImageResource(userId)
 
         if (request.checkNotModified(imageResponse.lastModifiedAt)) {
