@@ -22,6 +22,7 @@ import kr.co.wground.user.utils.defaultimage.domain.UserProfile
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 import kr.co.wground.user.domain.vo.RefreshToken
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
 
 @Entity
 @EntityListeners(AuditingEntityListener::class)
@@ -101,8 +102,8 @@ class User(
         this.userProfile = userProfile
     }
 
-    fun accessProfile():String {
-        return this.userProfile.imageUrl
+    fun fixAccessProfile() {
+        this.userProfile.imageUrl = DEFAULT_AVATAR_PATH + "/${this.userId}"
     }
 
     fun logout() {
