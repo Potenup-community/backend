@@ -4,6 +4,7 @@ import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
+import kr.co.wground.global.common.UserId
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.QPost.post
 import kr.co.wground.post.domain.enums.Topic
@@ -24,7 +25,10 @@ class CustomPostRepositoryImpl(private val jpaQueryFactory: JPAQueryFactory): Cu
         val pageable = predicate.pageable
 
         val content = jpaQueryFactory.selectFrom(post)
-            .where(eqTopic(predicate.topic))
+            .where(
+                eqTopic(predicate.topic),
+                eqUserId(predicate.userId)
+            )
             .orderBy(*toOrderSpecifiers(pageable.sort).toTypedArray())
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong() + 1)
@@ -108,4 +112,5 @@ class CustomPostRepositoryImpl(private val jpaQueryFactory: JPAQueryFactory): Cu
     }
 
     private fun eqTopic(topic: Topic?) = topic?.let { post.topic.eq(it) }
+    private fun eqUserId(userId: UserId?) = userId?.let { post.writerId.eq(it) }
 }
