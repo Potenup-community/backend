@@ -34,6 +34,4 @@ interface PostReactionJpaRepository : JpaRepository<PostReaction, Long>, CustomP
     )
 
     fun findPostReactionsByPostId(postId: Long): List<PostReaction>
-
-    fun findAllByUserId(userId: Long): MutableList<PostReaction>
 }
