@@ -26,60 +26,45 @@ interface ReactionApi {
     @Operation(summary = "리액션", description = "필수 요청 바디로 대상 id, 대상 유형, 리액션 유형을 보내어 리액션합니다.")
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "204", description = "생성 성공"),
             ApiResponse(
-                responseCode = "400", description = "지원되지 않는 대상 유형",
+                responseCode = "204", description = "생성 성공"
+            ),
+            ApiResponse(
+                responseCode = "400", description = "잘못된 요청",
                 content = [Content(
                     mediaType = "application/json",
                     schema = Schema(implementation = ErrorResponse::class),
-                    examples = [ExampleObject(
-                        name = "NOT_SUPPORTED_TARGET_TYPE",
-                        value = SwaggerReactionErrorExample.NOT_SUPPORTED_TARGET_TYPE
-                    )]
+                    examples = [
+                        ExampleObject(
+                            name = "NOT_SUPPORTED_TARGET_TYPE",
+                            value = SwaggerReactionErrorExample.BadRequest.NOT_SUPPORTED_TARGET_TYPE
+                        ),
+                        ExampleObject(
+                            name = "NOT_SUPPORTED_REACTION_TYPE",
+                            value = SwaggerReactionErrorExample.BadRequest.NOT_SUPPORTED_REACTION_TYPE
+                        ),
+                        ExampleObject(
+                            name = "INVALID_TARGET_TYPE",
+                            value = SwaggerReactionErrorExample.BadRequest.INVALID_TARGET_TYPE
+                        )
+                    ]
                 )]
             ),
             ApiResponse(
-                responseCode = "400", description = "지원되지 않는 리액션 유형",
+                responseCode = "404", description = "반응할 대상을 찾지 못함",
                 content = [Content(
                     mediaType = "application/json",
                     schema = Schema(implementation = ErrorResponse::class),
-                    examples = [ExampleObject(
-                        name = "NOT_SUPPORTED_REACTION_TYPE",
-                        value = SwaggerReactionErrorExample.NOT_SUPPORTED_REACTION_TYPE
-                    )]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "400", description = "유효하지 않은 대상 id 형식",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [ExampleObject(
-                        name = "INVALID_TARGET_TYPE",
-                        value = SwaggerReactionErrorExample.INVALID_TARGET_TYPE
-                    )]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "400", description = "반응할 게시글을 찾지 못함",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [ExampleObject(
-                        name = "POST_NOT_FOUND",
-                        value = SwaggerReactionErrorExample.POST_NOT_FOUND
-                    )]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "400", description = "반응할 댓글을 찾지 못함",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [ExampleObject(
-                        name = "COMMENT_NOT_FOUND",
-                        value = SwaggerReactionErrorExample.COMMENT_NOT_FOUND
-                    )]
+                    examples = [
+                        ExampleObject(
+                            name = "POST_NOT_FOUND",
+                            value = SwaggerReactionErrorExample.NotFound.POST_NOT_FOUND
+                        ),
+                        ExampleObject(
+                            name = "COMMENT_NOT_FOUND",
+                            value = SwaggerReactionErrorExample.NotFound.COMMENT_NOT_FOUND
+                        )
+                    ]
                 )]
             ),
         ]
@@ -92,38 +77,28 @@ interface ReactionApi {
     @Operation(summary = "리액션 취소", description = "필수 요청 바디로 대상 id, 대상 유형, 리액션 유형을 보내어 리액션을 취소합니다.")
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "204", description = "리액션 취소 성공 또는 no-op(이미 취소된 상태)"),
             ApiResponse(
-                responseCode = "400", description = "지원되지 않는 대상 유형",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [ExampleObject(
-                        name = "NOT_SUPPORTED_TARGET_TYPE",
-                        value = SwaggerReactionErrorExample.NOT_SUPPORTED_TARGET_TYPE
-                    )]
-                )]
+                responseCode = "204", description = "리액션 취소 성공 또는 no-op(이미 취소된 상태)"
             ),
             ApiResponse(
-                responseCode = "400", description = "지원되지 않는 리액션 유형",
+                responseCode = "400", description = "잘못된 요청",
                 content = [Content(
                     mediaType = "application/json",
                     schema = Schema(implementation = ErrorResponse::class),
-                    examples = [ExampleObject(
-                        name = "NOT_SUPPORTED_REACTION_TYPE",
-                        value = SwaggerReactionErrorExample.NOT_SUPPORTED_REACTION_TYPE
-                    )]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "400", description = "유효하지 않은 대상 id 형식",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [ExampleObject(
-                        name = "INVALID_TARGET_TYPE",
-                        value = SwaggerReactionErrorExample.INVALID_TARGET_TYPE
-                    )]
+                    examples = [
+                        ExampleObject(
+                            name = "NOT_SUPPORTED_TARGET_TYPE",
+                            value = SwaggerReactionErrorExample.BadRequest.NOT_SUPPORTED_TARGET_TYPE
+                        ),
+                        ExampleObject(
+                            name = "NOT_SUPPORTED_REACTION_TYPE",
+                            value = SwaggerReactionErrorExample.BadRequest.NOT_SUPPORTED_REACTION_TYPE
+                        ),
+                        ExampleObject(
+                            name = "INVALID_TARGET_TYPE",
+                            value = SwaggerReactionErrorExample.BadRequest.INVALID_TARGET_TYPE
+                        )
+                    ]
                 )]
             ),
         ]
@@ -154,18 +129,18 @@ interface ReactionApi {
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [ExampleObject(
                         name = "INVALID_TARGET_TYPE",
-                        value = SwaggerReactionErrorExample.INVALID_TARGET_TYPE
+                        value = SwaggerReactionErrorExample.BadRequest.INVALID_TARGET_TYPE
                     )]
                 )]
             ),
             ApiResponse(
-                responseCode = "400", description = "반응할 게시글을 찾지 못함",
+                responseCode = "404", description = "반응할 게시글을 찾지 못함",
                 content = [Content(
                     mediaType = "application/json",
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [ExampleObject(
                         name = "POST_NOT_FOUND",
-                        value = SwaggerReactionErrorExample.POST_NOT_FOUND
+                        value = SwaggerReactionErrorExample.NotFound.POST_NOT_FOUND
                     )]
                 )]
             ),
@@ -198,7 +173,7 @@ interface ReactionApi {
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [ExampleObject(
                         name = "INVALID_TARGET_TYPE",
-                        value = SwaggerReactionErrorExample.INVALID_POST_ID_LIST_SIZE
+                        value = SwaggerReactionErrorExample.BadRequest.INVALID_POST_ID_LIST_SIZE
                     )]
                 )]
             )
@@ -230,7 +205,7 @@ interface ReactionApi {
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [ExampleObject(
                         name = "INVALID_COMMENT_ID_LIST_SIZE",
-                        value = SwaggerReactionErrorExample.INVALID_COMMENT_ID_LIST_SIZE
+                        value = SwaggerReactionErrorExample.BadRequest.INVALID_COMMENT_ID_LIST_SIZE
                     )]
                 )]
             )
