@@ -136,6 +136,12 @@ class ReactionQueryService(
             .toMap()
     }
 
+    fun getMyLikedPosts(userId: UserId): Set<PostId> {
+        return postReactionJpaRepository.findAllByUserId(userId)
+            .map { it.postId }
+            .toSet()
+    }
+
     // validation --------------------
 
     fun validatePostExistence(postId: PostId) {
