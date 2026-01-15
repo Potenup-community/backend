@@ -104,18 +104,11 @@ class PostService(
     }
 
     fun getSummary(userId: UserId, pageable: Pageable, topic: Topic?): Slice<PostSummaryDto> {
-        val predicate = GetPostSummaryPredicate(pageable, topic)
+        val predicate = GetPostSummaryPredicate(pageable = pageable, topic = topic)
 
         val posts = postRepository.findAllByPredicate(predicate)
 
-        val postIds = posts.map { it.id }.toSet()
-        val writerIds = posts.map { it.writerId }.toSet()
-
-        val writersById = userRepository.findUserDisplayInfos(writerIds.toList())
-        val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
-        val commentsCountById = commentRepository.countByPostIds(postIds.toList())
-
-        return posts.toDtos(writersById, commentsCountById, postReactionStats)
+        return assembleSummaryDtos(posts, userId)
     }
 
     fun getPostDetail(id: PostId): PostDetailDto {
@@ -134,6 +127,33 @@ class PostService(
             commentsCount = commentsCount,
             reactions = reactionsByPostId
         )
+    }
+
+    fun getMyPosts(userId: UserId, pageable: Pageable): Slice<PostSummaryDto> {
+        val predicate = GetPostSummaryPredicate(pageable = pageable, userId = userId)
+        val posts = postRepository.findAllByPredicate(predicate)
+
+        return assembleSummaryDtos(posts, userId)
+    }
+
+    fun getMyLikedPosts(userId: UserId, pageable: Pageable): Slice<PostSummaryDto> {
+        val posts = postReactionRepository.findAllLikedByUser(userId, pageable)
+
+        return assembleSummaryDtos(posts, userId)
+    }
+
+    private fun assembleSummaryDtos(
+        posts: Slice<Post>,
+        userId: UserId
+    ): Slice<PostSummaryDto> {
+        val postIds = posts.map { it.id }.toSet()
+        val writerIds = posts.map { it.writerId }.toSet()
+
+        val writersById = userRepository.findUserDisplayInfos(writerIds.toList())
+        val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
+        val commentsCountById = commentRepository.countByPostIds(postIds.toList())
+
+        return posts.toDtos(writersById, commentsCountById, postReactionStats)
     }
 
     private fun findUserDisplayInfoByIdOrThrow(id: WriterId): UserDisplayInfoDto {

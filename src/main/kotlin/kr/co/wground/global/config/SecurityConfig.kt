@@ -32,6 +32,7 @@ class SecurityConfig(
                     "/api/v1/auth/login",
                     "/api/v1/admin/tracks",
                     "/swagger-ui/**",
+                    "/swagger-ui.html",
                     "/v3/api-docs/**",
                     "${actuatorPolicy.basePath}/**"
                     ).permitAll()
@@ -55,6 +56,8 @@ class SecurityConfig(
             web.ignoring()
                 .requestMatchers("/assets/**")
                 .requestMatchers("${uploadPolicy.publicBasePath}/**")
+                .requestMatchers("/swagger-ui/**")
+                .requestMatchers("/swagger-ui.html")
         }
     }
 }
