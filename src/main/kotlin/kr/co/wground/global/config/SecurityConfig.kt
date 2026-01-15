@@ -57,6 +57,7 @@ class SecurityConfig(
                 .requestMatchers("/assets/**")
                 .requestMatchers("${uploadPolicy.publicBasePath}/**")
                 .requestMatchers("/swagger-ui/**")
+                .requestMatchers("/swagger-ui.html")
         }
     }
 }
