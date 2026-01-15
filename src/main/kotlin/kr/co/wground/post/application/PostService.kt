@@ -137,7 +137,7 @@ class PostService(
     }
 
     fun getMyLikedPosts(userId: UserId, pageable: Pageable): Slice<PostSummaryDto> {
-        val posts = postRepository.findAllLikedByUser(userId, pageable)
+        val posts = postReactionRepository.findAllLikedByUser(userId, pageable)
 
         return assembleSummaryDtos(posts, userId)
     }
