@@ -10,4 +10,5 @@ interface CommentRepository : JpaRepository<Comment, Long>, CommentRepositoryCus
     fun findByPostIdAndParentIdIsNull(postId: PostId, pageable: Pageable): Slice<Comment>
     fun findByPostIdAndParentIdIn(postId: PostId, parentIds: List<Long>): List<Comment>
     fun findAllByPostId(postId: Long): MutableList<Comment>
+    fun findAllByWriterId(writerId: Long, pageable: Pageable): Slice<Comment>
 }
