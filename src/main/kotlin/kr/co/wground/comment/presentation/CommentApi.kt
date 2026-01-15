@@ -16,6 +16,7 @@ import kr.co.wground.comment.presentation.request.CommentUpdateRequest
 import kr.co.wground.comment.presentation.response.CommentSummaryResponse
 import kr.co.wground.comment.presentation.response.CommentsResponse
 import kr.co.wground.comment.presentation.response.LikedCommentsResponse
+import kr.co.wground.comment.presentation.response.MyCommentsResponse
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.response.ErrorResponse
@@ -249,6 +250,29 @@ interface CommentApi {
     ): ResponseEntity<CommentsResponse>
 
     @Operation(
+        summary = "내가 작성한 댓글 조회",
+        description = "현재 로그인한 사용자가 작성한 댓글 목록을 페이지 단위로 조회합니다."
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "조회 성공",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = CommentSummaryResponse::class),
+                )]
+            ),
+        ]
+    )
+    fun getCommentsByMe(
+        @ParameterObject
+        @PageableDefault(size = 20)
+        pageable: Pageable,
+        @Parameter(description = "현재 로그인한 사용자 ID", hidden = true) userId: CurrentUserId,
+    ): ResponseEntity<MyCommentsResponse>
+
+    @Operation(
         summary = "내가 좋아요한 댓글 조회",
         description = "현재 로그인한 사용자가 LIKE 반응을 누른 댓글 목록을 페이지 단위로 조회합니다."
     )
@@ -270,27 +294,4 @@ interface CommentApi {
         pageable: Pageable,
         @Parameter(description = "현재 로그인한 사용자 ID", hidden = true) userId: CurrentUserId,
     ): ResponseEntity<LikedCommentsResponse>
-
-    @Operation(
-        summary = "내가 작성한 댓글 조회",
-        description = "현재 로그인한 사용자가 작성한 댓글 목록을 페이지 단위로 조회합니다."
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "200",
-                description = "조회 성공",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = CommentSummaryResponse::class),
-                )]
-            ),
-        ]
-    )
-    fun getCommentsByMe(
-        @ParameterObject
-        @PageableDefault(size = 20)
-        pageable: Pageable,
-        @Parameter(description = "현재 로그인한 사용자 ID", hidden = true) userId: CurrentUserId,
-    ): ResponseEntity<CommentsResponse>
 }

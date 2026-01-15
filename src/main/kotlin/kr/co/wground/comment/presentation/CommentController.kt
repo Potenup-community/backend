@@ -8,6 +8,7 @@ import kr.co.wground.comment.presentation.request.CommentUpdateRequest
 import kr.co.wground.comment.presentation.response.CommentSummaryResponse
 import kr.co.wground.comment.presentation.response.CommentsResponse
 import kr.co.wground.comment.presentation.response.LikedCommentsResponse
+import kr.co.wground.comment.presentation.response.MyCommentsResponse
 import kr.co.wground.comment.presentation.response.toResponse
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
@@ -80,13 +81,10 @@ class CommentController(
         @SortDefault(sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable,
         userId: CurrentUserId
-    ): ResponseEntity<CommentsResponse> {
+    ): ResponseEntity<MyCommentsResponse> {
         val result = commentService.getCommentsByMe(userId, pageable)
-
-        return ResponseEntity.ok(
-            CommentsResponse(result.content.map { CommentSummaryResponse.from(it) }
-            )
-        )
+        
+        return ResponseEntity.ok(result.toResponse())
     }
 
     @GetMapping("/me/liked")
