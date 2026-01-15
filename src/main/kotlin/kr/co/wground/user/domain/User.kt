@@ -103,11 +103,11 @@ class User(
     }
 
     fun accessProfile(): String{
-        return this.userProfile.imageUrl
+        return "${this.userProfile.imageUrl}/${this.userProfile.currentFileName}"
     }
 
     fun fixAccessProfile() {
-        this.userProfile.imageUrl = DEFAULT_AVATAR_PATH + "/${this.userId}"
+        this.userProfile.imageUrl = "$DEFAULT_AVATAR_PATH/${this.userId}"
     }
 
     fun logout() {

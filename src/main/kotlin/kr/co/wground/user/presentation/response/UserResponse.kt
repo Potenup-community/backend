@@ -10,6 +10,7 @@ data class UserResponse(
     val name: String,
     val email: String,
     val trackId: TrackId,
+    val trackName: String,
     val profileImageUrl: String,
     val role: UserRole,
 ) {
@@ -20,6 +21,7 @@ data class UserResponse(
                 name = myInfo.name,
                 email = myInfo.email,
                 trackId = myInfo.trackId,
+                trackName = myInfo.trackName,
                 profileImageUrl = myInfo.profileImageUrl,
                 role = myInfo.role,
             )

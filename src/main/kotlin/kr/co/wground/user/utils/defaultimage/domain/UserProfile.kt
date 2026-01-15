@@ -1,23 +1,24 @@
 package kr.co.wground.user.utils.defaultimage.domain
 
 import jakarta.persistence.Embeddable
+import java.nio.file.Path
 import java.time.LocalDateTime
 
 @Embeddable
 class UserProfile(
-    originalProfileName: String?,
-    currentFileName: String?,
-    var imageUrl: String,
-    storagePath: String?,
+    originalProfileName: String? = null,
+    currentFileName: String? = null,
+    var imageUrl: String = "",
+    storagePath: String? = null,
     modifiedProfileAt: LocalDateTime = LocalDateTime.now(),
 ) {
-    var originalProfileName: String? = null
+    var originalProfileName: String? = originalProfileName
         protected set
 
-    var currentFileName: String? = null
+    var currentFileName: String? = currentFileName
         protected set
 
-    var storagePath: String? = null
+    var storagePath: String? = storagePath
         protected set
 
     var modifiedProfileAt: LocalDateTime = modifiedProfileAt
@@ -51,7 +52,14 @@ class UserProfile(
         }
     }
 
-    fun getStoragesUrl(): String {
-        return "$storagePath/$currentFileName"
+    fun getAccessUrl(): String {
+        return "${this.imageUrl}/${this.currentFileName}"
+    }
+
+    fun getStoragesUrl(): String? {
+        val path = storagePath?.takeIf { it.isNotBlank() } ?: return null
+        val fileName = currentFileName?.let { it.takeIf { it.isNotBlank() } } ?: return null
+
+        return Path.of(path, fileName).toString()
     }
 }
