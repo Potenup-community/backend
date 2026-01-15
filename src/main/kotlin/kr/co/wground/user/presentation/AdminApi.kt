@@ -1,7 +1,6 @@
 package kr.co.wground.user.presentation
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
@@ -47,7 +46,7 @@ interface AdminApi {
         ]
     )
     fun decisionSignUp(
-        @Parameter(description = "대상 유저 ID", example = "1") userId: UserId,
+        userId: UserId,
         request: DecisionStatusRequest
     ): ResponseEntity<Unit>
 

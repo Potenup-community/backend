@@ -9,7 +9,7 @@ object UserSwaggerResponseExample {
              "trackId": 1,
              "trackName": "BE 1기",
              "profileImageUrl": "/api/v1/users/profiles/1",
-            "role": "MEMBER"
+             "role": "MEMBER"
         }"""
 
     const val LOGIN_SUCCESS = """{
@@ -31,7 +31,7 @@ object UserSwaggerResponseExample {
                     "phoneNumber": "01012345678",
                     "trackName": "BE 1기",
                     "academicStatus": "ENROLLED",
-                    "status": "ACCEPTED",
+                    "status": "ACTIVE",
                     "role": "MEMBER"
                 }
             ],

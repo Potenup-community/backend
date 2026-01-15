@@ -115,7 +115,7 @@ interface TrackApi {
     )
     fun deleteTrack(@Parameter(description = "삭제할 과정 ID", example = "1") trackId: TrackId): ResponseEntity<Unit>
 
-    @Operation(summary = "과정 목록 조회 (Admin 제외)", description = "관리자 트랙을 제외한 모든 과정을 조회합니다.")
+    @Operation(summary = "과정 목록 조회 (Admin 제외, 회원가입 용)", description = "관리자 트랙을 제외한 모든 과정을 조회합니다.")
     @ApiResponses(
         value = [
             ApiResponse(
@@ -123,7 +123,7 @@ interface TrackApi {
                 content = [Content(
                     mediaType = "application/json",
                     schema = Schema(implementation = TrackListResponse::class),
-                    examples = [ExampleObject(name = "TRACK_LIST", value = TrackSwaggerResponseExample.TRACK_LIST)]
+                    examples = [ExampleObject(name = "TRACK_LIST", value = TrackSwaggerResponseExample.TRACK_LIST_EXCEPT_ADMIN)]
                 )]
             )
         ]
