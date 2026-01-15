@@ -29,7 +29,10 @@ class CustomPostRepositoryImpl(private val jpaQueryFactory: JPAQueryFactory): Cu
                 eqTopic(predicate.topic),
                 eqUserId(predicate.userId)
             )
-            .orderBy(*toOrderSpecifiers(pageable.sort).toTypedArray())
+            .orderBy(
+                *toOrderSpecifiers(pageable.sort).toTypedArray(),
+                post.id.desc()
+            )
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong() + 1)
             .fetch()

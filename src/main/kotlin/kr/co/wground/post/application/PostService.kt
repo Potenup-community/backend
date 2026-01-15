@@ -24,7 +24,6 @@ import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
-import org.springframework.data.domain.SliceImpl
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -133,6 +132,12 @@ class PostService(
     fun getMyPosts(userId: UserId, pageable: Pageable): Slice<PostSummaryDto> {
         val predicate = GetPostSummaryPredicate(pageable = pageable, userId = userId)
         val posts = postRepository.findAllByPredicate(predicate)
+
+        return assembleSummaryDtos(posts, userId)
+    }
+
+    fun getMyLikedPosts(userId: UserId, pageable: Pageable): Slice<PostSummaryDto> {
+        val posts = postReactionRepository.findAllLikedByUser(userId, pageable)
 
         return assembleSummaryDtos(posts, userId)
     }
