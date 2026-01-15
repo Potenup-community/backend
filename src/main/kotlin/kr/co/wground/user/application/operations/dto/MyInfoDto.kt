@@ -21,7 +21,7 @@ data class MyInfoDto(
                 name = user.name,
                 email = user.email,
                 trackId = user.trackId,
-                trackName = user.name,
+                trackName = user.trackName,
                 profileImageUrl = user.userProfile.getAccessUrl(),
                 role = user.role,
             )
