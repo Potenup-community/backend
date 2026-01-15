@@ -22,7 +22,7 @@ data class MyInfoDto(
                 email = user.email,
                 trackId = user.trackId,
                 trackName = user.name,
-                profileImageUrl = user.accessProfile(),
+                profileImageUrl = user.userProfile.getAccessUrl(),
                 role = user.role,
             )
         }

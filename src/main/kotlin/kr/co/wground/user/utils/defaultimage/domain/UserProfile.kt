@@ -52,6 +52,10 @@ class UserProfile(
         }
     }
 
+    fun getAccessUrl(): String {
+        return "${this.imageUrl}/${this.currentFileName}"
+    }
+
     fun getStoragesUrl(): String? {
         val path = storagePath?.takeIf { it.isNotBlank() } ?: return null
         val fileName = currentFileName?.let { it.takeIf { it.isNotBlank() } } ?: return null
