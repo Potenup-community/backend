@@ -41,19 +41,20 @@ class ProfileImageServiceImpl(
 
         val (storedFileName, targetPath) = storeFile(userId, file)
 
-        deleteOldProfileFile(user)
-
         val newUserProfile = createNewUserProfile(userId, file.originalFilename, storedFileName, targetPath)
+
         user.updateUserProfile(newUserProfile)
+
+        deleteOldProfileFile(user)
     }
 
     override fun deleteProfileImage(userId: UserId) {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        deleteOldProfileFile(user)
-
         user.updateUserProfile(UserProfile.default())
+
+        deleteOldProfileFile(user)
     }
 
 
