@@ -10,6 +10,7 @@ data class MyInfoDto(
     val name: String,
     val email: String,
     val trackId: TrackId,
+    val trackName: String,
     val profileImageUrl: String,
     val role: UserRole,
 ){
@@ -20,6 +21,7 @@ data class MyInfoDto(
                 name = user.name,
                 email = user.email,
                 trackId = user.trackId,
+                trackName = user.name,
                 profileImageUrl = user.accessProfile(),
                 role = user.role,
             )
