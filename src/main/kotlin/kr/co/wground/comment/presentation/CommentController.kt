@@ -8,10 +8,15 @@ import kr.co.wground.comment.presentation.request.CommentUpdateRequest
 import kr.co.wground.comment.presentation.response.CommentSummaryResponse
 import kr.co.wground.comment.presentation.response.CommentsResponse
 import kr.co.wground.comment.presentation.response.LikedCommentsResponse
+import kr.co.wground.comment.presentation.response.MyCommentsResponse
 import kr.co.wground.comment.presentation.response.toResponse
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
+import org.springframework.data.web.SortDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,10 +26,6 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
-import org.springframework.data.web.PageableDefault
-import org.springframework.data.web.SortDefault
 
 @RestController
 @RequestMapping("/api/v1/comments")
@@ -72,6 +73,18 @@ class CommentController(
             CommentsResponse(result.map { CommentSummaryResponse.from(it) }
             )
         )
+    }
+
+    @GetMapping("/me")
+    override fun getCommentsByMe(
+        @PageableDefault(size = 20)
+        @SortDefault(sort = ["createdAt"], direction = Sort.Direction.DESC)
+        pageable: Pageable,
+        userId: CurrentUserId
+    ): ResponseEntity<MyCommentsResponse> {
+        val result = commentService.getCommentsByMe(userId, pageable)
+        
+        return ResponseEntity.ok(result.toResponse())
     }
 
     @GetMapping("/me/liked")
