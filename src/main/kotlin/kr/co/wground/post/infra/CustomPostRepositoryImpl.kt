@@ -1,19 +1,14 @@
 package kr.co.wground.post.infra
 
 import com.querydsl.core.types.OrderSpecifier
-import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.core.types.dsl.NumberExpression
-import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.global.common.UserId
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.QPost.post
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
-import kr.co.wground.reaction.domain.QPostReaction.postReaction
-import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.data.domain.Sort
 
@@ -49,43 +44,6 @@ class CustomPostRepositoryImpl(private val jpaQueryFactory: JPAQueryFactory): Cu
             pageable,
             hasNext
         )
-    }
-
-    override fun findAllLikedByUser(
-        userId: UserId,
-        pageable: Pageable,
-    ): Slice<Post> {
-        val content = jpaQueryFactory
-            .selectFrom(post)
-            .where(
-                existsLikedBy(userId),
-            )
-            .orderBy(
-                post.createdAt.desc(),
-                post.id.desc(),
-            )
-            .offset(pageable.offset)
-            .limit(pageable.pageSize.toLong() + 1)
-            .fetch()
-
-        val hasNext = content.size > pageable.pageSize
-
-        return SliceImpl(
-            content.take(pageable.pageSize),
-            pageable,
-            hasNext
-        )
-    }
-
-    private fun existsLikedBy(userId: UserId): BooleanExpression {
-        return JPAExpressions
-            .selectOne()
-            .from(postReaction)
-            .where(
-                postReaction.userId.eq(userId),
-                postReaction.postId.eq(post.id),
-            )
-            .exists()
     }
 
     private data class PopularityParams(

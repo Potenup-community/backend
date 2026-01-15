@@ -1,11 +1,18 @@
 package kr.co.wground.reaction.infra.querydsl
 
 import com.querydsl.core.types.dsl.CaseBuilder
+import com.querydsl.jpa.JPAExpressions
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.post.domain.Post
+import kr.co.wground.post.domain.QPost.post
+import kr.co.wground.reaction.domain.QPostReaction
 import kr.co.wground.reaction.domain.QPostReaction.postReaction
 import kr.co.wground.reaction.domain.enums.ReactionType
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -64,6 +71,44 @@ class CustomPostReactionRepositoryImpl(
                 reactedByMe = reactedByMe > 0
             )
         }
+    }
+
+    override fun findAllLikedByUser(
+        userId: UserId,
+        pageable: Pageable,
+    ): Slice<Post> {
+        val subPostReaction = QPostReaction("subPostReaction")
+
+        val latestReactionIdsPerPost = JPAExpressions
+            .select(subPostReaction.id.max())
+            .from(subPostReaction)
+            .where(
+                subPostReaction.userId.eq(userId),
+            )
+            .groupBy(subPostReaction.postId)
+
+        val content = queryFactory
+            .select(post)
+            .from(postReaction)
+            .join(post).on(post.id.eq(postReaction.postId))
+            .where(
+                postReaction.id.`in`(latestReactionIdsPerPost),
+            )
+            .orderBy(
+                postReaction.createdAt.desc(),
+                postReaction.id.desc(),
+            )
+            .offset(pageable.offset)
+            .limit(pageable.pageSize.toLong() + 1)
+            .fetch()
+
+        val hasNext = content.size > pageable.pageSize
+
+        return SliceImpl(
+            content.take(pageable.pageSize),
+            pageable,
+            hasNext
+        )
     }
 
     data class PostReactionStatsRow(
