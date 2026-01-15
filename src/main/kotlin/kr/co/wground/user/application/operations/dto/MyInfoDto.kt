@@ -2,8 +2,8 @@ package kr.co.wground.user.application.operations.dto
 
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
-import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
+import kr.co.wground.user.infra.dto.MyPageDto
 
 data class MyInfoDto(
     val userId: UserId,
@@ -15,7 +15,7 @@ data class MyInfoDto(
     val role: UserRole,
 ){
     companion object{
-        fun from(user: User): MyInfoDto{
+        fun from(user: MyPageDto): MyInfoDto{
             return MyInfoDto(
                 userId = user.userId,
                 name = user.name,

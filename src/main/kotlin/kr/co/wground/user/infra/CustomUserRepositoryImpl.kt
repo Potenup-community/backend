@@ -24,6 +24,7 @@ import kr.co.wground.user.domain.QUser.user
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
+import kr.co.wground.user.infra.dto.MyPageDto
 import kr.co.wground.user.infra.dto.UserCountDto
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import kr.co.wground.user.infra.dto.UserInfoDto
@@ -233,6 +234,30 @@ class CustomUserRepositoryImpl(
             .leftJoin(track).on(user.trackId.eq(track.trackId))
             .where(user.userId.`in`(userIds))
             .fetch()
+    }
+
+    override fun findUserAndTrack(userId: UserId): MyPageDto? {
+        val result = queryFactory
+            .select(
+                Projections
+                    .constructor(
+                        MyPageDto::class.java,
+                        user.userId,
+                        user.name,
+                        user.email,
+                        user.trackId,
+                        track.trackName,
+                        user.userProfile,
+                        user.role,
+                        user.status
+                    )
+            )
+            .from(user)
+            .leftJoin(track).on(user.trackId.eq(track.trackId))
+            .where(user.userId.eq(userId))
+            .fetchOne()
+
+        return result
     }
 
     private fun predicates(condition: ConditionDto): Array<BooleanExpression?> {

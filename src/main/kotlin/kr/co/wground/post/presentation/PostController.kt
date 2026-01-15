@@ -69,4 +69,24 @@ class PostController(
     override fun getPost(@PathVariable id: PostId): PostDetailResponse {
         return postService.getPostDetail(id).toResponse()
     }
+
+    @GetMapping("/me")
+    override fun getMyPost(
+        @PageableDefault(size = 20)
+        @SortDefault(sort = ["createdAt"], direction = Sort.Direction.DESC)
+        pageable: Pageable,
+        userId: CurrentUserId,
+    ): PostSummaryResponse {
+        return postService.getMyPosts(userId.value, pageable).toResponse()
+    }
+
+    @GetMapping("/posts/me/liked")
+    override fun getMyLikedPosts(
+        @PageableDefault(size = 20)
+        @SortDefault(sort = ["createdAt"], direction = Sort.Direction.DESC)
+        pageable: Pageable,
+        userId: CurrentUserId
+    ): PostSummaryResponse {
+        return postService.getMyLikedPosts(userId.value, pageable).toResponse()
+    }
 }
