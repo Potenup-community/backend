@@ -47,7 +47,7 @@ class SignUpServiceTest {
 
         // then
         verify(userRepository).save(any(User::class.java))
-        verify(eventPublisher, times(2)).publishEvent(any(Any::class.java))
+        verify(eventPublisher, times(1)).publishEvent(any(Any::class.java))
     }
 
     @Test
