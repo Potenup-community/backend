@@ -1,27 +1,23 @@
 package kr.co.wground.user.utils.defaultimage.domain
 
 import jakarta.persistence.Embeddable
-import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
-import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_FILE_NAME
-import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_PROFILE_NAME
-import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_STORAGE_PATH
 import java.time.LocalDateTime
 
 @Embeddable
 class UserProfile(
-    originalProfileName: String,
-    currentFileName: String,
-    val imageUrl: String,
-    storagePath: String,
+    originalProfileName: String?,
+    currentFileName: String?,
+    var imageUrl: String,
+    storagePath: String?,
     modifiedProfileAt: LocalDateTime = LocalDateTime.now(),
 ) {
-    var originalProfileName: String = originalProfileName
+    var originalProfileName: String? = null
         protected set
 
-    var currentFileName: String = currentFileName
+    var currentFileName: String? = null
         protected set
 
-    var storagePath: String = storagePath
+    var storagePath: String? = null
         protected set
 
     var modifiedProfileAt: LocalDateTime = modifiedProfileAt
@@ -46,10 +42,10 @@ class UserProfile(
 
         fun default(): UserProfile {
             return UserProfile(
-                originalProfileName = DEFAULT_PROFILE_NAME,
-                currentFileName = DEFAULT_FILE_NAME,
-                imageUrl = DEFAULT_AVATAR_PATH,
-                storagePath = DEFAULT_STORAGE_PATH,
+                originalProfileName = null,
+                currentFileName = null,
+                imageUrl = "",
+                storagePath = null,
                 modifiedProfileAt = LocalDateTime.now()
             )
         }
