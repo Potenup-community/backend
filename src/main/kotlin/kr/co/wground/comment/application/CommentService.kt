@@ -3,6 +3,7 @@ package kr.co.wground.comment.application
 import kr.co.wground.comment.application.dto.CommentCreateDto
 import kr.co.wground.comment.application.dto.CommentSummaryDto
 import kr.co.wground.comment.application.dto.CommentUpdateDto
+import kr.co.wground.comment.application.dto.LikedCommentSummaryDto
 import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.exception.CommentErrorCode
 import kr.co.wground.comment.infra.CommentRepository
@@ -16,9 +17,17 @@ import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
+import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
+import kr.co.wground.user.application.operations.constant.UNKNOWN_USER_NAME_TAG
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+
+private const val DELETED_COMMENT_TAG = "[삭제된 댓글]"
 
 @Service
 class CommentService(
@@ -112,5 +121,43 @@ class CommentService(
             .associate { (commentId, stats) ->
                 commentId to stats
             }
+    }
+
+    @Transactional(readOnly = true)
+    fun getLikedComments(userId: CurrentUserId, pageable: Pageable): Slice<LikedCommentSummaryDto> {
+        val likedReactions = reactionQueryService.getLikedComments(userId.value, pageable)
+        if (likedReactions.isEmpty) {
+            return SliceImpl(emptyList(), pageable, likedReactions.hasNext())
+        }
+
+        val likedCommentIds = likedReactions.content.map { it.commentId }
+        val commentsById = commentRepository
+            .findAllById(likedCommentIds.toSet())
+            .associateBy { it.id }
+
+        val comments = commentsById.values.toList()
+        val usersById = loadUsersByComments(comments)
+        val reactionStatsById = fetchReactionCounts(comments, userId.value)
+
+        val summaries = likedReactions.content.mapNotNull { likedReaction ->
+            val comment = commentsById[likedReaction.commentId] ?: return@mapNotNull null
+            val author = usersById[comment.writerId]
+
+            LikedCommentSummaryDto(
+                commentId = comment.id,
+                postId = comment.postId,
+                content = if (comment.isDeleted) DELETED_COMMENT_TAG else comment.content,
+                authorId = comment.writerId,
+                authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
+                trackName = author?.trackName ?: NOT_ASSOCIATE,
+                authorProfileImageUrl = author?.profileImageUrl ?: DEFAULT_AVATAR_PATH,
+                createdAt = comment.createdAt,
+                likedAt = likedReaction.likedAt,
+                commentReactionStats = reactionStatsById[comment.id] ?: CommentReactionStats.emptyOf(comment.id),
+                isDeleted = comment.isDeleted,
+            )
+        }
+
+        return SliceImpl(summaries, pageable, likedReactions.hasNext())
     }
 }

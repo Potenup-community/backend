@@ -10,7 +10,11 @@ import kr.co.wground.reaction.exception.ReactionErrorCode
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.reaction.application.dto.PostReactionStats
 import kr.co.wground.reaction.application.dto.ReactionSummary
+import kr.co.wground.reaction.application.dto.LikedCommentDto
+import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.infra.jpa.CommentReactionJpaRepository
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -134,6 +138,12 @@ class ReactionQueryService(
                 )
             }
             .toMap()
+    }
+
+    fun getLikedComments(userId: UserId, pageable: Pageable): Slice<LikedCommentDto> {
+        return commentReactionJpaRepository
+            .findByUserIdAndReactionType(userId, ReactionType.LIKE, pageable)
+            .map { LikedCommentDto(commentId = it.commentId, likedAt = it.createdAt) }
     }
 
     // validation --------------------
