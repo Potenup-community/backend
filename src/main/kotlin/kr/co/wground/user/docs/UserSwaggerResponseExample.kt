@@ -7,6 +7,7 @@ object UserSwaggerResponseExample {
              "name": "홍길동",
              "email": "gildong@gmail.com",
              "trackId": 1,
+             "trackName": "BE 1기",
              "profileImageUrl": "/api/v1/users/profiles/1",
             "role": "MEMBER"
         }"""
