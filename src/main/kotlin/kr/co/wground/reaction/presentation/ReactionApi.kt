@@ -165,7 +165,6 @@ interface ReactionApi {
     fun getPostReactionStats(
         @Schema(example = "1")
         @Positive(message = "postId 는 0 또는 음수일 수 없습니다.")
-        @NotNull(message = "postId 가 null 입니다.")
         postId: PostId,
         @Parameter(
             `in` = ParameterIn.COOKIE,
