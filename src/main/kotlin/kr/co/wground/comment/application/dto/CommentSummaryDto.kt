@@ -2,11 +2,13 @@ package kr.co.wground.comment.application.dto
 
 import java.time.LocalDateTime
 import kr.co.wground.global.common.CommentId
+import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 
 data class CommentSummaryDto(
     val commentId: CommentId,
+    val postId: PostId,
     val content: String,
     val authorId: UserId,
     val authorName: String,
@@ -20,6 +22,7 @@ data class CommentSummaryDto(
     companion object {
         fun of(
             commentId: CommentId,
+            postId: PostId,
             content: String,
             authorId: UserId,
             authorName: String,
@@ -32,6 +35,7 @@ data class CommentSummaryDto(
         ): CommentSummaryDto {
             return CommentSummaryDto(
                 commentId = commentId,
+                postId = postId,
                 content = content,
                 authorId = authorId,
                 authorName = authorName,

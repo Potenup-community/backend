@@ -95,6 +95,7 @@ class CommentService(
 
             CommentSummaryDto.of(
                 commentId = comment.id,
+                postId = comment.postId,
                 content = if (comment.isDeleted) DELETED_COMMENT_TAG else comment.content,
                 authorId = comment.writerId,
                 authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
