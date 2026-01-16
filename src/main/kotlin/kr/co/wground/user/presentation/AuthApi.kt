@@ -2,6 +2,7 @@ package kr.co.wground.user.presentation
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
@@ -80,9 +81,13 @@ interface AuthApi {
             )
         ]
     )
-    fun logout(@Parameter(hidden = true) userId: CurrentUserId): ResponseEntity<Unit>
+    fun logout(@Parameter(
+        `in` = ParameterIn.COOKIE,
+        name = "accessToken",
+        description = "현재 로그인한 사용자 ID",
+        schema = Schema(type = "string", example = "token_value")) userId: CurrentUserId): ResponseEntity<Unit>
 
-    @Operation(summary = "인증 상태 확인", description = "현재 요청의 인증 상태(로그인 여부, 유저 ID, 권한)를 확인합니다.")
+    @Operation(summary = "인증 상태 확인", description = "현재 요청의 인증 상태(로그인 여부, 유저 ID, 권한)를 확인합니다. # 엑세스 토큰 필수")
     @ApiResponses(
         value = [
             ApiResponse(
@@ -96,5 +101,5 @@ interface AuthApi {
             )
         ]
     )
-    fun getAuthStatus(@Parameter(hidden = true) authentication: Authentication): ResponseEntity<AuthStatusResponse>
+    fun getAuthStatus(authentication: Authentication): ResponseEntity<AuthStatusResponse>
 }

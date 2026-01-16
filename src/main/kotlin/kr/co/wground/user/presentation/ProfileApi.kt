@@ -2,6 +2,7 @@ package kr.co.wground.user.presentation
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
@@ -53,7 +54,12 @@ interface ProfileApi {
         ]
     )
     fun getMyProfile(
-        @Parameter(description = "대상 유저 ID(엑세스 토큰을 통해 추출)", example = "1") userId: CurrentUserId,
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")
+        ) userId: CurrentUserId,
         @Parameter(hidden = true) request: WebRequest
     ): ResponseEntity<ProfileResponse>
 
@@ -90,7 +96,14 @@ interface ProfileApi {
             )
         ]
     )
-    fun uploadProfileImage(@RequestPart("file") file: MultipartFile, userId: CurrentUserId): ResponseEntity<Unit>
+    fun uploadProfileImage(
+        @RequestPart("file") file: MultipartFile, @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")
+        ) userId: CurrentUserId
+    ): ResponseEntity<Unit>
 
 
     @Operation(
@@ -121,5 +134,12 @@ interface ProfileApi {
             )
         ]
     )
-    fun deleteProfile(userId: CurrentUserId): ResponseEntity<Unit>
+    fun deleteProfile(
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")
+        ) userId: CurrentUserId
+    ): ResponseEntity<Unit>
 }

@@ -2,6 +2,7 @@ package kr.co.wground.post.presentation
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.headers.Header
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
@@ -52,7 +53,11 @@ interface PostApi {
                 )]
             )]
     )
-    fun writePost(request: PostCreateRequest, writer: CurrentUserId): ResponseEntity<Unit>
+    fun writePost(request: PostCreateRequest, @Parameter(
+        `in` = ParameterIn.COOKIE,
+        name = "accessToken",
+        description = "현재 로그인한 사용자 ID",
+        schema = Schema(type = "string", example = "token_value")) writer: CurrentUserId): ResponseEntity<Unit>
 
     @Operation(summary = "게시글 삭제", description = "게시글 id로 게시글을 삭제합니다.")
     @ApiResponses(
@@ -68,7 +73,11 @@ interface PostApi {
             )
         ]
     )
-    fun deletePost(@Schema(example = "1")id: PostId, writer: CurrentUserId): ResponseEntity<Unit>
+    fun deletePost(@Schema(example = "1")id: PostId, @Parameter(
+        `in` = ParameterIn.COOKIE,
+        name = "accessToken",
+        description = "현재 로그인한 사용자 ID",
+        schema = Schema(type = "string", example = "token_value")) writer: CurrentUserId): ResponseEntity<Unit>
 
     @Operation(summary = "게시글 수정", description = "id에 맞는 게시글을 수정합니다.")
     @ApiResponses(
@@ -103,7 +112,11 @@ interface PostApi {
         ]
     )
     fun updatePost(
-        @Schema(example = "1") id: PostId, request: PostUpdateRequest, writer: CurrentUserId
+        @Schema(example = "1") id: PostId, request: PostUpdateRequest, @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")) writer: CurrentUserId
     ): ResponseEntity<Unit>
 
     @Operation(summary = "게시글을 page, size 단위로 summary들만 조회합니다.")
@@ -120,7 +133,11 @@ interface PostApi {
             example = "NOTICE"
         )
         topic: Topic?,
-        userId: CurrentUserId
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")) userId: CurrentUserId
     ): PostSummaryResponse
 
     @Operation(summary = "게시글의 id로 상세 조회합니다.")
@@ -151,7 +168,11 @@ interface PostApi {
     fun getMyPost(
         @ParameterObject @PageableDefault(size = 20)
         pageable: Pageable,
-        userId: CurrentUserId
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")) userId: CurrentUserId
     ): PostSummaryResponse
 
     @Operation(summary = "page, size 단위로 내가 좋아요 누른 글을 조회합니다.(현재 글이 작성된 시간 기준)")
@@ -163,6 +184,10 @@ interface PostApi {
     fun getMyLikedPosts(
         @ParameterObject @PageableDefault(size = 20)
         pageable: Pageable,
-        userId: CurrentUserId
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")) userId: CurrentUserId
     ): PostSummaryResponse
 }

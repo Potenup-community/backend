@@ -2,6 +2,7 @@ package kr.co.wground.comment.presentation
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.headers.Header
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
@@ -94,7 +95,11 @@ interface CommentApi {
     )
     fun writeComment(
         request: CommentCreateRequest,
-        @Parameter(description = "현재 로그인한 사용자 ID", hidden = true) writerId: CurrentUserId,
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")) writerId: CurrentUserId,
     ): ResponseEntity<Unit>
 
     @Operation(
@@ -155,7 +160,11 @@ interface CommentApi {
     fun updateComment(
         @Parameter(description = "수정할 댓글 ID", example = "1") id: CommentId,
         request: CommentUpdateRequest,
-        @Parameter(description = "현재 로그인한 사용자 ID", hidden = true) writerId: CurrentUserId,
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")) writerId: CurrentUserId,
     ): ResponseEntity<Unit>
 
     @Operation(
@@ -197,7 +206,11 @@ interface CommentApi {
     )
     fun deleteComment(
         @Parameter(description = "삭제할 댓글 ID", example = "1") id: CommentId,
-        @Parameter(description = "현재 로그인한 사용자 ID", hidden = true) writerId: CurrentUserId,
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")) writerId: CurrentUserId,
     ): ResponseEntity<Unit>
 
     @Operation(
@@ -246,7 +259,11 @@ interface CommentApi {
     )
     fun getComments(
         @Parameter(description = "댓글을 조회할 게시글 ID", example = "1") postId: PostId,
-        @Parameter(description = "현재 로그인한 사용자 ID", hidden = true) writerId: CurrentUserId
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")) writerId: CurrentUserId
     ): ResponseEntity<CommentsResponse>
 
     @Operation(
@@ -269,7 +286,11 @@ interface CommentApi {
         @ParameterObject
         @PageableDefault(size = 20)
         pageable: Pageable,
-        @Parameter(description = "현재 로그인한 사용자 ID", hidden = true) userId: CurrentUserId,
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")) userId: CurrentUserId,
     ): ResponseEntity<MyCommentsResponse>
 
     @Operation(
@@ -292,6 +313,11 @@ interface CommentApi {
         @ParameterObject
         @PageableDefault(size = 20)
         pageable: Pageable,
-        @Parameter(description = "현재 로그인한 사용자 ID", hidden = true) userId: CurrentUserId,
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value"))
+        userId: CurrentUserId,
     ): ResponseEntity<LikedCommentsResponse>
 }
