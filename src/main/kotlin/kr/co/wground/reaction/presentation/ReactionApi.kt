@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.response.ErrorResponse
@@ -72,12 +75,14 @@ interface ReactionApi {
         ]
     )
     fun react(
-        request: ReactionRequest,
+        @Valid request: ReactionRequest,
         @Parameter(
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) user: CurrentUserId
+            schema = Schema(type = "string", example = "token_value")
+        )
+        user: CurrentUserId
     ): ResponseEntity<Unit>
 
     @Operation(summary = "리액션 취소", description = "필수 요청 바디로 대상 id, 대상 유형, 리액션 유형을 보내어 리액션을 취소합니다.")
@@ -110,12 +115,13 @@ interface ReactionApi {
         ]
     )
     fun unreact(
-        request: ReactionRequest,
+        @Valid request: ReactionRequest,
         @Parameter(
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) user: CurrentUserId
+            schema = Schema(type = "string", example = "token_value")
+        ) user: CurrentUserId
     ): ResponseEntity<Unit>
 
     @Operation(summary = "게시글 리액션 조회", description = "경로 변수로 게시글 id 명시하여 해당 게시글의 리액션 유형 별 리액션 수를 조회합니다.")
@@ -158,12 +164,15 @@ interface ReactionApi {
     )
     fun getPostReactionStats(
         @Schema(example = "1")
+        @Positive(message = "postId 는 0 또는 음수일 수 없습니다.")
+        @NotNull(message = "postId 가 null 입니다.")
         postId: PostId,
         @Parameter(
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) user: CurrentUserId
+            schema = Schema(type = "string", example = "token_value")
+        ) user: CurrentUserId
     ): ResponseEntity<PostReactionStats>
 
     @Operation(summary = "여러 게시글 리액션 조회", description = "요청 바디로 게시글 id 리스트 명시하여 해당 게시글 목록의 리액션 유형 별 리액션 수를 조회합니다.")
@@ -194,12 +203,13 @@ interface ReactionApi {
         ]
     )
     fun getPostReactionStatsInBatch(
-        request: PostReactionStatsBatchRequest,
+        @Valid request: PostReactionStatsBatchRequest,
         @Parameter(
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) user: CurrentUserId
+            schema = Schema(type = "string", example = "token_value")
+        ) user: CurrentUserId
     ): ResponseEntity<Map<PostId, PostReactionStats>>
 
     @Operation(summary = "여러 댓글 리액션 조회", description = "요청 바디로 댓글 id 리스트 명시하여 해당 댓글 목록의 리액션 유형 별 리액션 수를 조회합니다.")
@@ -230,11 +240,12 @@ interface ReactionApi {
         ]
     )
     fun getCommentReactionStats(
-        request: CommentReactionStatsBatchRequest,
+        @Valid request: CommentReactionStatsBatchRequest,
         @Parameter(
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) user: CurrentUserId
+            schema = Schema(type = "string", example = "token_value")
+        ) user: CurrentUserId
     ): ResponseEntity<Map<CommentId, CommentReactionStats>>
 }

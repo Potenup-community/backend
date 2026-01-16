@@ -1,7 +1,6 @@
 package kr.co.wground.reaction.presentation
 
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
@@ -9,12 +8,12 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.reaction.application.ReactionCommandService
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
-import kr.co.wground.reaction.presentation.request.ReactionRequest
-import kr.co.wground.reaction.presentation.request.ReactionTarget.COMMENT
-import kr.co.wground.reaction.presentation.request.ReactionTarget.POST
 import kr.co.wground.reaction.application.dto.PostReactionStats
 import kr.co.wground.reaction.presentation.request.CommentReactionStatsBatchRequest
 import kr.co.wground.reaction.presentation.request.PostReactionStatsBatchRequest
+import kr.co.wground.reaction.presentation.request.ReactionRequest
+import kr.co.wground.reaction.presentation.request.ReactionTarget.COMMENT
+import kr.co.wground.reaction.presentation.request.ReactionTarget.POST
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -69,11 +68,10 @@ class ReactionController(
 
     @GetMapping("/posts/{postId}")
     override fun getPostReactionStats(
-        @NotNull(message = "postId 가 null 입니다.")
+        @PathVariable
         @Positive(message = "postId 는 0 또는 음수일 수 없습니다.")
-        @PathVariable("postId")
         postId: PostId,
-        user: CurrentUserId
+        user: CurrentUserId,
     ): ResponseEntity<PostReactionStats> {
 
         val userId = user.value
@@ -89,7 +87,7 @@ class ReactionController(
         @Valid
         @RequestBody
         request: PostReactionStatsBatchRequest,
-        user: CurrentUserId
+        user: CurrentUserId,
     ): ResponseEntity<Map<PostId, PostReactionStats>> {
 
         val userId = user.value
@@ -104,7 +102,7 @@ class ReactionController(
         @Valid
         @RequestBody
         request: CommentReactionStatsBatchRequest,
-        user: CurrentUserId
+        user: CurrentUserId,
     ): ResponseEntity<Map<CommentId, CommentReactionStats>> {
 
         val userId = user.value
