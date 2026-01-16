@@ -1,5 +1,6 @@
 package kr.co.wground.comment.presentation
 
+import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -300,6 +301,7 @@ interface CommentApi {
         ) userId: CurrentUserId,
     ): ResponseEntity<MyCommentsResponse>
 
+    @Hidden
     @Operation(
         summary = "내가 좋아요한 댓글 조회",
         description = "현재 로그인한 사용자가 LIKE 반응을 누른 댓글 목록을 페이지 단위로 조회합니다."
