@@ -34,8 +34,6 @@ class WebConfig(
     }
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
-        registry.addResourceHandler("/assets/**")
-            .addResourceLocations("classpath:/assets/")
 
         registry.addResourceHandler("${uploadPolicy.publicBasePath}/**")
             .addResourceLocations("file:${uploadPolicy.localDir}/")
