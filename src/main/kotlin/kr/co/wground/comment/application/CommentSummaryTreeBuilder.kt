@@ -43,6 +43,7 @@ class CommentSummaryTreeBuilder private constructor(
 
         return CommentSummaryDto.of(
             commentId = comment.id,
+            postId = comment.postId,
             content = content,
             authorId = comment.writerId,
             authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
