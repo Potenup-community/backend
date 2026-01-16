@@ -83,7 +83,7 @@ class CommentController(
         userId: CurrentUserId
     ): ResponseEntity<MyCommentsResponse> {
         val result = commentService.getCommentsByMe(userId, pageable)
-        
+
         return ResponseEntity.ok(result.toResponse())
     }
 

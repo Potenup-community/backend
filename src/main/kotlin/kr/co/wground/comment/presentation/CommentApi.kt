@@ -14,7 +14,6 @@ import kr.co.wground.comment.docs.CommentSwaggerErrorExample
 import kr.co.wground.comment.docs.CommentSwaggerResponseExample
 import kr.co.wground.comment.presentation.request.CommentCreateRequest
 import kr.co.wground.comment.presentation.request.CommentUpdateRequest
-import kr.co.wground.comment.presentation.response.CommentSummaryResponse
 import kr.co.wground.comment.presentation.response.CommentsResponse
 import kr.co.wground.comment.presentation.response.LikedCommentsResponse
 import kr.co.wground.comment.presentation.response.MyCommentsResponse
@@ -99,7 +98,8 @@ interface CommentApi {
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) writerId: CurrentUserId,
+            schema = Schema(type = "string", example = "token_value")
+        ) writerId: CurrentUserId,
     ): ResponseEntity<Unit>
 
     @Operation(
@@ -164,7 +164,8 @@ interface CommentApi {
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) writerId: CurrentUserId,
+            schema = Schema(type = "string", example = "token_value")
+        ) writerId: CurrentUserId,
     ): ResponseEntity<Unit>
 
     @Operation(
@@ -210,7 +211,8 @@ interface CommentApi {
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) writerId: CurrentUserId,
+            schema = Schema(type = "string", example = "token_value")
+        ) writerId: CurrentUserId,
     ): ResponseEntity<Unit>
 
     @Operation(
@@ -263,7 +265,8 @@ interface CommentApi {
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) writerId: CurrentUserId
+            schema = Schema(type = "string", example = "token_value")
+        ) writerId: CurrentUserId
     ): ResponseEntity<CommentsResponse>
 
     @Operation(
@@ -277,7 +280,10 @@ interface CommentApi {
                 description = "조회 성공",
                 content = [Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = CommentSummaryResponse::class),
+                    schema = Schema(implementation = MyCommentsResponse::class),
+                    examples = [
+                        ExampleObject(name = "MY_COMMENTS", value = CommentSwaggerResponseExample.MY_COMMENTS)
+                    ]
                 )]
             ),
         ]
@@ -290,7 +296,8 @@ interface CommentApi {
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")) userId: CurrentUserId,
+            schema = Schema(type = "string", example = "token_value")
+        ) userId: CurrentUserId,
     ): ResponseEntity<MyCommentsResponse>
 
     @Operation(
@@ -305,6 +312,9 @@ interface CommentApi {
                 content = [Content(
                     mediaType = "application/json",
                     schema = Schema(implementation = LikedCommentsResponse::class),
+                    examples = [
+                        ExampleObject(name = "LIKED_COMMENTS", value = CommentSwaggerResponseExample.LIKED_COMMENTS)
+                    ]
                 )]
             ),
         ]
@@ -317,7 +327,7 @@ interface CommentApi {
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
             description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value"))
-        userId: CurrentUserId,
+            schema = Schema(type = "string", example = "token_value")
+        ) userId: CurrentUserId,
     ): ResponseEntity<LikedCommentsResponse>
 }
