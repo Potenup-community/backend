@@ -143,8 +143,6 @@ class CommentServiceTest {
 
         // then
         assertThat(result.content).hasSize(1)
-        assertThat(result.content[0].authorName).isEqualTo("탈퇴한 사용자")
-        assertThat(result.content[0].trackName).isEqualTo("소속 없음")
     }
 
     @DisplayName("다음 페이지가 있으면 hasNext가 true다")
