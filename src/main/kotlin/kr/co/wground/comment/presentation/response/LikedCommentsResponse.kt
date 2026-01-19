@@ -22,8 +22,6 @@ data class LikedCommentSummaryResponse(
     val postId: PostId,
     @field:Schema(description = "댓글 내용")
     val content: String,
-    @field:Schema(description = "댓글 작성자 정보")
-    val author: CommentAuthorResponse,
     @field:Schema(description = "댓글 작성 시간")
     val createdAt: LocalDateTime,
     @field:Schema(description = "좋아요 누른 시간")
@@ -41,12 +39,6 @@ fun Slice<LikedCommentSummaryDto>.toResponse(): LikedCommentsResponse {
                 commentId = it.commentId,
                 postId = it.postId,
                 content = it.content,
-                author = CommentAuthorResponse(
-                    userId = it.authorId,
-                    name = it.authorName,
-                    trackName = it.trackName,
-                    profileImageUrl = it.authorProfileImageUrl,
-                ),
                 createdAt = it.createdAt,
                 likedAt = it.likedAt,
                 commentReactionStats = it.commentReactionStats,

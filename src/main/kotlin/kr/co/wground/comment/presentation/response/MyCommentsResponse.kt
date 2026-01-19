@@ -24,7 +24,7 @@ data class MyCommentItemResponse(
     val createdAt: LocalDateTime,
     @field:Schema(description = "게시글 조회수")
     val viewCount: Int,
-    @field:Schema(description = "댓글 좋아요수")
+    @field:Schema(description = "댓글 좋아요 수")
     val likeCount: Int,
     @field:Schema(description = "댓글 삭제 여부")
     val isDeleted: Boolean,
