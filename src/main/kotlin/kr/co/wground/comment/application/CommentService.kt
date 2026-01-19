@@ -83,15 +83,14 @@ class CommentService(
             return SliceImpl(emptyList(), pageable, comments.hasNext())
         }
 
-        val postIds = comments.content.map { it.postId }.toSet()
-        val postsById = postRepository.findAllById(postIds).associateBy { it.id }
+        val usersById = loadUsersByComments(comments.content)
         val reactionStatsById = fetchReactionCounts(comments.content, userId.value)
 
         val summaries = comments.content.map { comment ->
             MyCommentSummaryDto.from(
                 comment = comment,
-                post = postsById[comment.postId],
-                reactionStats = reactionStatsById[comment.id],
+                author = usersById[comment.writerId],
+                reactionStats = reactionStatsById[comment.id] ?: CommentReactionStats.emptyOf(comment.id),
             )
         }
 
