@@ -2,55 +2,78 @@ name: backend-ci
 
 on:
   push:
-    branches:
-      - develop
-      - main
+    branches: [test/scrum-182, main, develop]
   pull_request:
-    branches:
-      - develop
-      - main
-
-permissions:
-  contents: read
-  checks: write
-  pull-requests: write
+    branches: [feature/scrum-182, main, develop]
 
 jobs:
   test:
     name: Build Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     env:
       SPRING_PROFILES_ACTIVE: test
       JWT_SECRET_TOKEN: ${{ secrets.JWT_SECRET_TOKEN }}
       GOOGLE_CLIENT_KEY: ${{ secrets.GOOGLE_CLIENT_KEY }}
       ACCESS_TOKEN_EXPIRED: ${{ secrets.ACCESS_TOKEN_EXPIRED }}
       REFRESH_TOKEN_EXPIRED: ${{ secrets.REFRESH_TOKEN_EXPIRED }}
+      IMAGE_NAME: ${{secrets.DOCKERHUB_USERNAME}}/${{secrets.DOCKERHUB_REPOSITORY}}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 브랜치명(main/develop/release-x)을 태그에 쓰기 좋게 정리
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          images: ${{ env.IMAGE_NAME }}
+          tags: | 
+            type=sha,format=short 
+            type=ref,event=branch 
+            type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Run Tests with Gradle
-        run: ./gradlew test --no-daemon
-
-      - name: Register the test results as comments in the PR
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
+      - name: Build (load for test)
+        uses: docker/build-push-action@v6
         with:
-          files: '**/build/test-results/test/TEST-*.xml'
+          context: .
+          load: true
+          tags: local:test-image
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Register a Check comment on failed test code
-        uses: mikepenz/action-junit-report@v3
-        if: always()
+      - name: Run tests inside image
+        run: |
+          docker run --rm \
+            -e SPRING_PROFILES_ACTIVE \
+            -e JWT_SECRET_TOKEN \
+            -e GOOGLE_CLIENT_KEY \
+            -e ACCESS_TOKEN_EXPIRED \
+            -e REFRESH_TOKEN_EXPIRED \
+            local:test-image ./gradlew test
+
+      - name: Docker Hub Login
+        uses: docker/login-action@v3
+        if: github.event_name == 'push'
         with:
-          report_paths: '**/build/test-results/test/TEST-*.xml'
-          token: ${{ github.token }}
+          username: ${{secrets.DOCKERHUB_USERNAME}}
+          password: ${{secrets.DOCKERHUB_TOKEN}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        if: github.event_name == 'push'
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
