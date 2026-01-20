@@ -2,9 +2,9 @@ name: backend-ci
 
 on:
   push:
-    branches: [test/scrum-182, main, develop]
+    branches: [ test/scrum-182, main, develop ]
   pull_request:
-    branches: [feature/scrum-182, main, develop]
+    branches: [ feature/scrum-182, main, develop ]
 
 jobs:
   test:
@@ -36,7 +36,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME }}
-          tags: | 
+          tags: |
             type=sha,format=short 
             type=ref,event=branch 
             type=raw,value=latest,enable={{is_default_branch}}
@@ -58,7 +58,12 @@ jobs:
             -e GOOGLE_CLIENT_KEY \
             -e ACCESS_TOKEN_EXPIRED \
             -e REFRESH_TOKEN_EXPIRED \
-            local:test-image ./gradlew test
+            local:test-image ./gradlew test --stacktrace --info
+              echo "PROFILE=$SPRING_PROFILES_ACTIVE"
+              echo "JWT_SECRET_TOKEN length=${#JWT_SECRET_TOKEN}"
+              echo "GOOGLE_CLIENT_KEY length=${#GOOGLE_CLIENT_KEY}"
+              echo "ACCESS_TOKEN_EXPIRED=$ACCESS_TOKEN_EXPIRED"
+              echo "REFRESH_TOKEN_EXPIRED=$REFRESH_TOKEN_EXPIRED"
 
       - name: Docker Hub Login
         uses: docker/login-action@v3
