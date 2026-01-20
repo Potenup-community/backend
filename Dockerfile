@@ -25,9 +25,6 @@ RUN ./gradlew --no-daemon clean bootJar
 ############################
 FROM build AS test
 
-ARG SPRING_PROFILES_ACTIVE=test
-ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
-
 # 필요하면 여기서 특정 테스트만/옵션 추가 가능
 CMD ["./gradlew", "--no-daemon", "test"]
 
