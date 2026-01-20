@@ -7,13 +7,13 @@ import java.util.UUID
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.image.exception.UploadErrorCode
-import kr.co.wground.image.validator.ImageUploadValidator
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_FILE_NAME
 import kr.co.wground.user.utils.defaultimage.domain.UserProfile
 import kr.co.wground.user.utils.defaultimage.policy.ProfilePolicy
+import kr.co.wground.user.utils.defaultimage.validator.ProfileValidator
 import org.slf4j.LoggerFactory
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile
 @Transactional
 class ProfileImageServiceImpl(
     private val userRepository: UserRepository,
-    private val imageUploadValidator: ImageUploadValidator,
+    private val profileValidator: ProfileValidator,
     private val profilePolicy: ProfilePolicy,
 ) : ProfileImageService {
 
@@ -37,39 +37,31 @@ class ProfileImageServiceImpl(
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        validateFile(file)
+        profileValidator.validateImage(file)
 
         val (storedFileName, targetPath) = storeFile(userId, file)
 
         val newUserProfile = createNewUserProfile(userId, file.originalFilename, storedFileName, targetPath)
 
-        user.updateUserProfile(newUserProfile)
-
         deleteOldProfileFile(user)
+
+        user.updateUserProfile(newUserProfile)
     }
 
     override fun deleteProfileImage(userId: UserId) {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        user.updateUserProfile(UserProfile.default())
-
         deleteOldProfileFile(user)
+
+        user.updateUserProfile(UserProfile.default())
     }
 
-
-
-    private fun validateFile(file: MultipartFile) {
-        imageUploadValidator.validate(file)
-        val ext = file.originalFilename?.substringAfterLast('.', "").orEmpty().lowercase()
-        validateMaxBytes(file.size)
-        validateFileExtension(ext)
-    }
 
     private fun storeFile(userId: UserId, file: MultipartFile): Pair<String, Path> {
         val ext = file.originalFilename?.substringAfterLast('.', "").orEmpty().lowercase()
         val storedFileName = "${UUID.randomUUID()}.$ext"
-        val targetPath = Path.of(profilePolicy.localDir, "/$userId/$storedFileName")
+        val targetPath = Path.of(profilePolicy.localDir, "$userId/$storedFileName")
 
         try {
             Files.createDirectories(targetPath.parent)
@@ -84,7 +76,12 @@ class ProfileImageServiceImpl(
         }
     }
 
-    private fun createNewUserProfile(userId: UserId, originalName: String?, storedName: String, path: Path): UserProfile {
+    private fun createNewUserProfile(
+        userId: UserId,
+        originalName: String?,
+        storedName: String,
+        path: Path
+    ): UserProfile {
         val imageUrl = "${profilePolicy.webPathPrefix}/$userId"
             .replace(FILE_URL_REGEX, "/")
 
@@ -105,18 +102,6 @@ class ProfileImageServiceImpl(
             }
         } catch (e: Exception) {
             log.error("UserId: ${user.userId}, 이전 프로필 삭제 실패: ${e.message}")
-        }
-    }
-
-    private fun validateMaxBytes(size: Long) {
-        if (size > profilePolicy.maxBytes) {
-            throw BusinessException(UploadErrorCode.FILE_TOO_LARGE_EXCEPTION)
-        }
-    }
-
-    private fun validateFileExtension(ext: String) {
-        if (!profilePolicy.allowedExts.contains(ext)) {
-            throw BusinessException(UploadErrorCode.UNSUPPORTED_MIME_EXCEPTION)
         }
     }
 }
