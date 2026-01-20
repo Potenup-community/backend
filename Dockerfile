@@ -15,14 +15,16 @@ RUN chmod +x gradlew && ./gradlew --no-daemon dependencies > /dev/null || true
 # 소스 복사
 COPY . .
 
-# (선택) 테스트 stage 분리: 여기서는 빌드만
+# COPY . 이후에 gradlew가 덮여써질 수도 있으니 한 번 더
+RUN chmod +x gradlew
+
 RUN ./gradlew --no-daemon clean bootJar
 
 ############################
 # 2) Test stage
 ############################
 FROM build AS test
-# 테스트는 CI에서 이 stage만 실행하게 할 거야
+
 ARG SPRING_PROFILES_ACTIVE=test
 ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
 
