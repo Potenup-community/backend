@@ -86,6 +86,12 @@ tasks.withType<Test> {
 	useJUnitPlatform()
 }
 
+tasks.test {
+    useJUnitPlatform() {
+        excludeTags("container")
+    }
+}
+
 sourceSets {
     main {
         java {

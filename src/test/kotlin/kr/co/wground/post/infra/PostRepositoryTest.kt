@@ -13,6 +13,7 @@ import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
@@ -32,6 +33,7 @@ import kotlin.math.pow
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(QuerydslTestConfig::class)
+@Tag("container")
 class PostRepositoryTest(
     @Autowired private val em: EntityManager,
     @Autowired private val jpaQueryFactory: JPAQueryFactory,
