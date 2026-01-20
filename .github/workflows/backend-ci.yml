@@ -45,6 +45,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          target: test
           load: true
           tags: local:test-image
           cache-from: type=gha
@@ -57,7 +58,7 @@ jobs:
             ./gradlew -q tasks --all | grep -E "bootRun|test|build" | head -n 50
             ./gradlew test --dry-run
           '
-          
+
       - name: Run tests inside image
         run: |
           docker run --rm \
