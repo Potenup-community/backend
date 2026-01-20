@@ -90,7 +90,7 @@ class CommentService(
             MyCommentSummaryDto.from(
                 comment = comment,
                 author = usersById[comment.writerId],
-                reactionStats = reactionStatsById[comment.id] ?: CommentReactionStats.emptyOf(comment.id),
+                reactionStats = reactionStatsById[comment.id],
             )
         }
 
@@ -117,7 +117,7 @@ class CommentService(
 
             LikedCommentSummaryDto.from(
                 comment = comment,
-                reactionStats = reactionStatsById[comment.id] ?: CommentReactionStats.emptyOf(comment.id),
+                reactionStats = reactionStatsById[comment.id],
                 likedAt = likedReaction.likedAt,
             )
         }
@@ -172,7 +172,7 @@ class CommentService(
             return CommentSummaryDto.from(
                 comment = comment,
                 author = authorsById[comment.writerId],
-                reactionStats = reactionStatsById[comment.id] ?: CommentReactionStats.emptyOf(comment.id),
+                reactionStats = reactionStatsById[comment.id],
                 replies = replies,
             )
         }

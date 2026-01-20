@@ -20,7 +20,7 @@ data class LikedCommentSummaryDto(
     companion object {
         fun from(
             comment: Comment,
-            reactionStats: CommentReactionStats,
+            reactionStats: CommentReactionStats?,
             likedAt: LocalDateTime,
         ) = LikedCommentSummaryDto(
             commentId = comment.id,
@@ -28,7 +28,7 @@ data class LikedCommentSummaryDto(
             content = if (comment.isDeleted) DELETED_COMMENT_TAG else comment.content,
             createdAt = comment.createdAt,
             likedAt = likedAt,
-            commentReactionStats = reactionStats,
+            commentReactionStats = reactionStats ?: CommentReactionStats.emptyOf(comment.id),
             isDeleted = comment.isDeleted,
         )
     }

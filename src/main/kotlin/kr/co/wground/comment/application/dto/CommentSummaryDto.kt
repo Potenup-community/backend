@@ -27,7 +27,7 @@ data class CommentSummaryDto(
         fun from(
             comment: Comment,
             author: UserDisplayInfoDto?,
-            reactionStats: CommentReactionStats,
+            reactionStats: CommentReactionStats?,
             replies: List<CommentSummaryDto>,
         ) = CommentSummaryDto(
             commentId = comment.id,
@@ -37,7 +37,7 @@ data class CommentSummaryDto(
             trackName = author?.trackName ?: NOT_ASSOCIATE,
             authorProfileImageUrl = author?.profileImageUrl ?: "",
             createdAt = comment.createdAt,
-            commentReactionStats = reactionStats,
+            commentReactionStats = reactionStats ?: CommentReactionStats.emptyOf(comment.id),
             isDeleted = comment.isDeleted,
             replies = replies,
         )
