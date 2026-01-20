@@ -3,6 +3,7 @@ package kr.co.wground.comment.application.dto
 import java.time.LocalDateTime
 import kr.co.wground.comment.domain.Comment
 import kr.co.wground.global.common.CommentId
+import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
@@ -11,8 +12,9 @@ import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 
 private const val DELETED_COMMENT_TAG = "[삭제된 댓글]"
 
-data class CommentSummaryDto(
+data class MyCommentSummaryDto(
     val commentId: CommentId,
+    val postId: PostId,
     val content: String,
     val authorId: UserId,
     val authorName: String,
@@ -21,16 +23,15 @@ data class CommentSummaryDto(
     val createdAt: LocalDateTime,
     val commentReactionStats: CommentReactionStats,
     val isDeleted: Boolean,
-    val replies: List<CommentSummaryDto>,
 ) {
     companion object {
         fun from(
             comment: Comment,
             author: UserDisplayInfoDto?,
             reactionStats: CommentReactionStats?,
-            replies: List<CommentSummaryDto>,
-        ) = CommentSummaryDto(
+        ) = MyCommentSummaryDto(
             commentId = comment.id,
+            postId = comment.postId,
             content = if (comment.isDeleted) DELETED_COMMENT_TAG else comment.content,
             authorId = comment.writerId,
             authorName = author?.name ?: UNKNOWN_USER_NAME_TAG,
@@ -39,7 +40,6 @@ data class CommentSummaryDto(
             createdAt = comment.createdAt,
             commentReactionStats = reactionStats ?: CommentReactionStats.emptyOf(comment.id),
             isDeleted = comment.isDeleted,
-            replies = replies,
         )
     }
 }
