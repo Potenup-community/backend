@@ -80,7 +80,10 @@ class ProfileValidator(
                     riff == "RIFF" && webp == "WEBP"
                 }
             }
-            else -> true
+            else -> {
+                log.error("미지원 헤더 확장자 : $ext")
+                false
+            }
         }
     }
 }

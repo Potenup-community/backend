@@ -34,8 +34,7 @@ class ProfileImageServiceImpl(
     }
 
     override fun updateProfileImage(userId: UserId, file: MultipartFile) {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+        val user = findUserById(userId)
 
         profileValidator.validateImage(file)
 
@@ -49,8 +48,7 @@ class ProfileImageServiceImpl(
     }
 
     override fun deleteProfileImage(userId: UserId) {
-        val user = userRepository.findByIdOrNull(userId)
-            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+        val user = findUserById(userId)
 
         deleteOldProfileFile(user)
 
@@ -103,5 +101,10 @@ class ProfileImageServiceImpl(
         } catch (e: Exception) {
             log.error("UserId: ${user.userId}, 이전 프로필 삭제 실패: ${e.message}")
         }
+    }
+
+    private fun findUserById(userId: UserId): User {
+        return userRepository.findByIdOrNull(userId)
+            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
     }
 }

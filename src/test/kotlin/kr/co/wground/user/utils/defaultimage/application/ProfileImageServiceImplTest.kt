@@ -23,9 +23,9 @@ import org.junit.jupiter.api.io.TempDir
 import org.springframework.mock.web.MockMultipartFile
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
 import kotlin.io.path.createDirectories
 import kr.co.wground.user.utils.defaultimage.validator.ProfileValidator
+import java.util.Optional
 
 @ExtendWith(MockKExtension::class)
 class ProfileImageServiceImplTest {
