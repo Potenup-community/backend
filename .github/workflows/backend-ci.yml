@@ -51,14 +51,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Sanity check inside container
-        run: |
-          docker run --rm --entrypoint bash local:test-image -lc '
-            ls -la
-            ./gradlew -q tasks --all | grep -E "bootRun|test|build" | head -n 50
-            ./gradlew test --dry-run
-          '
-
       - name: Run tests inside image
         run: |
           docker run --rm \
