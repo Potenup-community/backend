@@ -219,6 +219,40 @@ class CustomUserRepositoryImpl(
         return results.associateBy { it.userId }
     }
 
+    override fun findUserDisplayInfosForMention(
+        limit: Int,
+        cursorName: String?,
+        cursorId: Long?
+    ): List<UserDisplayInfoDto> {
+        val trackNameExpr = track.trackName.coalesce(NOT_ASSOCIATE)
+
+        val query = queryFactory
+            .select(
+                Projections.constructor(
+                    UserDisplayInfoDto::class.java,
+                    user.userId,
+                    user.name,
+                    user.userProfile.imageUrl,
+                    trackNameExpr,
+                )
+            )
+            .from(user)
+            .leftJoin(track).on(user.trackId.eq(track.trackId))
+            .where(user.status.eq(UserStatus.ACTIVE))
+
+        if (cursorName != null && cursorId != null) {
+            query.where(
+                user.name.gt(cursorName)
+                    .or(user.name.eq(cursorName).and(user.userId.gt(cursorId)))
+            )
+        }
+
+        return query
+            .orderBy(user.name.asc(), user.userId.asc())
+            .limit(limit.toLong())
+            .fetch()
+    }
+
     override fun findAllApprovalTargets(userIds: List<Long>): List<VerificationEvent.VerificationTarget> {
         return queryFactory
             .select(
