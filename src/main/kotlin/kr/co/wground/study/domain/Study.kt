@@ -1,5 +1,6 @@
 package kr.co.wground.study.domain
 
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -7,6 +8,7 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.domain.constant.StudyStatus
 import java.time.LocalDateTime
@@ -66,6 +68,10 @@ class Study(
     var budget: BudgetType = budget
         protected set
 
+    @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true)
+    protected val _studyTags: MutableList<StudyTag> = ArrayList()
+    val studyTags: List<StudyTag> get() = _studyTags.toList()
+
     @Column(nullable = false)
     var externalChatUrl: String = externalChatUrl
         protected set
@@ -82,6 +88,7 @@ class Study(
         const val MIN_CAPACITY = 2
         const val RECOMMENDED_MAX_CAPACITY = 10
         const val ABSOLUTE_MAX_CAPACITY = 60
+        const val MAX_TAG_COUNT = 5
 
         val URL_PATTERN = Regex("^(http|https)://.*$")
     }
@@ -130,6 +137,24 @@ class Study(
         this.updatedAt = LocalDateTime.now()
 
         checkAndChangeStatus()
+    }
+
+    fun addTag(tag: Tag) {
+        if (this.studyTags.size >= MAX_TAG_COUNT) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_TAG_COUNT_EXCEEDED)
+        }
+
+        val isExist = this.studyTags.any { it.tag.id == tag.id }
+        if (isExist) {
+            return
+        }
+
+        val studyTag = StudyTag(study = this, tag = tag)
+        this._studyTags.add(studyTag)
+    }
+
+    fun removeTag(tag: Tag) {
+        this._studyTags.removeIf { it.tag.id == tag.id }
     }
 
     fun approve() {

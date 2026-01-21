@@ -31,7 +31,7 @@ class Tag protected constructor(
         private fun normalize(input: String): String {
             return input.trim()
                 .lowercase()
-                .replace(" ", "").replace(VALID_PATTERN, "")
+                .replace(" ", "")
                 .filter {
                     it.isDigit() ||
                             it.isLowerCase() ||

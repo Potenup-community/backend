@@ -32,4 +32,6 @@ class StudyRecruitment(
     @Column(nullable = false)
     var updatedAt: LocalDateTime = updatedAt
         protected set
+
+    //TODO 내일 여기까지  만들면 도메인 구축은 끝
 }
