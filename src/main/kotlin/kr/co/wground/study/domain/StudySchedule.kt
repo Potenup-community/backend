@@ -35,6 +35,7 @@ class StudySchedule(
     recruitStartDate: LocalDate,
     recruitEndDate: LocalDate,
     studyEndDate: LocalDate,
+    @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     updatedAt: LocalDateTime = LocalDateTime.now(),
 ) {
@@ -47,15 +48,19 @@ class StudySchedule(
     var months: Months = months
         protected set
 
+    @Column(nullable = false)
     var recruitStartDate: LocalDateTime = recruitStartDate.atStartOfDay()
         protected set
 
+    @Column(nullable = false)
     var recruitEndDate: LocalDateTime = recruitEndDate.atTime(LocalTime.MAX)
         protected set
 
+    @Column(nullable = false)
     var studyEndDate: LocalDateTime = studyEndDate.atTime(LocalTime.MAX)
         protected set
 
+    @Column(nullable = false)
     var updatedAt: LocalDateTime = updatedAt
         protected set
 
