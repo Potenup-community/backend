@@ -1,4 +1,4 @@
-package kr.co.wground.study.aplication
+package kr.co.wground.study.application
 
 import org.springframework.stereotype.Service
 

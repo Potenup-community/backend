@@ -22,5 +22,5 @@ class StudyTag(
 ) {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
-    var tags: Tag = tag
+    var tag: Tag = tag
 }

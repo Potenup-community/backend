@@ -18,7 +18,7 @@ class Study(
     val leaderId: UserId,
     description: String,
     status: StudyStatus,
-    hiringAmount: Integer,
+    hiringAmount: Int,
     externalChatUrl: String,
     referenceUrl: String,
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -34,7 +34,7 @@ class Study(
     var status: StudyStatus = status
         protected set
 
-    var hiringAmount: Integer = hiringAmount
+    var hiringAmount: Int = hiringAmount
         protected set
 
     var externalChatUrl: String = externalChatUrl
