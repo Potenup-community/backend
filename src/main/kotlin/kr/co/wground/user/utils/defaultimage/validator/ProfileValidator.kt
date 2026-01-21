@@ -12,6 +12,8 @@ class ProfileValidator(
     val profilePolicy: ProfilePolicy
 ) {
     companion object {
+        const val IMAGE_FILE_HEADER_MAX = 12
+        const val IMAGE_FILE_HEADER_MIN = 4
         private val log = LoggerFactory.getLogger(ProfileValidator::class.java)
     }
 
@@ -47,10 +49,10 @@ class ProfileValidator(
     private fun validateImageHeader(file: MultipartFile, ext: String) {
         try {
             file.inputStream.use { inputStream ->
-                val header = ByteArray(12)
+                val header = ByteArray(IMAGE_FILE_HEADER_MAX)
                 val readBytes = inputStream.read(header)
 
-                if (readBytes < 4) throw BusinessException(UploadErrorCode.UNSUPPORTED_FORMAT_EXCEPTION)
+                if (readBytes < IMAGE_FILE_HEADER_MIN) throw BusinessException(UploadErrorCode.UNSUPPORTED_FORMAT_EXCEPTION)
 
                 if (!isValidHeader(header, readBytes, ext)) {
                     log.warn("이미지 헤더 검증 실패: 확장자=$ext")
@@ -73,7 +75,7 @@ class ProfileValidator(
                 s == "GIF87a" || s == "GIF89a"
             }
             "webp" -> {
-                if (readBytes < 12) false
+                if (readBytes < IMAGE_FILE_HEADER_MAX) false
                 else {
                     val riff = String(header.copyOfRange(0, 4))
                     val webp = String(header.copyOfRange(8, 12))
