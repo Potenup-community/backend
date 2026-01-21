@@ -8,7 +8,6 @@ import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
 import kr.co.wground.global.common.UserId
-import kr.co.wground.image.validator.ImageUploadValidator
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.utils.defaultimage.domain.UserProfile
@@ -24,8 +23,9 @@ import org.junit.jupiter.api.io.TempDir
 import org.springframework.mock.web.MockMultipartFile
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.*
 import kotlin.io.path.createDirectories
+import kr.co.wground.user.utils.defaultimage.validator.ProfileValidator
+import java.util.Optional
 
 @ExtendWith(MockKExtension::class)
 class ProfileImageServiceImplTest {
@@ -36,7 +36,7 @@ class ProfileImageServiceImplTest {
     private lateinit var userRepository: UserRepository
 
     @MockK
-    private lateinit var imageUploadValidator: ImageUploadValidator
+    private lateinit var profileValidator: ProfileValidator
 
     @TempDir
     lateinit var tempDir: Path
@@ -53,7 +53,7 @@ class ProfileImageServiceImplTest {
 
         profileImageService = ProfileImageServiceImpl(
             userRepository,
-            imageUploadValidator,
+            profileValidator,
             profilePolicy
         )
     }
@@ -64,13 +64,11 @@ class ProfileImageServiceImplTest {
         // Given
         val userId: UserId = 1L
         
-        // relaxed = true: 메서드 호출 시 별도 설정이 없으면 기본값 반환 (Unit 메서드는 그냥 실행됨)
         val user = mockk<User>(relaxed = true)
 
-        // findByIdOrNull 내부에서 findById가 호출되므로 이를 Mocking
         every { userRepository.findById(userId) } returns Optional.of(user)
         every { user.userProfile } returns UserProfile.default()
-        every { imageUploadValidator.validate(any()) } just runs
+        every { profileValidator.validateImage(any()) } just runs
 
         val multipartFile = MockMultipartFile(
             "file",
@@ -83,7 +81,6 @@ class ProfileImageServiceImplTest {
         profileImageService.updateProfileImage(userId, multipartFile)
 
         // Then
-        // 1. 파일 시스템 확인
         val userDir = tempDir.resolve(userId.toString())
         assertTrue(Files.exists(userDir), "User 디렉토리가 생성되어야 합니다")
         
@@ -91,7 +88,6 @@ class ProfileImageServiceImplTest {
         assertEquals(1, files.size, "파일이 1개 생성되어야 합니다")
         assertEquals("fake-image-content", Files.readString(files[0]))
 
-        // 2. User 업데이트 호출 검증 (MockK는 final 메서드도 검증 가능)
         verify(exactly = 1) { user.updateUserProfile(any()) }
     }
 
@@ -102,7 +98,6 @@ class ProfileImageServiceImplTest {
         val userId: UserId = 2L
         val user = mockk<User>(relaxed = true)
 
-        // 테스트용 파일 생성
         val storedFileName = "old-image.png"
         val userDir = tempDir.resolve(userId.toString()).also { it.createDirectories() }
         val oldFile = userDir.resolve(storedFileName)
@@ -123,10 +118,7 @@ class ProfileImageServiceImplTest {
         profileImageService.deleteProfileImage(userId)
 
         // Then
-        // 1. 파일 삭제 확인
         assertFalse(Files.exists(oldFile), "기존 파일은 삭제되어야 합니다")
-
-        // 2. User 업데이트 호출 검증
         verify(exactly = 1) { user.updateUserProfile(any()) }
     }
 }
