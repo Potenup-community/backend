@@ -9,7 +9,8 @@ import kr.co.wground.global.common.CommentId
 data class CommentUpdateRequest(
     @field:Schema(example = "수정할 댓글 내용")
     @field:Size(max = 2000, message = "댓글은 2000자까지 작성할 수 있습니다.")
-    val content: String?
+    val content: String?,
+    val mentionUserIds: List<Long>? = emptyList(),
 ) {
     fun toDto(commentId: CommentId) = CommentUpdateDto(
         commentId = commentId,
