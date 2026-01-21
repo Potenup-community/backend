@@ -10,19 +10,39 @@ import kr.co.wground.study.domain.constant.StudyStatus
 import java.time.LocalDateTime
 
 @Entity
-class Study (
+class Study(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    val name: String,
-    val leaderId : UserId,
-    @Column(columnDefinition = "TEXT", nullable = false, length = 300)
-    val description: String,
-    val status: StudyStatus,
-    val hiringAmount: Integer,
-    val externalChatUrl: String,
-    val referenceUrl: String,
+    name: String,
+    val leaderId: UserId,
+    description: String,
+    status: StudyStatus,
+    hiringAmount: Integer,
+    externalChatUrl: String,
+    referenceUrl: String,
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
-){
+    updatedAt: LocalDateTime = LocalDateTime.now(),
+) {
+    var name: String = name
+        protected set
+
+    @Column(columnDefinition = "TEXT", nullable = false, length = 300)
+    var description: String = description
+        protected set
+
+    var status: StudyStatus = status
+        protected set
+
+    var hiringAmount: Integer = hiringAmount
+        protected set
+
+    var externalChatUrl: String = externalChatUrl
+        protected set
+
+    var referenceUrl: String = referenceUrl
+        protected set
+
+    var updatedAt: LocalDateTime = updatedAt
+        protected set
 }

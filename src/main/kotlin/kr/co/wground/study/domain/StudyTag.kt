@@ -18,8 +18,9 @@ class StudyTag(
     @JoinColumn(name = "study_id")
     val study: Study,
 
+    tag: Tag
+) {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
-    val tags: Tag,
-) {
+    var tags: Tag = tag
 }

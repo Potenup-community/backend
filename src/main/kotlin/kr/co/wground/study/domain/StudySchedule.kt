@@ -14,14 +14,24 @@ class StudySchedule(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
-    val trackId: TrackId,
-    val months: Months,
-    val startDate: LocalDate,
-    val recruitEndDate: LocalDate,
-    val studyEndDate: LocalDate,
+    trackId: TrackId,
+    months: Months,
+    startDate: LocalDate,
+    recruitEndDate: LocalDate,
+    studyEndDate: LocalDate,
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    updatedAt: LocalDateTime = LocalDateTime.now(),
 ) {
-
-
+    var trackId: TrackId = trackId
+        protected set
+    var months: Months = months
+        protected set
+    var startDate: LocalDate = startDate
+        protected set
+    var recruitEndDate: LocalDate = recruitEndDate
+        protected set
+    var studyEndDate: LocalDate = studyEndDate
+        protected set
+    var updatedAt: LocalDateTime = updatedAt
+        protected set
 }

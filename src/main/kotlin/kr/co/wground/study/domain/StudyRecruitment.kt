@@ -16,8 +16,12 @@ class StudyRecruitment(
     val userId: UserId,
     val studyId: Long,
     val appeal: String,
-    val recruitStatus: RecruitStatus,
+    recruitStatus: RecruitStatus,
     val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    updatedAt: LocalDateTime = LocalDateTime.now(),
 ) {
+    var recruitStatus: RecruitStatus = recruitStatus
+        protected set
+    var updatedAt: LocalDateTime = updatedAt
+        protected set
 }
