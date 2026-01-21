@@ -17,6 +17,7 @@ import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
@@ -123,6 +124,22 @@ class CommentService(
         }
 
         return SliceImpl(summaries, pageable, likedReactions.hasNext())
+    }
+
+    fun validateMentionUserIds(mentionUserIds: List<Long>?, writerId: UserId): List<Long> {
+        if (mentionUserIds.isNullOrEmpty()) return emptyList()
+
+        val users = userRepository.findByUserIdIn(mentionUserIds)
+
+        val foundIds = users.map { it.userId }.toSet()
+        val notFoundIds = mentionUserIds.filter { it !in foundIds }
+        if (notFoundIds.isNotEmpty()) {
+            throw BusinessException(CommentErrorCode.MENTION_USER_NOT_FOUND)
+        }
+
+        return users
+            .filter { it.userId != writerId && it.status == UserStatus.ACTIVE }
+            .map { it.userId }
     }
 
     private fun validateExistTargetPost(postId: PostId) {
