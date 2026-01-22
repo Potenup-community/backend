@@ -12,7 +12,6 @@ enum class StudyDomainErrorCode(
     STUDY_CANT_START_AFTER_END_DATE(HttpStatus.BAD_REQUEST, "SS-0001", "모집 시작은 모집 종료보다 빨라야 합니다."),
     STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE(HttpStatus.BAD_REQUEST, "SS-0002", "모집 종료는 스터디 종료보다 빨라야 합니다."),
     STUDY_MONTH_ILLEGAL_RANGE(HttpStatus.BAD_REQUEST, "SS-0003", "유효하지 않은 차수입니다. 1 ~ 6차 사이여야 합니다."),
-    STUDY_SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND,"SS-0004","해당 과정과 차수의 스케줄을 찾을 수 없습니다."),
 
     //Tag
     TAG_LENGTH_INVALID_RANGE(HttpStatus.BAD_REQUEST, "TG-0001", "태그의 길이가 양식에 맞지 않습니다."),
@@ -32,6 +31,7 @@ enum class StudyDomainErrorCode(
     STUDY_TAG_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0011","스터디 태그는 최대 5개까지 가질수 있습니다."),
     STUDY_CANT_DELETE_STATUS_DETERMINE(HttpStatus.BAD_REQUEST,"SD-0012","결재 상신된 스터디는 삭제할 수 없습니다."),
     STUDY_SCHEDULE_IS_NOT_IN_TRACK(HttpStatus.BAD_REQUEST,"SD-0013","선택한 스터디 일정이 소속된 트랙에 존재하지 않습니다."),
+    STUDY_ALREADY_FINISH_TO_RECRUIT(HttpStatus.BAD_REQUEST,"SD-0014","해당 스터디의 모집기한이 이미 지났습니다."),
 
     //StudyRecruitment
     RECRUITMENT_APPEAL_TOO_BIG(HttpStatus.BAD_REQUEST,"SR-0001","자기 소개는 최대 100자까지 작성 할 수 있습니다."),

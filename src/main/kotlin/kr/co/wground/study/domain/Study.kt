@@ -35,7 +35,7 @@ class Study(
     status: StudyStatus,
     capacity: Int = RECOMMENDED_MAX_CAPACITY,
     budget: BudgetType,
-    externalChatUrl: String,
+    externalChatUrl: String = DEFAULT_CHAT_URL,
     referenceUrl: String? = null,
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
@@ -95,6 +95,7 @@ class Study(
         const val MAX_TAG_COUNT = 5
         const val MAX_NAME_LENGTH = 50
         const val MAX_DESCRIPTION_LENGTH = 300
+        const val DEFAULT_CHAT_URL = "https://www.kakaocorp.com/page/service/service/openchat"
         val URL_PATTERN = Regex("^(http|https)://.*$")
     }
 
@@ -107,6 +108,10 @@ class Study(
     }
 
     fun increaseMemberCount() {
+        if (isOverRecruit()) {
+            checkAndChangeStatus()
+            throw BusinessException(StudyDomainErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
+        }
         if (this.status != StudyStatus.PENDING) {
             throw BusinessException(StudyDomainErrorCode.STUDY_NOT_RECRUITING)
         }
@@ -122,7 +127,7 @@ class Study(
         newName: String,
         newDescription: String,
         newCapacity: Int,
-        newSchedule:StudySchedule,
+        newSchedule: StudySchedule,
         newBudget: BudgetType,
         newChatUrl: String,
         newRefUrl: String?
@@ -183,7 +188,7 @@ class Study(
     }
 
     private fun validateSchedule(schedule: StudySchedule) {
-        if(!this.trackId.equals(schedule.trackId)) {
+        if (!this.trackId.equals(schedule.trackId)) {
             throw BusinessException(StudyDomainErrorCode.STUDY_SCHEDULE_IS_NOT_IN_TRACK)
         }
     }
@@ -195,9 +200,15 @@ class Study(
 
         if (this.currentMemberCount >= this.capacity) {
             this.status = StudyStatus.CLOSED
-        } else {
-            this.status = StudyStatus.PENDING
+            return
         }
+
+        if (isOverRecruit()) {
+            this.status = StudyStatus.REJECTED
+            return
+        }
+
+        this.status = StudyStatus.PENDING
     }
 
     private fun validateCanUpdate() {
@@ -240,5 +251,9 @@ class Study(
         if (newCapacity < this.currentMemberCount) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_CANNOT_LESS_THAN_CURRENT)
         }
+    }
+
+    private fun isOverRecruit(): Boolean {
+        return this.schedule.recruitEndDate < LocalDateTime.now()
     }
 }
