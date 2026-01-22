@@ -12,6 +12,7 @@ enum class StudyDomainErrorCode(
     STUDY_CANT_START_AFTER_END_DATE(HttpStatus.BAD_REQUEST, "SS-0001", "모집 시작은 모집 종료보다 빨라야 합니다."),
     STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE(HttpStatus.BAD_REQUEST, "SS-0002", "모집 종료는 스터디 종료보다 빨라야 합니다."),
     STUDY_MONTH_ILLEGAL_RANGE(HttpStatus.BAD_REQUEST, "SS-0003", "유효하지 않은 차수입니다. 1 ~ 6차 사이여야 합니다."),
+    STUDY_SCHEDULE_NOT_FOUND(HttpStatus.NOT_FOUND,"SS-0004","해당 과정과 차수의 스케줄을 찾을 수 없습니다."),
 
     //Tag
     TAG_LENGTH_INVALID_RANGE(HttpStatus.BAD_REQUEST, "TG-0001", "태그의 길이가 양식에 맞지 않습니다."),
