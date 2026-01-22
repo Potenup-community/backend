@@ -21,6 +21,9 @@ data class CommentCreateRequest(
     @field:NotNull(message = "댓글 내용을 입력해주세요.")
     @field:Size(max = 2000, message = "댓글은 2000자까지 작성할 수 있습니다.")
     val content: String,
+
+    @field:Schema(example = "[2, 3]")
+    val mentionUserIds: List<Long>? = emptyList(),
 ) {
     fun toDto(writerId: CurrentUserId) = CommentCreateDto(
         writerId = writerId.value,
