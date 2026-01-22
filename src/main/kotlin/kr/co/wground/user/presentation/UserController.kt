@@ -37,10 +37,9 @@ class UserController(
     @GetMapping
     override fun getUsersForMention(
         @RequestParam(defaultValue = "20") size: Int,
-        @RequestParam(required = false) cursorName: String?,
         @RequestParam(required = false) cursorId: Long?
     ): ResponseEntity<List<UserSummaryResponse>> {
-        val users = userService.getUsersForMention(size, cursorName, cursorId)
+        val users = userService.getUsersForMention(size, cursorId)
         return ResponseEntity.ok(users.map { UserSummaryResponse.from(it) })
     }
 }

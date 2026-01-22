@@ -92,7 +92,7 @@ interface UserApi {
     )
     fun requestSignUp(requestSignup: SignUpRequest): ResponseEntity<Unit>
 
-    @Operation(summary = "멘션용 유저 목록 조회", description = "멘션을 위한 회원 요약 정보를 이름순으로 조회합니다. 커서 기반 페이지네이션을 지원합니다.")
+    @Operation(summary = "멘션용 유저 목록 조회", description = "멘션을 위한 회원 요약 정보를 조회합니다. 커서 기반 페이지네이션을 지원합니다.")
     @ApiResponses(
         value = [
             ApiResponse(
@@ -111,8 +111,6 @@ interface UserApi {
     fun getUsersForMention(
         @Parameter(description = "조회할 유저 수 (기본값: 20)", example = "20")
         size: Int,
-        @Parameter(description = "커서: 마지막으로 조회한 유저 이름", example = "홍길동")
-        cursorName: String?,
         @Parameter(description = "커서: 마지막으로 조회한 유저 ID", example = "123")
         cursorId: Long?
     ): ResponseEntity<List<UserSummaryResponse>>

@@ -221,7 +221,6 @@ class CustomUserRepositoryImpl(
 
     override fun findUserDisplayInfosForMention(
         size: Int,
-        cursorName: String?,
         cursorId: Long?
     ): List<UserDisplayInfoDto> {
         val trackNameExpr = track.trackName.coalesce(NOT_ASSOCIATE)
@@ -240,15 +239,10 @@ class CustomUserRepositoryImpl(
             .leftJoin(track).on(user.trackId.eq(track.trackId))
             .where(user.status.eq(UserStatus.ACTIVE))
 
-        if (cursorName != null && cursorId != null) {
-            query.where(
-                user.name.gt(cursorName)
-                    .or(user.name.eq(cursorName).and(user.userId.gt(cursorId)))
-            )
-        }
+        cursorId?.let { query.where(user.userId.gt(cursorId)) }
 
         return query
-            .orderBy(user.name.asc(), user.userId.asc())
+            .orderBy(user.userId.asc())
             .limit(size.toLong())
             .fetch()
     }

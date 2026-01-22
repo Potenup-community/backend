@@ -15,7 +15,6 @@ interface CustomUserRepository {
     fun findUserDisplayInfos(userIds: List<UserId>): Map<UserId, UserDisplayInfoDto>
     fun findUserDisplayInfosForMention(
         size: Int,
-        cursorName: String?,
         cursorId: Long?
     ): List<UserDisplayInfoDto>
 
