@@ -109,7 +109,7 @@ class Study(
 
     fun increaseMemberCount() {
         if (isOverRecruit()) {
-            checkAndChangeStatus()
+            refreshStatus()
             throw BusinessException(StudyDomainErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
         }
         if (this.status != StudyStatus.PENDING) {
@@ -120,7 +120,17 @@ class Study(
         }
 
         this.currentMemberCount++
-        checkAndChangeStatus()
+        refreshStatus()
+    }
+
+    fun decreaseMemberCount() {
+        if (this.currentMemberCount <= 1) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_MIN_MEMBER_REQUIRED)
+        }
+
+        this.currentMemberCount--
+
+        refreshStatus()
     }
 
     fun updateStudyInfo(
@@ -149,7 +159,7 @@ class Study(
         this.referenceUrl = newRefUrl
         this.updatedAt = LocalDateTime.now()
 
-        checkAndChangeStatus()
+        refreshStatus()
     }
 
     fun addTag(tag: Tag) {
@@ -193,22 +203,24 @@ class Study(
         }
     }
 
-    private fun checkAndChangeStatus() {
+    fun refreshStatus(now: LocalDateTime = LocalDateTime.now()) {
         if (this.status == StudyStatus.APPROVED || this.status == StudyStatus.REJECTED) {
             return
         }
 
-        if (this.currentMemberCount >= this.capacity) {
-            this.status = StudyStatus.CLOSED
-            return
+        if (schedule.isRecruitmentClosed(now)) {
+            if (this.currentMemberCount < MIN_CAPACITY) {
+                this.status = StudyStatus.REJECTED
+            } else {
+                this.status = StudyStatus.CLOSED
+            }
+        } else {
+            this.status = if (this.currentMemberCount >= this.capacity) {
+                StudyStatus.CLOSED
+            } else {
+                StudyStatus.PENDING
+            }
         }
-
-        if (isOverRecruit()) {
-            this.status = StudyStatus.REJECTED
-            return
-        }
-
-        this.status = StudyStatus.PENDING
     }
 
     private fun validateCanUpdate() {

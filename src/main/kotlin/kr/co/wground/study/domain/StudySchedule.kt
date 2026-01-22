@@ -120,4 +120,12 @@ class StudySchedule(
     fun isRecruitmentClosed(now: LocalDateTime = LocalDateTime.now()): Boolean {
         return now.isAfter(this.recruitEndDate)
     }
+
+    fun isCurrentRound(now: LocalDateTime = LocalDateTime.now()): Boolean {
+        return now.isAfter(this.recruitStartDate) && now.isBefore(this.studyEndDate)
+    }
+
+    fun isScheduleEnded(now: LocalDateTime = LocalDateTime.now()): Boolean {
+        return now.isAfter(this.studyEndDate)
+    }
 }
