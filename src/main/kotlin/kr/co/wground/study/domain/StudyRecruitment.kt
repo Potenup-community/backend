@@ -2,9 +2,12 @@ package kr.co.wground.study.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.domain.constant.RecruitStatus
@@ -19,8 +22,10 @@ class StudyRecruitment(
     val id: Long = 0,
     @Column(nullable = false)
     val userId: UserId,
-    @Column(nullable = false)
-    val studyId: Long,
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_id", nullable = false)
+    val study: Study,
     appeal: String,
     recruitStatus: RecruitStatus,
     @Column(nullable = false)
@@ -43,22 +48,22 @@ class StudyRecruitment(
         const val MAX_APPEAL_LENGTH = 100
         const val LEADER_DEFAULT_APPEAL = "스터디장 자동 참여"
 
-        fun apply(userId: UserId, studyId: Long, appeal: String): StudyRecruitment {
+        fun apply(userId: UserId, appeal: String, study: Study): StudyRecruitment {
             validateAppealLength(appeal)
 
             return StudyRecruitment(
                 userId = userId,
-                studyId = studyId,
                 appeal = appeal,
-                recruitStatus = RecruitStatus.PENDING
+                study = study,
+                recruitStatus = RecruitStatus.PENDING,
             )
         }
 
-        fun createByLeader(userId: UserId, studyId: Long): StudyRecruitment {
+        fun createByLeader(userId: UserId, study: Study): StudyRecruitment {
             return StudyRecruitment(
                 userId = userId,
-                studyId = studyId,
                 appeal = LEADER_DEFAULT_APPEAL,
+                study = study,
                 recruitStatus = RecruitStatus.APPROVED
             )
         }
@@ -76,8 +81,8 @@ class StudyRecruitment(
         recentUpdateAt()
     }
 
-    fun updateRecruitStatus(newRecruitStatus: RecruitStatus, studyStatus: StudyStatus) {
-        validateStudyStatus(studyStatus)
+    fun updateRecruitStatus(newRecruitStatus: RecruitStatus) {
+        validateStudyStatus(this.study.status)
         validateRecruitStatus(newRecruitStatus)
         this.recruitStatus = newRecruitStatus
         recentUpdateAt()
