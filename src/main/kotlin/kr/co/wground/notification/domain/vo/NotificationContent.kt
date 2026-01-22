@@ -8,13 +8,13 @@ import kr.co.wground.notification.exception.NotificationErrorCode.INVALID_NOTIFI
 data class NotificationContent(
     val title: String,
     val content: String,
-    val link: String? = null
+    val link: String? = null,
 ) {
     init {
-        require(title.isNotBlank()) {
+        if (title.isBlank()) {
             throw BusinessException(INVALID_NOTIFICATION_INPUT)
         }
-        require(content.isNotBlank()) {
+        if (content.isBlank()) {
             throw BusinessException(INVALID_NOTIFICATION_INPUT)
         }
     }
