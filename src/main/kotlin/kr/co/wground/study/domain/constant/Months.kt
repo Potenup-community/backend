@@ -8,7 +8,9 @@ enum class Months(month: String) {
     SECOND("2차"),
     THIRD("3차"),
     FOuRTH("4차"),
-    FIFTH("5차");
+    FIFTH("5차"),
+    SIXTH("6차"),
+    ;
 
     companion object {
                  fun from(value: String): Months {

@@ -38,7 +38,7 @@ class Study(
     val createdAt: LocalDateTime = LocalDateTime.now(),
     updatedAt: LocalDateTime = LocalDateTime.now(),
 ) {
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = MAX_NAME_LENGTH)
     var name: String = name
         protected set
 
@@ -46,7 +46,7 @@ class Study(
     var scheduleId: Long = scheduleId
         protected set
 
-    @Column(length = 300)
+    @Column(length = MAX_DESCRIPTION_LENGTH)
     var description: String = description
         protected set
 
@@ -89,7 +89,8 @@ class Study(
         const val RECOMMENDED_MAX_CAPACITY = 10
         const val ABSOLUTE_MAX_CAPACITY = 60
         const val MAX_TAG_COUNT = 5
-
+        const val MAX_NAME_LENGTH = 50
+        const val MAX_DESCRIPTION_LENGTH = 300
         val URL_PATTERN = Regex("^(http|https)://.*$")
     }
 
@@ -187,13 +188,13 @@ class Study(
     }
 
     private fun validateName(name: String) {
-        if (name.trim().isBlank() || name.length > 50) {
+        if (name.trim().isBlank() || name.length > MAX_NAME_LENGTH) {
             throw BusinessException(StudyDomainErrorCode.STUDY_NAME_INVALID)
         }
     }
 
     private fun validateDescription(description: String) {
-        if (description.trim().isBlank() || description.length > 300) {
+        if (description.trim().isBlank() || description.length > MAX_DESCRIPTION_LENGTH) {
             throw BusinessException(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID)
         }
     }
