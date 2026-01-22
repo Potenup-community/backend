@@ -10,10 +10,18 @@ data class NotificationContent(
     val content: String,
 ) {
     init {
-        if (title.isBlank()) {
+        validateTitle()
+        validateContent()
+    }
+
+    private fun validateTitle() {
+        require(title.isNotBlank()) {
             throw BusinessException(INVALID_NOTIFICATION_INPUT)
         }
-        if (content.isBlank()) {
+    }
+
+    private fun validateContent() {
+        require(content.isNotBlank()) {
             throw BusinessException(INVALID_NOTIFICATION_INPUT)
         }
     }

@@ -41,23 +41,35 @@ class Notification(
     val expiresAt: LocalDateTime?,
 ) {
     init {
-        if (recipientId <= 0) {
-            throw BusinessException(NotificationErrorCode.INVALID_RECIPIENT_ID)
-        }
-        actorId?.let {
-            if (it <= 0) {
-                throw BusinessException(NotificationErrorCode.INVALID_ACTOR_ID)
-            }
-        }
-        expiresAt?.let {
-            if (!it.isAfter(createdAt)) {
-                throw BusinessException(NotificationErrorCode.INVALID_EXPIRES_AT)
-            }
-        }
+        validateRecipientId()
+        validateActorId()
+        validateExpiresAt()
     }
 
     var status = status
         protected set
+
+    private fun validateRecipientId() {
+        require(recipientId > 0) {
+            throw BusinessException(NotificationErrorCode.INVALID_RECIPIENT_ID)
+        }
+    }
+
+    private fun validateActorId() {
+        actorId?.let {
+            require(it > 0) {
+                throw BusinessException(NotificationErrorCode.INVALID_ACTOR_ID)
+            }
+        }
+    }
+
+    private fun validateExpiresAt() {
+        expiresAt?.let {
+            require(it.isAfter(createdAt)) {
+                throw BusinessException(NotificationErrorCode.INVALID_EXPIRES_AT)
+            }
+        }
+    }
 
     fun markAsRead() {
         if (status.isRead()) return
