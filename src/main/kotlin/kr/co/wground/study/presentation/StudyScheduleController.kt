@@ -1,11 +1,10 @@
 package kr.co.wground.study.presentation
 
 import kr.co.wground.study.application.StudyScheduleService
-import kr.co.wground.study.domain.StudySchedule
 import kr.co.wground.study.presentation.request.schedule.ScheduleCreateRequest
 import kr.co.wground.study.presentation.request.schedule.ScheduleUpdateRequest
-import kr.co.wground.study.presentation.response.ScheduleCreateResponse
-import kr.co.wground.study.presentation.response.ScheduleUpdateResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -39,10 +38,5 @@ class StudyScheduleController(
     fun deleteSchedule(@PathVariable id: Long): ResponseEntity<Unit> {
         studyScheduleService.deleteSchedule(id)
         return ResponseEntity.noContent().build()
-    }
-
-    @GetMapping
-    fun getAllSchedules(){
-        val response = studyScheduleService.getAllSchedules()
     }
 }

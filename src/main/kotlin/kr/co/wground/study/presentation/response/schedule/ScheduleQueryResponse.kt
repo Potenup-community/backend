@@ -1,4 +1,4 @@
-package kr.co.wground.study.presentation.response
+package kr.co.wground.study.presentation.response.schedule
 
 import kr.co.wground.study.domain.constant.Months
 import java.time.LocalDateTime

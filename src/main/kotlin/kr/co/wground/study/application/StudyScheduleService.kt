@@ -7,12 +7,13 @@ import kr.co.wground.study.application.dto.ScheduleCreateCommand
 import kr.co.wground.study.application.dto.ScheduleInfo
 import kr.co.wground.study.application.dto.ScheduleUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
+import kr.co.wground.study.domain.StudySchedule
 import kr.co.wground.study.domain.constant.Months
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.StudyScheduleRepository
-import kr.co.wground.study.presentation.response.ScheduleCreateResponse
-import kr.co.wground.study.presentation.response.ScheduleQueryResponse
-import kr.co.wground.study.presentation.response.ScheduleUpdateResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
 import kr.co.wground.track.infra.TrackRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -65,8 +66,7 @@ class StudyScheduleService(
     }
 
     fun updateSchedule(command: ScheduleUpdateCommand): ScheduleUpdateResponse {
-        val schedule = studyScheduleRepository.findByIdOrNull(command.id)
-            ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
+        val schedule = getScheduleEntity(command.id)
 
         val newRecruitStart = command.recruitStartDate?.atStartOfDay() ?: schedule.recruitStartDate
         val newStudyEnd = command.studyEndDate?.atTime(LocalTime.MAX) ?: schedule.studyEndDate
@@ -125,5 +125,10 @@ class StudyScheduleService(
                 throw BusinessException(StudyServiceErrorCode.DUPLICATE_SCHEDULE_MONTH)
             }
         }
+    }
+
+    fun getScheduleEntity(id: Long): StudySchedule {
+        return studyScheduleRepository.findByIdOrNull(id)
+            ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
     }
 }

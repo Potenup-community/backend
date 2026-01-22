@@ -73,6 +73,10 @@ class Study(
         protected set
 
     @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true)
+    protected val _recruitments: MutableList<StudyRecruitment> = ArrayList()
+    val recruitments: List<StudyRecruitment> get() = _recruitments.toList()
+
+    @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true)
     protected val _studyTags: MutableList<StudyTag> = ArrayList()
     val studyTags: List<StudyTag> get() = _studyTags.toList()
 
@@ -134,32 +138,68 @@ class Study(
     }
 
     fun updateStudyInfo(
-        newName: String,
-        newDescription: String,
-        newCapacity: Int,
-        newSchedule: StudySchedule,
-        newBudget: BudgetType,
-        newChatUrl: String,
-        newRefUrl: String?
+        newName: String?,
+        newDescription: String?,
+        newCapacity: Int?,
+        newBudget: BudgetType?,
+        newChatUrl: String?,
+        newRefUrl: String?,
+        newTags: List<Tag>?,
+        now: LocalDateTime = LocalDateTime.now()
     ) {
         validateCanUpdate()
-        validateName(newName)
-        validateDescription(newDescription)
-        validateCapacity(newCapacity)
-        validateUrl(newChatUrl, newRefUrl)
-        validateSchedule(newSchedule)
-        validateCurrentMemberOverCapacity(newCapacity)
 
-        this.name = newName
-        this.description = newDescription
-        this.capacity = newCapacity
-        this.budget = newBudget
-        this.schedule = newSchedule
-        this.externalChatUrl = newChatUrl
-        this.referenceUrl = newRefUrl
+        val resolvedBudget = newBudget ?: this.budget
+        val resolvedChatUrl = newChatUrl ?: this.externalChatUrl
+        val resolvedRefUrl = newRefUrl ?: this.referenceUrl
+
+        validateUrl(resolvedChatUrl, resolvedRefUrl)
+
+        this.budget = resolvedBudget
+        this.externalChatUrl = resolvedChatUrl
+        this.referenceUrl = resolvedRefUrl
+
+        if (!schedule.isRecruitmentClosed(now)) {
+            val resolvedName = newName ?: this.name
+            val resolvedDescription = newDescription ?: this.description
+            val resolvedCapacity = newCapacity ?: this.capacity
+
+            validateName(resolvedName)
+            validateDescription(resolvedDescription)
+            validateCapacity(resolvedCapacity)
+            validateCurrentMemberOverCapacity(resolvedCapacity)
+
+            this.name = resolvedName
+            this.description = resolvedDescription
+            this.capacity = resolvedCapacity
+
+            if (newTags != null) {
+                updateTags(newTags)
+            }
+        } else {
+            if (newName != null || newDescription != null || newCapacity != null || newTags != null) {
+                throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DEADLINE)
+            }
+        }
         this.updatedAt = LocalDateTime.now()
+        refreshStatus(now)
+    }
 
-        refreshStatus()
+    private fun updateTags(newTags: List<Tag>) {
+        val tags = this._studyTags.iterator()
+        while (tags.hasNext()) {
+            val currentStudyTag = tags.next()
+            if (newTags.none { it.id == currentStudyTag.tag.id }) {
+                tags.remove()
+            }
+        }
+
+        newTags.forEach { newTag ->
+            val isAlreadyExist = this._studyTags.any { it.tag.id == newTag.id }
+            if (!isAlreadyExist) {
+                this.addTag(newTag)
+            }
+        }
     }
 
     fun addTag(tag: Tag) {
@@ -174,10 +214,6 @@ class Study(
 
         val studyTag = StudyTag(study = this, tag = tag)
         this._studyTags.add(studyTag)
-    }
-
-    fun removeTag(tag: Tag) {
-        this._studyTags.removeIf { it.tag.id == tag.id }
     }
 
     fun approve() {
