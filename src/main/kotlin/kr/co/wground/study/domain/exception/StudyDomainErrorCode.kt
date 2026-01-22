@@ -30,8 +30,7 @@ enum class StudyDomainErrorCode(
     STUDY_CAPACITY_TOO_BIG(HttpStatus.BAD_REQUEST, "SD-0010", "스터티의 최대 모집 정원이 너무 많습니다."),
     STUDY_TAG_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0011","스터디 태그는 최대 5개까지 가질수 있습니다."),
     STUDY_CANT_DELETE_STATUS_DETERMINE(HttpStatus.BAD_REQUEST,"SD-0012","결재 상신된 스터디는 삭제할 수 없습니다."),
-    STUDY_SCHEDULE_IS_NOT_IN_TRACK(HttpStatus.BAD_REQUEST,"SD-0013","선택한 스터디 일정이 소속된 트랙에 존재하지 않습니다."),
-    STUDY_ALREADY_FINISH_TO_RECRUIT(HttpStatus.BAD_REQUEST,"SD-0014","해당 스터디의 모집기한이 이미 지났습니다."),
+    STUDY_ALREADY_FINISH_TO_RECRUIT(HttpStatus.BAD_REQUEST,"SD-0013","해당 스터디의 모집기한이 이미 지났습니다."),
 
     //StudyRecruitment
     RECRUITMENT_APPEAL_TOO_BIG(HttpStatus.BAD_REQUEST,"SR-0001","자기 소개는 최대 100자까지 작성 할 수 있습니다."),

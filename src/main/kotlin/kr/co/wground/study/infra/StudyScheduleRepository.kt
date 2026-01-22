@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface StudyScheduleRepository : JpaRepository<StudySchedule, Long> {
     fun save(studySchedule: StudySchedule): StudySchedule
+
 }
