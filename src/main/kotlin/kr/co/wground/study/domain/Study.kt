@@ -5,17 +5,20 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
-import kr.co.wground.global.common.UserId
-import kr.co.wground.study.domain.constant.StudyStatus
-import java.time.LocalDateTime
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.study.domain.constant.BudgetType
+import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
+import java.time.LocalDateTime
 
 @Entity
 class Study(
@@ -27,7 +30,7 @@ class Study(
     val leaderId: UserId,
     @Column(nullable = false)
     val trackId: TrackId,
-    scheduleId: Long,
+    schedule: StudySchedule,
     description: String,
     status: StudyStatus,
     capacity: Int = RECOMMENDED_MAX_CAPACITY,
@@ -42,8 +45,9 @@ class Study(
     var name: String = name
         protected set
 
-    @Column(nullable = false)
-    var scheduleId: Long = scheduleId
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "schedule_id", nullable = false)
+    var schedule: StudySchedule = schedule
         protected set
 
     @Column(length = MAX_DESCRIPTION_LENGTH)
@@ -98,6 +102,7 @@ class Study(
         validateName(name)
         validateDescription(description)
         validateCapacity(capacity)
+        validateSchedule(schedule)
         validateUrl(externalChatUrl, referenceUrl)
     }
 
@@ -117,6 +122,7 @@ class Study(
         newName: String,
         newDescription: String,
         newCapacity: Int,
+        newSchedule:StudySchedule,
         newBudget: BudgetType,
         newChatUrl: String,
         newRefUrl: String?
@@ -126,13 +132,14 @@ class Study(
         validateDescription(newDescription)
         validateCapacity(newCapacity)
         validateUrl(newChatUrl, newRefUrl)
-
+        validateSchedule(newSchedule)
         validateCurrentMemberOverCapacity(newCapacity)
 
         this.name = newName
         this.description = newDescription
         this.capacity = newCapacity
         this.budget = newBudget
+        this.schedule = newSchedule
         this.externalChatUrl = newChatUrl
         this.referenceUrl = newRefUrl
         this.updatedAt = LocalDateTime.now()
@@ -167,6 +174,18 @@ class Study(
 
     fun reject() {
         this.status = StudyStatus.REJECTED
+    }
+
+    fun validateHardDeletable() {
+        if (this.status == StudyStatus.APPROVED || this.status == StudyStatus.REJECTED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_DETERMINE)
+        }
+    }
+
+    private fun validateSchedule(schedule: StudySchedule) {
+        if(!this.trackId.equals(schedule.trackId)) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_SCHEDULE_IS_NOT_IN_TRACK)
+        }
     }
 
     private fun checkAndChangeStatus() {
