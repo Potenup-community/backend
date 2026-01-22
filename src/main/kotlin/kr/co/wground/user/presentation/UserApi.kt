@@ -110,7 +110,7 @@ interface UserApi {
     )
     fun getUsersForMention(
         @Parameter(description = "조회할 유저 수 (기본값: 20)", example = "20")
-        limit: Int,
+        size: Int,
         @Parameter(description = "커서: 마지막으로 조회한 유저 이름", example = "홍길동")
         cursorName: String?,
         @Parameter(description = "커서: 마지막으로 조회한 유저 ID", example = "123")

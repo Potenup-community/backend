@@ -6,5 +6,5 @@ import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 
 interface UserService {
     fun getMyInfo(userId: UserId): MyInfoDto
-    fun getUsersForMention(limit: Int, cursorName: String?, cursorId: Long?): List<UserDisplayInfoDto>
+    fun getUsersForMention(size: Int, cursorName: String?, cursorId: Long?): List<UserDisplayInfoDto>
 }

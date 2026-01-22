@@ -220,7 +220,7 @@ class CustomUserRepositoryImpl(
     }
 
     override fun findUserDisplayInfosForMention(
-        limit: Int,
+        size: Int,
         cursorName: String?,
         cursorId: Long?
     ): List<UserDisplayInfoDto> {
@@ -249,7 +249,7 @@ class CustomUserRepositoryImpl(
 
         return query
             .orderBy(user.name.asc(), user.userId.asc())
-            .limit(limit.toLong())
+            .limit(size.toLong())
             .fetch()
     }
 

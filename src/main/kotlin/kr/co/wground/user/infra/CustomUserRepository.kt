@@ -14,10 +14,11 @@ interface CustomUserRepository {
     fun searchUsers(condition: ConditionDto, pageable: Pageable): Page<UserInfoDto>
     fun findUserDisplayInfos(userIds: List<UserId>): Map<UserId, UserDisplayInfoDto>
     fun findUserDisplayInfosForMention(
-        limit: Int,
+        size: Int,
         cursorName: String?,
         cursorId: Long?
     ): List<UserDisplayInfoDto>
+
     fun calculateCounts(conditionDto: ConditionDto): UserCountDto
     fun findUserAndTrack(userId: UserId): MyPageDto?
     fun findAllApprovalTargets(userIds: List<Long>): List<VerificationEvent.VerificationTarget>

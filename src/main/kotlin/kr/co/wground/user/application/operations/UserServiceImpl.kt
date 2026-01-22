@@ -28,7 +28,7 @@ class UserServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getUsersForMention(limit: Int, cursorName: String?, cursorId: Long?): List<UserDisplayInfoDto> {
-        return userRepository.findUserDisplayInfosForMention(limit, cursorName, cursorId)
+    override fun getUsersForMention(size: Int, cursorName: String?, cursorId: Long?): List<UserDisplayInfoDto> {
+        return userRepository.findUserDisplayInfosForMention(size, cursorName, cursorId)
     }
 }

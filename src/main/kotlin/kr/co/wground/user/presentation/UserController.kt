@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 class UserController(
     private val userService: UserService,
     private val signUpService: SignUpService,
-    ) : UserApi {
+) : UserApi {
     @GetMapping("/myInfo")
     override fun getMyInfo(userId: CurrentUserId): ResponseEntity<UserResponse> {
         val response = userService.getMyInfo(userId.value)
@@ -36,11 +36,11 @@ class UserController(
 
     @GetMapping
     override fun getUsersForMention(
-        @RequestParam(defaultValue = "20") limit: Int,
+        @RequestParam(defaultValue = "20") size: Int,
         @RequestParam(required = false) cursorName: String?,
         @RequestParam(required = false) cursorId: Long?
     ): ResponseEntity<List<UserSummaryResponse>> {
-        val users = userService.getUsersForMention(limit, cursorName, cursorId)
+        val users = userService.getUsersForMention(size, cursorName, cursorId)
         return ResponseEntity.ok(users.map { UserSummaryResponse.from(it) })
     }
 }
