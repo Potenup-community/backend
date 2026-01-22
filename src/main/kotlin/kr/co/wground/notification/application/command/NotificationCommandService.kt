@@ -15,7 +15,7 @@ import org.springframework.transaction.event.TransactionalEventListener
 @Service
 class NotificationCommandService(
     private val notificationRepository: NotificationRepository,
-): CreateNotificationUseCase {
+) : CreateNotificationUseCase {
 
     @Async("notificationExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -27,8 +27,10 @@ class NotificationCommandService(
             notificationRepository.save(
                 Notification(
                     eventId = event.eventId,
-                    recipient = event.recipient,
+                    recipientId = event.recipientId,
+                    actorId = event.actorId,
                     content = event.content,
+                    reference = event.reference,
                     type = event.type,
                     expiresAt = event.expiresAt,
                 )
