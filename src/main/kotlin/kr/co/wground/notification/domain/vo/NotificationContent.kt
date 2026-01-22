@@ -8,7 +8,6 @@ import kr.co.wground.notification.exception.NotificationErrorCode.INVALID_NOTIFI
 data class NotificationContent(
     val title: String,
     val content: String,
-    val link: String? = null,
 ) {
     init {
         if (title.isBlank()) {
