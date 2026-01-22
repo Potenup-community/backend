@@ -17,7 +17,6 @@ import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.infra.UserRepository
-import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
@@ -138,7 +137,7 @@ class CommentService(
         }
 
         return users
-            .filter { it.userId != writerId && it.status == UserStatus.ACTIVE }
+            .filter { it.userId != writerId }
             .map { it.userId }
     }
 
