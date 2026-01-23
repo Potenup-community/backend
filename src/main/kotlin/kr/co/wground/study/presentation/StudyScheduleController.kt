@@ -40,9 +40,4 @@ class StudyScheduleController(
         studyScheduleService.deleteSchedule(id)
         return ResponseEntity.noContent().build()
     }
-
-    @GetMapping
-    fun getAllSchedules(){
-        val response = studyScheduleService.getAllSchedules()
-    }
 }
