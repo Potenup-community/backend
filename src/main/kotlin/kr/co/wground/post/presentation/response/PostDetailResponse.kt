@@ -27,6 +27,8 @@ data class PostDetailResponse(
     val wroteAt: LocalDateTime,
     val trackName: String,
     val profileImageUrl: String,
+    val nextPostId: PostId?,
+    val previousPostId: PostId?,
     val reactions: List<PostReactionDetail> = emptyList(),
 ) {
     data class PostReactionDetail(
@@ -47,5 +49,7 @@ fun PostDetailDto.toResponse() = PostDetailResponse(
     wroteAt = wroteAt,
     trackName = trackName,
     profileImageUrl = profileImageUrl,
+    nextPostId = nextPostId,
+    previousPostId = previousPostId,
     reactions = reactions.map { PostReactionDetail(it.reactionType, it.count) }
 )

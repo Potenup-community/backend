@@ -120,11 +120,18 @@ class PostService(
         val commentsCount = commentRepository.countByPostIds(listOf(id))
             .firstOrNull()?.count ?: 0
 
+        val postNavigationDto = postRepository.findIdsOfPreviousAndNext(
+            foundCourse.id,
+            foundCourse.createdAt
+        )
+
         return foundCourse.toDto(
             writerName = writer.name,
             trackName = writer.trackName,
             profileImageUrl = writer.profileImageUrl,
             commentsCount = commentsCount,
+            nextPostId = postNavigationDto.nextPostId,
+            previousPostId = postNavigationDto.previousPostId,
             reactions = reactionsByPostId
         )
     }
