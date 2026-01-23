@@ -8,13 +8,16 @@ import kr.co.wground.study.application.dto.ScheduleInfo
 import kr.co.wground.study.application.dto.ScheduleUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.StudySchedule
+import kr.co.wground.study.domain.Tag
 import kr.co.wground.study.domain.constant.Months
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.StudyScheduleRepository
+import kr.co.wground.study.infra.TagRepository
 import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
 import kr.co.wground.track.infra.TrackRepository
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -24,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 class StudyScheduleService(
     private val studyScheduleRepository: StudyScheduleRepository,
     private val trackRepository: TrackRepository,
+    private val tagRepository: TagRepository,
     private val studyRepository: StudyRepository,
     private val scheduleValidator: StudyScheduleValidator
 ) {
@@ -68,16 +72,23 @@ class StudyScheduleService(
     fun updateSchedule(command: ScheduleUpdateCommand): ScheduleUpdateResponse {
         val schedule = getScheduleEntity(command.id)
 
+        val track = trackRepository.findByIdOrNull(schedule.trackId)
+            ?: throw BusinessException(StudyServiceErrorCode.TRACK_NOT_FOUND)
+        val existSchedules = studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(schedule.trackId)
+            .filter { it.id != schedule.id }
+
         val newRecruitStart = command.recruitStartDate?.atStartOfDay() ?: schedule.recruitStartDate
         val newStudyEnd = command.studyEndDate?.atTime(LocalTime.MAX) ?: schedule.studyEndDate
         val newMonth = command.months ?: schedule.months
 
-        validateSchedulePolicy(
-            trackId = schedule.trackId,
-            targetMonth = newMonth,
-            recruitStart = newRecruitStart,
-            studyEnd = newStudyEnd,
-            excludeScheduleId = schedule.id
+        scheduleValidator.validate(
+            newInfo = ScheduleInfo(
+                month = newMonth,
+                recruitStart = newRecruitStart,
+                studyEnd = newStudyEnd
+            ),
+            track = track,
+            existSchedules = existSchedules
         )
 
         schedule.updateSchedule(
@@ -100,31 +111,6 @@ class StudyScheduleService(
             throw BusinessException(StudyServiceErrorCode.CANNOT_DELETE_SCHEDULE_WITH_STUDIES)
         }
         studyScheduleRepository.deleteById(scheduleId)
-    }
-
-    private fun validateSchedulePolicy(
-        trackId: Long,
-        targetMonth: Months,
-        recruitStart: LocalDateTime,
-        studyEnd: LocalDateTime,
-        excludeScheduleId: Long? = null
-    ) {
-        val schedules = studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(trackId)
-            .filter { it.id != excludeScheduleId }
-
-        for (schedule in schedules) {
-            if (schedule.months.ordinal < targetMonth.ordinal) {
-                if (!recruitStart.isAfter(schedule.studyEndDate)) {
-                    throw BusinessException(StudyServiceErrorCode.SCHEDULE_OVERLAP_WITH_PREVIOUS)
-                }
-            } else if (schedule.months.ordinal > targetMonth.ordinal) {
-                if (!studyEnd.isBefore(schedule.recruitStartDate)) {
-                    throw BusinessException(StudyServiceErrorCode.SCHEDULE_OVERLAP_WITH_NEXT)
-                }
-            } else {
-                throw BusinessException(StudyServiceErrorCode.DUPLICATE_SCHEDULE_MONTH)
-            }
-        }
     }
 
     fun getScheduleEntity(id: Long): StudySchedule {

@@ -17,6 +17,7 @@ import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.infra.UserRepository
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -147,15 +148,34 @@ class StudyService(
 
         return StudyDetailResponse.from(study, canViewChatUrl)
     }
-
-    private fun resolveTags(tagNames: List<String>): List<Tag> {
-        return tagNames.map { name ->
-            tagRepository.findByName(name) ?: tagRepository.save(Tag.create(name))
-        }
-    }
-
     private fun getStudyEntity(id: Long): Study {
         return studyRepository.findByIdOrNull(id)
             ?: throw BusinessException(StudyServiceErrorCode.STUDY_NOT_FOUND)
+    }
+
+
+    private fun resolveTags(tagNames: List<String>): List<Tag> {
+        if (tagNames.isEmpty()) return emptyList()
+
+        val distinctNames = tagNames.distinct()
+        val existTags = tagRepository.findByNameIn(distinctNames)
+
+        val existingTagNames = existTags.map { it.name }.toSet()
+        val newTagNames = distinctNames.filter { !existingTagNames.contains(it) }
+
+        val newTags = newTagNames.map { name ->
+            createTag(name)
+        }
+
+        return existTags + newTags
+    }
+
+    private fun createTag(name: String): Tag {
+        return try {
+            tagRepository.save(Tag.create(name))
+        } catch (e: DataIntegrityViolationException) {
+            tagRepository.findByName(name)
+                ?: throw e
+        }
     }
 }

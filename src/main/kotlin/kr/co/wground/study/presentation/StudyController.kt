@@ -11,6 +11,7 @@ import kr.co.wground.study.presentation.request.study.StudyCreateRequest
 import kr.co.wground.study.presentation.request.study.StudyUpdateRequest
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
 import kr.co.wground.study.presentation.response.study.StudyIdResponse
+import kr.co.wground.user.domain.constant.UserRole
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -61,7 +62,7 @@ class StudyController(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable studyId: Long
     ): ResponseEntity<Unit> {
-        val isAdmin = if (userPrincipal.role == "ADMIN") {
+        val isAdmin = if (userPrincipal.role == UserRole.ADMIN.name) {
             true
         } else {
             false
