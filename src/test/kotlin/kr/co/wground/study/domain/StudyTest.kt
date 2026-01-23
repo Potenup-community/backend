@@ -19,6 +19,9 @@ class StudyTest {
     @Nested
     @DisplayName("내부 요구조건 테스트")
     inner class StudyInternalConditionTest {
+
+        // To Do: 특정 값을 변경하고 싶지 않은 경우, null 을 명시적으로 전달하는 방식이 괜찮을 지 모르겠음
+        val NOT_GONNA_CHANGE = null;
         
         // ----- 정원 수
 
@@ -68,14 +71,13 @@ class StudyTest {
             assertEquals(StudyDomainErrorCode.STUDY_CAPACITY_TOO_BIG.code, thrown.code)
         }
 
-        // ❌
         @Test
         fun `모집 기간이 마감되지 않은, 참여 인원 수가 정원 수와 같고 상태가 CLOSED 인 스터디에서, 참여 인원 수가 감소한 경우, 해당 스터디의 상태는 PENDING 으로 변경된다`() {
             val created = createStudyWithCapacity(2)
             created.increaseMemberCount()
             assertEquals(StudyStatus.CLOSED, created.status)
 
-//            created.decreaseMemberCount()
+            created.decreaseMemberCount()
             assertEquals(StudyStatus.PENDING, created.status)
         }
 
@@ -111,12 +113,12 @@ class StudyTest {
         private fun updateStudyCapacity(study: Study, capacity: Int) {
             return study.updateStudyInfo(
                 newCapacity = capacity,
-                newName = study.name,
-                newDescription = study.description,
-                newSchedule = study.schedule,
-                newBudget = study.budget,
-                newChatUrl = study.externalChatUrl,
-                newRefUrl = study.referenceUrl
+                newName = NOT_GONNA_CHANGE,
+                newDescription = NOT_GONNA_CHANGE,
+                newBudget = NOT_GONNA_CHANGE,
+                newChatUrl = NOT_GONNA_CHANGE,
+                newRefUrl = NOT_GONNA_CHANGE,
+                newTags = NOT_GONNA_CHANGE
             )
         }
 
@@ -237,13 +239,13 @@ class StudyTest {
 
         private fun updateStudyName(study: Study, name: String) {
             return study.updateStudyInfo(
-                newCapacity = study.capacity,
+                newCapacity = NOT_GONNA_CHANGE,
                 newName = name,
-                newDescription = study.description,
-                newSchedule = study.schedule,
-                newBudget = study.budget,
-                newChatUrl = study.externalChatUrl,
-                newRefUrl = study.referenceUrl
+                newDescription = NOT_GONNA_CHANGE,
+                newBudget = NOT_GONNA_CHANGE,
+                newChatUrl = NOT_GONNA_CHANGE,
+                newRefUrl = NOT_GONNA_CHANGE,
+                newTags = NOT_GONNA_CHANGE
             )
         }
 
@@ -353,13 +355,13 @@ class StudyTest {
 
         private fun updateStudyDescription(study: Study, description: String) {
             return study.updateStudyInfo(
-                newCapacity = study.capacity,
-                newName = study.name,
+                newCapacity = NOT_GONNA_CHANGE,
+                newName = NOT_GONNA_CHANGE,
                 newDescription = description,
-                newSchedule = study.schedule,
-                newBudget = study.budget,
-                newChatUrl = study.externalChatUrl,
-                newRefUrl = study.referenceUrl
+                newBudget = NOT_GONNA_CHANGE,
+                newChatUrl = NOT_GONNA_CHANGE,
+                newRefUrl = NOT_GONNA_CHANGE,
+                newTags = NOT_GONNA_CHANGE
             )
         }
 
@@ -421,13 +423,13 @@ class StudyTest {
 
         private fun updateStudyExternalChatUrl(study: Study, externalChatUrl: String) {
             return study.updateStudyInfo(
-                newCapacity = study.capacity,
-                newName = study.name,
-                newDescription = study.description,
-                newSchedule = study.schedule,
-                newBudget = study.budget,
+                newCapacity = NOT_GONNA_CHANGE,
+                newName = NOT_GONNA_CHANGE,
+                newDescription = NOT_GONNA_CHANGE,
+                newBudget = NOT_GONNA_CHANGE,
                 newChatUrl = externalChatUrl,
-                newRefUrl = study.referenceUrl
+                newRefUrl = NOT_GONNA_CHANGE,
+                newTags = NOT_GONNA_CHANGE
             )
         }
 
@@ -474,13 +476,13 @@ class StudyTest {
 
         private fun updateStudyReferenceUrl(study: Study, referenceUrl: String) {
             return study.updateStudyInfo(
-                newCapacity = study.capacity,
-                newName = study.name,
-                newDescription = study.description,
-                newSchedule = study.schedule,
-                newBudget = study.budget,
-                newChatUrl = study.externalChatUrl,
-                newRefUrl = referenceUrl
+                newCapacity = NOT_GONNA_CHANGE,
+                newName = NOT_GONNA_CHANGE,
+                newDescription = NOT_GONNA_CHANGE,
+                newBudget = NOT_GONNA_CHANGE,
+                newChatUrl = NOT_GONNA_CHANGE,
+                newRefUrl = referenceUrl,
+                newTags = NOT_GONNA_CHANGE
             )
         }
 
@@ -531,7 +533,7 @@ class StudyTest {
             assertEquals(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE.code, thrown.code)
         }
 
-        // ----- 참여 인원 수 테스트 (스터디 신청과의 정합성 고려 ❌)
+        // ----- 참여 인원 수 테스트 (스터디 신청과의 정합성 고려 x)
 
         @Test
         fun `참여 인원 수가 (정원 - 1)인 경우, 참여 인원 수 1 증가 시, CLOSED 상태로 성공적으로 변경된다`() {
