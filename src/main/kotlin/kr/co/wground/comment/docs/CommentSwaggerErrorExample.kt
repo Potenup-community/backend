@@ -19,6 +19,12 @@ object CommentSwaggerErrorExample {
           "message":"댓글 입력값이 올바르지 않습니다.",
           "errors":[{"field":"content","reason":"댓글은 2000자까지 작성할 수 있습니다."}]
         }"""
+
+        const val MENTION_USER_NOT_FOUND = """{
+          "code":"C-0009",
+          "message":"존재하지 않는 유저를 멘션할 수 없습니다.",
+          "errors":[]
+        }"""
     }
 
     object NotFound {
