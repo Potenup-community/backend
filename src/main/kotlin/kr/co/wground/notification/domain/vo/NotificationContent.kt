@@ -15,13 +15,13 @@ data class NotificationContent(
     }
 
     private fun validateTitle() {
-        require(title.isNotBlank()) {
+        if (title.isBlank()) {
             throw BusinessException(INVALID_NOTIFICATION_INPUT)
         }
     }
 
     private fun validateContent() {
-        require(content.isNotBlank()) {
+        if (content.isBlank()) {
             throw BusinessException(INVALID_NOTIFICATION_INPUT)
         }
     }

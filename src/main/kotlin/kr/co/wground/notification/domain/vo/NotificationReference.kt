@@ -11,7 +11,7 @@ data class NotificationReference(
     val referenceId: Long,
 ) {
     init {
-        require(referenceId > 0) {
+        if (referenceId <= 0) {
             throw BusinessException(NotificationErrorCode.INVALID_NOTIFICATION_REFERENCE)
         }
     }

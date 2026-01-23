@@ -50,14 +50,14 @@ class Notification(
         protected set
 
     private fun validateRecipientId() {
-        require(recipientId > 0) {
+        if (recipientId <= 0) {
             throw BusinessException(NotificationErrorCode.INVALID_RECIPIENT_ID)
         }
     }
 
     private fun validateActorId() {
         actorId?.let {
-            require(it > 0) {
+            if (it <= 0) {
                 throw BusinessException(NotificationErrorCode.INVALID_ACTOR_ID)
             }
         }
@@ -65,7 +65,7 @@ class Notification(
 
     private fun validateExpiresAt() {
         expiresAt?.let {
-            require(it.isAfter(createdAt)) {
+            if (!it.isAfter(createdAt)) {
                 throw BusinessException(NotificationErrorCode.INVALID_EXPIRES_AT)
             }
         }
