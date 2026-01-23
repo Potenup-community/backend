@@ -8,9 +8,11 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.QPost.post
 import kr.co.wground.post.domain.enums.Topic
+import kr.co.wground.post.infra.dto.PostNavigationDto
 import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import org.springframework.data.domain.SliceImpl
 import org.springframework.data.domain.Sort
+import java.time.LocalDateTime
 
 class CustomPostRepositoryImpl(private val jpaQueryFactory: JPAQueryFactory): CustomPostRepository {
     private companion object {
@@ -44,6 +46,39 @@ class CustomPostRepositoryImpl(private val jpaQueryFactory: JPAQueryFactory): Cu
             pageable,
             hasNext
         )
+    }
+
+    override fun findIdsOfPreviousAndNext(
+        currentPostId: Long,
+        currentCreatedAt: LocalDateTime
+    ): PostNavigationDto {
+        val previousPostId = jpaQueryFactory
+            .select(post.id)
+            .from(post)
+            .where(
+                post.createdAt.gt(currentCreatedAt)
+                    .or(
+                        post.createdAt.eq(currentCreatedAt)
+                            .and(post.id.gt(currentPostId))
+                    )
+            )
+            .orderBy(post.createdAt.asc(), post.id.asc())
+            .fetchFirst()
+
+        val nextPostId = jpaQueryFactory
+            .select(post.id)
+            .from(post)
+            .where(
+                post.createdAt.lt(currentCreatedAt)
+                    .or(
+                        post.createdAt.eq(currentCreatedAt)
+                            .and(post.id.lt(currentPostId))
+                    )
+            )
+            .orderBy(post.createdAt.desc(), post.id.desc())
+            .fetchFirst()
+
+        return PostNavigationDto(previousPostId, nextPostId)
     }
 
     private data class PopularityParams(
