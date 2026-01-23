@@ -70,6 +70,10 @@ interface CommentApi {
                             name = "INVALID_REPLY",
                             value = CommentSwaggerErrorExample.BadRequest.INVALID_REPLY
                         ),
+                        ExampleObject(
+                            name = "MENTION_USER_NOT_FOUND",
+                            value = CommentSwaggerErrorExample.BadRequest.MENTION_USER_NOT_FOUND
+                        ),
                     ]
                 )]
             ),
@@ -124,6 +128,10 @@ interface CommentApi {
                         ExampleObject(
                             name = "INVALID_INPUT",
                             value = CommentSwaggerErrorExample.BadRequest.INVALID_INPUT
+                        ),
+                        ExampleObject(
+                            name = "MENTION_USER_NOT_FOUND",
+                            value = CommentSwaggerErrorExample.BadRequest.MENTION_USER_NOT_FOUND
                         ),
                     ]
                 )]
