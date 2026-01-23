@@ -28,11 +28,12 @@ class StudyRecruitment(
     val study: Study,
     appeal: String,
     recruitStatus: RecruitStatus,
+    approvedAt: LocalDateTime? = null,
     @Column(nullable = false)
     val createdAt: LocalDateTime = LocalDateTime.now(),
     updatedAt: LocalDateTime = LocalDateTime.now(),
 ) {
-    @Column(nullable = false, length =MAX_APPEAL_LENGTH)
+    @Column(nullable = false, length = MAX_APPEAL_LENGTH)
     var appeal: String = appeal
         protected set
 
@@ -40,20 +41,25 @@ class StudyRecruitment(
     var recruitStatus: RecruitStatus = recruitStatus
         protected set
 
+    @Column(nullable = true)
+    var approvedAt: LocalDateTime? = approvedAt
+        protected set
+
     @Column(nullable = false)
     var updatedAt: LocalDateTime = updatedAt
         protected set
 
     companion object {
-        const val MAX_APPEAL_LENGTH = 100
+        const val MAX_APPEAL_LENGTH = 200
         const val LEADER_DEFAULT_APPEAL = "스터디장 자동 참여"
 
         fun apply(userId: UserId, appeal: String, study: Study): StudyRecruitment {
-            validateAppealLength(appeal)
+            val trimmedAppeal = appeal.trim()
+            validateAppealLength(trimmedAppeal)
 
             return StudyRecruitment(
                 userId = userId,
-                appeal = appeal,
+                appeal = trimmedAppeal,
                 study = study,
                 recruitStatus = RecruitStatus.PENDING,
             )
@@ -69,6 +75,9 @@ class StudyRecruitment(
         }
 
         private fun validateAppealLength(appeal: String) {
+            if (appeal.isBlank()) {
+                throw BusinessException(StudyDomainErrorCode.RECRUITMENT_APPEAL_EMPTY)
+            }
             if (appeal.length > MAX_APPEAL_LENGTH) {
                 throw BusinessException(StudyDomainErrorCode.RECRUITMENT_APPEAL_TOO_BIG)
             }
@@ -76,8 +85,9 @@ class StudyRecruitment(
     }
 
     fun updateAppeal(newAppeal: String) {
-        validateAppealLength(newAppeal)
-        this.appeal = newAppeal
+        val trimmedAppeal = newAppeal.trim()
+        validateAppealLength(trimmedAppeal)
+        this.appeal = trimmedAppeal
         recentUpdateAt()
     }
 
@@ -88,16 +98,17 @@ class StudyRecruitment(
         recentUpdateAt()
     }
 
-    private fun recentUpdateAt(){
+    private fun recentUpdateAt() {
         this.updatedAt = LocalDateTime.now()
     }
 
     private fun validateRecruitStatus(recruitStatus: RecruitStatus) {
-        when(recruitStatus) {
+        if (this.study.status == StudyStatus.APPROVED || this.study.status == StudyStatus.REJECTED) {
+            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE)
+        }
+        when (recruitStatus) {
             RecruitStatus.PENDING -> {
-                if (this.recruitStatus != RecruitStatus.CANCELLED) {
-                    throw BusinessException(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE)
-                }
+                throw BusinessException(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE)
             }
 
             RecruitStatus.APPROVED, RecruitStatus.REJECTED -> {
@@ -107,14 +118,14 @@ class StudyRecruitment(
             }
 
             RecruitStatus.CANCELLED -> {
-                if (this.recruitStatus != RecruitStatus.PENDING && this.recruitStatus != RecruitStatus.APPROVED) {
-                    throw BusinessException(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE)
+                if (this.recruitStatus == RecruitStatus.PENDING) {
+                    return
                 }
             }
         }
     }
 
-    private fun validateStudyStatus(studyStatus: StudyStatus){
+    private fun validateStudyStatus(studyStatus: StudyStatus) {
         if (studyStatus == StudyStatus.APPROVED || studyStatus == StudyStatus.REJECTED) {
             throw BusinessException(StudyDomainErrorCode.RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE)
         }

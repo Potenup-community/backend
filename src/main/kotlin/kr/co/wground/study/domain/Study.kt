@@ -19,6 +19,7 @@ import kr.co.wground.study.domain.constant.BudgetType
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import java.time.LocalDateTime
+import kr.co.wground.study.domain.constant.RecruitStatus
 
 @Entity
 class Study(
@@ -257,6 +258,10 @@ class Study(
                 StudyStatus.PENDING
             }
         }
+    }
+
+    fun isLeader(userId: UserId): Boolean {
+        return this.leaderId == userId
     }
 
     private fun validateCanUpdate() {

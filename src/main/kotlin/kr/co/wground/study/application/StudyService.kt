@@ -2,6 +2,7 @@ package kr.co.wground.study.application
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.application.dto.StudyCreateCommand
+import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.application.dto.StudyUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
@@ -13,11 +14,15 @@ import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.TagRepository
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
+import kr.co.wground.study.presentation.response.study.StudySearchResponse
 import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.infra.UserRepository
+import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -31,6 +36,10 @@ class StudyService(
     private val tagRepository: TagRepository,
     private val userRepository: UserRepository
 ) {
+    companion object {
+        private val log = LoggerFactory.getLogger(StudyService::class.java)
+    }
+
     fun createStudy(command: StudyCreateCommand): Long {
         val user = userRepository.findByIdOrNull(command.userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
@@ -78,7 +87,7 @@ class StudyService(
     fun updateStudy(command: StudyUpdateCommand) {
         val study = getStudyEntity(command.studyId)
 
-        if (study.leaderId != command.userId) {
+        if (!study.isLeader(command.userId)) {
             throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
         }
 
@@ -103,7 +112,7 @@ class StudyService(
         if (isAdmin) {
             studyRepository.delete(study)
         } else {
-            if (study.leaderId != userId) {
+            if (!study.isLeader(userId)) {
                 throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
             }
             study.validateHardDeletable()
@@ -116,20 +125,22 @@ class StudyService(
 
         study.approve()
 
-        val pendingApplications =
-            studyRecruitmentRepository.findAllByStudyIdAndRecruitStatus(studyId, RecruitStatus.PENDING)
-        pendingApplications.forEach { it.updateRecruitStatus(RecruitStatus.REJECTED) }
+        studyRecruitmentRepository.rejectAllByStudyIdWithExceptStatus(studyId, RecruitStatus.APPROVED)
+
     }
 
     fun rejectStudy(studyId: Long) {
-        val study =
-            studyRepository.findByIdOrNull(studyId) ?: throw BusinessException(StudyServiceErrorCode.STUDY_NOT_FOUND)
+        val study = getStudyEntity(studyId)
 
         study.reject()
 
-        study.recruitments.forEach {
-            it.updateRecruitStatus(RecruitStatus.REJECTED)
-        }
+        studyRecruitmentRepository.rejectAllByStudyIdWithExceptStatus(studyId, RecruitStatus.CANCELLED)
+    }
+
+    @Transactional(readOnly = true)
+    fun searchStudies(condition: StudySearchCondition, pageable: Pageable): Slice<StudySearchResponse> {
+        return studyRepository.searchStudies(condition, pageable)
+            .map { StudySearchResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
@@ -139,43 +150,46 @@ class StudyService(
         // 채팅 링크 마스킹 로직
         val canViewChatUrl = if (userId == null) false else {
             study.leaderId == userId || // 스터디장이거나
-                    studyRecruitmentRepository.existsByStudyIdAndUserIdAndRecruitStatus(
+                    studyRecruitmentRepository.existsByStudyIdAndUserIdAndRecruitStatusIn(
                         studyId,
                         userId,
-                        RecruitStatus.APPROVED
+                        listOf(RecruitStatus.APPROVED)
                     ) // 참여자거나
         }
 
         return StudyDetailResponse.from(study, canViewChatUrl)
     }
+
     private fun getStudyEntity(id: Long): Study {
         return studyRepository.findByIdOrNull(id)
             ?: throw BusinessException(StudyServiceErrorCode.STUDY_NOT_FOUND)
     }
 
+    private fun resolveTags(rawTagNames: List<String>): List<Tag> {
+        if (rawTagNames.isEmpty()) return emptyList()
 
-    private fun resolveTags(tagNames: List<String>): List<Tag> {
-        if (tagNames.isEmpty()) return emptyList()
+        val distinctNormalizedNames = rawTagNames
+            .map { Tag.normalize(it) }
+            .distinct()
+            .filter { it.isNotBlank() }
 
-        val distinctNames = tagNames.distinct()
-        val existTags = tagRepository.findByNameIn(distinctNames)
+        if (distinctNormalizedNames.isEmpty()) return emptyList()
 
-        val existingTagNames = existTags.map { it.name }.toSet()
-        val newTagNames = distinctNames.filter { !existingTagNames.contains(it) }
+        val existingTags = tagRepository.findByNameIn(distinctNormalizedNames)
+        val existingTagMap = existingTags.associateBy { it.name }
 
-        val newTags = newTagNames.map { name ->
-            createTag(name)
+        return distinctNormalizedNames.map { name ->
+            existingTagMap[name] ?: createTag(name)
         }
-
-        return existTags + newTags
     }
 
     private fun createTag(name: String): Tag {
         return try {
             tagRepository.save(Tag.create(name))
         } catch (e: DataIntegrityViolationException) {
+            log.error("Tag 생성 중 오류 발생 : ${e.message}")
             tagRepository.findByName(name)
-                ?: throw e
+                ?: throw BusinessException(StudyServiceErrorCode.TAG_CREATION_FAIL)
         }
     }
 }
