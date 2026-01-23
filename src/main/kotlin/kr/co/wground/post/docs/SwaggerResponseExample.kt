@@ -34,7 +34,7 @@ object SwaggerResponseExample {
 
     const val POST_DETAIL_RESPONSE = """
     {
-      "postId": 1,
+      "postId": 2,
       "writerId": 10,
       "writerName": "홍길동",
       "title": "공지사항 제목",
@@ -43,6 +43,8 @@ object SwaggerResponseExample {
       "highlightType": "BY_ADMIN",
       "commentsCount": 5,
       "wroteAt": "2026-01-07T15:00:00",
+      "nextPostId": 1,
+      "previousPostId": null
       "reactions": [
         {
           "reactionType": "LIKE",

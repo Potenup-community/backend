@@ -143,7 +143,7 @@ interface PostApi {
     @Operation(summary = "게시글의 id로 상세 조회합니다.")
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "조회 성공"),
+            ApiResponse(responseCode = "200", description = "조회 성공, 다음글과 이전글은 시간순으로 정렬됩니다."),
             ApiResponse(
                 responseCode = "404", description = "자원 찾을 수 없음",
                 content = [Content(
