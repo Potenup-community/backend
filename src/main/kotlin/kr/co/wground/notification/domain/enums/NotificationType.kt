@@ -12,7 +12,6 @@ enum class NotificationType {
     // 스터디 관련
     STUDY_APPLICATION,
     STUDY_APPROVED,
-    STUDY_CANCELED,
     STUDY_REJECTED,
     STUDY_DELETED,
 
