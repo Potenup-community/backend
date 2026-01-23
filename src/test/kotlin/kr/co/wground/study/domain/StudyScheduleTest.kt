@@ -17,6 +17,9 @@ class StudyScheduleTest {
     @DisplayName("내부 요구조건 테스트")
     inner class StudyScheduleInternalConditionTest {
 
+        // To Do: 특정 값을 변경하고 싶지 않은 경우, null 을 명시적으로 전달하는 방식이 괜찮을 지 모르겠음
+        val NOT_GONNA_CHANGE = null;
+
         @Test
         fun `일정 생성 시, 모집 시작 시점이 모집 종료 시점 이후인 경우, 예외 발생 - BusinessException(SS-0001)`() {
             val thrown = assertThrows<BusinessException> {
@@ -44,9 +47,10 @@ class StudyScheduleTest {
                 )
 
                 created.updateSchedule(
-                    newRecruitStart = LocalDate.now(),
+                    newRecruitStart = NOT_GONNA_CHANGE,
                     newRecruitEnd = LocalDate.now().minusDays(1),
-                    newStudyEnd = LocalDate.now().plusDays(1)
+                    newStudyEnd = LocalDate.now().plusDays(1),
+                    newMonths = NOT_GONNA_CHANGE
                 )
             }
 
@@ -80,9 +84,10 @@ class StudyScheduleTest {
                 )
 
                 created.updateSchedule(
-                    newRecruitStart = LocalDate.now(),
+                    newRecruitStart = NOT_GONNA_CHANGE,
                     newRecruitEnd = LocalDate.now().plusDays(2),
-                    newStudyEnd = LocalDate.now().plusDays(1)
+                    newStudyEnd = LocalDate.now().plusDays(1),
+                    newMonths = NOT_GONNA_CHANGE
                 )
             }
 
