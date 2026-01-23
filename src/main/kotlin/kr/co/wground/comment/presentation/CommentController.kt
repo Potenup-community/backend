@@ -37,6 +37,7 @@ class CommentController(
         @Valid @RequestBody request: CommentCreateRequest,
         writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
+        commentService.validateMentionUserIds(request.mentionUserIds, writerId.value)
         val commentDto = request.toDto(writerId)
         val location = "/api/v1/comments/${commentService.write(commentDto)}"
         return ResponseEntity.created(URI.create(location)).build()
@@ -48,6 +49,7 @@ class CommentController(
         @Valid @RequestBody request: CommentUpdateRequest,
         writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
+        commentService.validateMentionUserIds(request.mentionUserIds, writerId.value)
         val commentDto = request.toDto(id)
         commentService.update(commentDto, writerId)
         return ResponseEntity.noContent().build()

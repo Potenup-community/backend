@@ -66,4 +66,15 @@ object UserSwaggerResponseExample {
                 "leaveOfAbsenceCount": 20
             }
         }"""
+
+    const val MENTION_USER_LIST = """
+        [
+          {
+            "userId": 1,
+            "name": "홍길동",
+            "profileImageUrl": "/api/v1/users/profiles/1",
+            "trackName": "BE 트랙 1기"
+          }
+        ]
+    """
 }

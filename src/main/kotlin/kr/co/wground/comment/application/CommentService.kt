@@ -125,6 +125,22 @@ class CommentService(
         return SliceImpl(summaries, pageable, likedReactions.hasNext())
     }
 
+    fun validateMentionUserIds(mentionUserIds: List<Long>?, writerId: UserId): List<Long> {
+        if (mentionUserIds.isNullOrEmpty()) return emptyList()
+
+        val users = userRepository.findByUserIdIn(mentionUserIds)
+
+        val foundIds = users.map { it.userId }.toSet()
+        val notFoundIds = mentionUserIds.filter { it !in foundIds }
+        if (notFoundIds.isNotEmpty()) {
+            throw BusinessException(CommentErrorCode.MENTION_USER_NOT_FOUND)
+        }
+
+        return users
+            .filter { it.userId != writerId }
+            .map { it.userId }
+    }
+
     private fun validateExistTargetPost(postId: PostId) {
         postRepository.findByIdOrNull(postId) ?: throw BusinessException(CommentErrorCode.TARGET_POST_IS_NOT_FOUND)
     }
