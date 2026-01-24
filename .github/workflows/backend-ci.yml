@@ -11,7 +11,7 @@ jobs:
     name: Build Test
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     env:
       SPRING_PROFILES_ACTIVE: test
       JWT_SECRET_TOKEN: ${{ secrets.JWT_SECRET_TOKEN }}
