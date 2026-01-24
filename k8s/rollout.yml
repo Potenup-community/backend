@@ -45,7 +45,7 @@ spec:
           livenessProbe:
             httpGet:
               path: /449b92a4/actuator/health/liveness
-              port: 8080
+              port: 9091
             initialDelaySeconds: 20
             periodSeconds: 10
             timeoutSeconds: 2
@@ -54,7 +54,7 @@ spec:
           readinessProbe:
             httpGet:
               path: /449b92a4/actuator/health/readiness
-              port: 8080
+              port: 9091
             initialDelaySeconds: 10
             periodSeconds: 5
             timeoutSeconds: 2
