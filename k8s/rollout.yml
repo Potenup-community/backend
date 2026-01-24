@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: community-be
+  namespace: community
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: community-be
+  template:
+    metadata:
+      labels:
+        app: community-be
+    spec:
+      containers:
+        - name: app
+          image: potenup/community-be:test-scrum-182
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - secretRef:
+                name: community-be-secret
+  strategy:
+    blueGreen:
+      activeService: community-be-active
+      previewService: community-be-preview
+      autoPromotionEnabled: false

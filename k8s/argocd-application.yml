@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: community-be
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ohwarida/potenup-community-be   # 너 레포 주소
+    targetRevision: test/scrum-182                                    # 또는 develop
+    path: k8s                                               # 우리가 만든 yaml 폴더
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: community
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

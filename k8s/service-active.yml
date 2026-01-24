@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: community-be-active
+  namespace: community
+spec:
+  type: ClusterIP
+  selector:
+    app: community-be
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
