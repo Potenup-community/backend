@@ -85,10 +85,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Update image tag in k8s manifest
+      - name: Update app container image in rollout
         if: github.event_name == 'push'
         run: |
-          sed -i "s|image: .*|image: $IMAGE_NAME:${{ steps.vars.outputs.SHA_TAG }}|" k8s/rollout.yml
+          awk '
+            $0 ~ /- name: app/ {inapp=1}
+            inapp && $0 ~ /image:/ {
+              sub(/image: .*/, "image: '"$IMAGE_NAME"':'"${{ steps.vars.outputs.SHA_TAG }}"'")
+              inapp=0
+            }
+            {print}
+          ' k8s/rollout.yml > rollout.tmp && mv rollout.tmp k8s/rollout.yml
+      
 
       - name: Commit and push updated manifest
         if: github.event_name == 'push'

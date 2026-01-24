@@ -31,38 +31,40 @@ spec:
           image: potenup/poten_up:sha-89a80a1
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
+            - name: http
+              containerPort: 8080
+            - name: management
+              containerPort: 9091
           envFrom:
             - secretRef:
                 name: community-be-secret
-
           volumeMounts:
             - name: app-logs
               mountPath: /app/monitoring/logs
-      livenessProbe:
-        httpGet:
-          path: /449b92a4/actuator/health/liveness
-          port: 8080
-        initialDelaySeconds: 20
-        periodSeconds: 10
-        timeoutSeconds: 2
-        failureThreshold: 3
 
-      readinessProbe:
-        httpGet:
-          path: /449b92a4/actuator/health/readiness
-          port: 8080
-        initialDelaySeconds: 10
-        periodSeconds: 5
-        timeoutSeconds: 2
-        failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /449b92a4/actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /449b92a4/actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 3
 
   strategy:
     blueGreen:
       activeService: community-be-active
       previewService: community-be-preview
       autoPromotionEnabled: true
-
       prePromotionAnalysis:
         templates:
           - templateName: community-be-ready-check
