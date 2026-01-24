@@ -23,5 +23,18 @@ enum class StudyServiceErrorCode(
     //Study
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND,"SD-0015","해당 스터디를 찾을수 없습니다."),
     MAX_STUDY_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0016","스터디는 최대 2개까지 가입 가능합니다."),
-    NOT_STUDY_LEADER(HttpStatus.FORBIDDEN,"SD-0017","스터디장만 사용할 수 있습니다.")
+    NOT_STUDY_LEADER(HttpStatus.FORBIDDEN,"SD-0017","스터디장만 사용할 수 있습니다."),
+
+    //Tag
+    TAG_CREATION_FAIL(HttpStatus.CONFLICT,"TG-0001","태그 생성 및 조회에 실패했습니다."),
+
+    //StudyRecruitment
+    NOT_RECRUITMENT_OWNER(HttpStatus.FORBIDDEN,"SR-0005","본인이 작성한 신청만 취소할 수 있습니다."),
+    LEADER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST,"SR-0006","스터디장은 탈퇴할 수 없습니다."),
+    TRACK_MISMATCH(HttpStatus.BAD_REQUEST,"SR-0007","신청자의 과정과 스터디의 과정이 일치하지 않습니다."),
+    STUDY_NOT_RECRUITING(HttpStatus.BAD_REQUEST,"SR-0008","해당 스터디는 모집중이 아닙니다."),
+    ALREADY_APPLIED(HttpStatus.BAD_REQUEST,"SR-0009","이미 신청하거나 승인된 스터디입니다."),
+    RECRUITMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"SR-0010","해당 스터디에 대한 신청기록을 찾을 수 없습니다."),
+    STUDY_MONTH_IS_NOT_CURRENT_MONTH(HttpStatus.BAD_REQUEST,"SR-0011","신청한 차수는 현재 진행되는 차수에 해당하지 않습니다."),
+
 }

@@ -1,7 +1,11 @@
 package kr.co.wground.study.application
 
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.UserId
+import kr.co.wground.study.application.dto.LeaderDto
+import kr.co.wground.study.application.dto.ScheduleDto
 import kr.co.wground.study.application.dto.StudyCreateCommand
+import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.application.dto.StudyUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
@@ -13,11 +17,15 @@ import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.TagRepository
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
+import kr.co.wground.study.presentation.response.study.StudyQueryResponse
 import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.infra.UserRepository
+import org.slf4j.LoggerFactory
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -34,6 +42,7 @@ class StudyService(
 ) {
     companion object {
         const val MAX_ENROLLED_STUDY = 2
+        private val log = LoggerFactory.getLogger(StudyService::class.java)
     }
 
     fun createStudy(command: StudyCreateCommand): Long {
@@ -84,7 +93,7 @@ class StudyService(
         val study = getStudyEntity(command.studyId)
         val schedule = studyScheduleService.getScheduleEntity(command.scheduleId)
 
-        if (study.leaderId != command.userId) {
+        if (!study.isLeader(command.userId)) {
             throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
         }
 
@@ -105,10 +114,11 @@ class StudyService(
         )
         return study.id
     }
+
     fun deleteStudy(studyId: Long, userId: Long, isAdmin: Boolean) {
         val study = getStudyEntity(studyId)
 
-        if (!isAdmin) {
+        if (isAdmin) {
             study.isLeader(userId)
             study.validateHardDeletable()
         }
@@ -121,19 +131,47 @@ class StudyService(
 
         study.approve()
 
-        val pendingApplications =
-            studyRecruitmentRepository.findAllByStudyIdAndRecruitStatus(studyId, RecruitStatus.PENDING)
-        pendingApplications.forEach { it.updateRecruitStatus(RecruitStatus.REJECTED) }
+        studyRecruitmentRepository.rejectAllByStudyIdWithExceptStatus(studyId, RecruitStatus.APPROVED)
+
     }
 
     fun rejectStudy(studyId: Long) {
-        val study =
-            studyRepository.findByIdOrNull(studyId) ?: throw BusinessException(StudyServiceErrorCode.STUDY_NOT_FOUND)
+        val study = getStudyEntity(studyId)
 
         study.reject()
 
-        study.recruitments.forEach {
-            it.updateRecruitStatus(RecruitStatus.REJECTED)
+        studyRecruitmentRepository.rejectAllByStudyIdWithExceptStatus(studyId, RecruitStatus.CANCELLED)
+    }
+
+    @Transactional(readOnly = true)
+    fun searchStudies(
+        condition: StudySearchCondition,
+        pageable: Pageable,
+        userId: UserId
+    ): Slice<StudyQueryResponse> {
+        val result = studyRepository.searchStudies(condition, pageable)
+
+        val joinedStudyIds = if (userId != null) {
+            val studyIds = result.content.map { it.study.id }
+            studyRecruitmentRepository.findApprovedStudyIdsByUserIdAndStudyIds(userId, studyIds).toSet()
+        } else emptySet()
+
+        return result.map { dto ->
+            val leaderDto = LeaderDto.from(dto)
+            val scheduleDto = ScheduleDto.from(dto)
+
+            val isJoined = joinedStudyIds.contains(dto.study.id)
+            val canViewChatUrl = (userId == dto.study.leaderId) || isJoined
+            val isRecruitmentClosed = dto.schedule.isRecruitmentClosed()
+
+            StudyQueryResponse.of(
+                study = dto.study,
+                canViewChatUrl = canViewChatUrl,
+                schedule = scheduleDto,
+                userId = userId,
+                leaderDto = leaderDto,
+                isRecruitmentClosed = isRecruitmentClosed
+            )
         }
     }
 
@@ -145,10 +183,10 @@ class StudyService(
         // 채팅 링크 마스킹 로직
         val canViewChatUrl = if (userId == null) false else {
             study.leaderId == userId || // 스터디장이거나
-                    studyRecruitmentRepository.existsByStudyIdAndUserIdAndRecruitStatus(
+                    studyRecruitmentRepository.existsByStudyIdAndUserIdAndRecruitStatusIn(
                         studyId,
                         userId,
-                        RecruitStatus.APPROVED
+                        listOf(RecruitStatus.APPROVED)
                     ) // 참여자거나
         }
 
@@ -159,7 +197,6 @@ class StudyService(
         return studyRepository.findByIdOrNull(id)
             ?: throw BusinessException(StudyServiceErrorCode.STUDY_NOT_FOUND)
     }
-
 
     private fun resolveTags(tagNames: List<String>): List<Tag> {
         if (tagNames.isEmpty()) return emptyList()
@@ -181,8 +218,9 @@ class StudyService(
         return try {
             tagRepository.save(Tag.create(name))
         } catch (e: DataIntegrityViolationException) {
+            log.error("Tag 생성 중 오류 발생 : ${e.message}")
             tagRepository.findByName(name)
-                ?: throw e
+                ?: throw BusinessException(StudyServiceErrorCode.TAG_CREATION_FAIL)
         }
     }
 }
