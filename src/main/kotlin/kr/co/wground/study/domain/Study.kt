@@ -107,7 +107,7 @@ class Study(
         validateName(name)
         validateDescription(description)
         validateCapacity(capacity)
-        validateSchedule(schedule)
+        schedule.validateTrackId(trackId)
         validateUrl(externalChatUrl, referenceUrl)
     }
 
@@ -142,6 +142,7 @@ class Study(
         newDescription: String?,
         newCapacity: Int?,
         newBudget: BudgetType?,
+        newSchedule: StudySchedule?,
         newChatUrl: String?,
         newRefUrl: String?,
         newTags: List<Tag>?,
@@ -168,7 +169,7 @@ class Study(
             validateDescription(resolvedDescription)
             validateCapacity(resolvedCapacity)
             validateCurrentMemberOverCapacity(resolvedCapacity)
-
+            newSchedule.validateTrackId(this.trackId)
             this.name = resolvedName
             this.description = resolvedDescription
             this.capacity = resolvedCapacity
@@ -230,12 +231,6 @@ class Study(
     fun validateHardDeletable() {
         if (this.status == StudyStatus.APPROVED || this.status == StudyStatus.REJECTED) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_DETERMINE)
-        }
-    }
-
-    private fun validateSchedule(schedule: StudySchedule) {
-        if (!this.trackId.equals(schedule.trackId)) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_SCHEDULE_IS_NOT_IN_TRACK)
         }
     }
 
