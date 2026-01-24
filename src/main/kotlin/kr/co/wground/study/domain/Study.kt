@@ -245,10 +245,8 @@ class Study(
             else -> StudyStatus.PENDING
         }
     }
-    fun isLeader(userId: UserId) {
-        if (this.leaderId != userId) {
-            throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
-        }
+    fun isLeader(userId: UserId): Boolean {
+        return this.leaderId == userId
     }
 
     private fun validateCanUpdate() {

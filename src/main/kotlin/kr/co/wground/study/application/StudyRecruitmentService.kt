@@ -37,7 +37,8 @@ class StudyRecruitmentService(
         val user = findUser(userId)
 
         val study = findStudyById(studyId)
-        val schedule = study.schedule
+        val schedule = findScheduleById(study.scheduleId)
+
         val requestMonth = scheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId)
             .firstOrNull { it.isCurrentRound() } ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
 
@@ -45,7 +46,7 @@ class StudyRecruitmentService(
         validateCurrentMonth(schedule,requestMonth)
         validateApply(user.trackId, study)
         validateDuplicateRecruit(userId, studyId)
-        validateHasMaxStudyLimit(userId, study.schedule.id)
+        validateHasMaxStudyLimit(userId, schedule.id)
 
         val recruitment = StudyRecruitment.apply(userId, appeal, study)
         val savedRecruitment = studyRecruitmentRepository.save(recruitment)
@@ -55,7 +56,7 @@ class StudyRecruitmentService(
 
     fun cancelRecruit(userId: Long, recruitmentId: Long) {
         val recruitment = getRecruitment(recruitmentId)
-
+        val schedule = findScheduleById(recruitment.study.scheduleId)
         if (recruitment.userId != userId) {
             throw BusinessException(StudyServiceErrorCode.NOT_RECRUITMENT_OWNER)
         }
@@ -65,20 +66,20 @@ class StudyRecruitmentService(
         }
 
         if (recruitment.recruitStatus == RecruitStatus.APPROVED || recruitment.recruitStatus == RecruitStatus.PENDING) {
-            recruitment.study.decreaseMemberCount()
+            recruitment.study.decreaseMemberCount(schedule.isRecruitmentClosed())
         }
         recruitment.updateRecruitStatus(RecruitStatus.CANCELLED)
     }
 
     fun determineRecruit(leaderId: Long, recruitmentId: Long, newStatus: RecruitStatus) {
         val recruitment = getRecruitment(recruitmentId)
-
+        val schedule = findScheduleById(recruitment.study.scheduleId)
         if (!recruitment.study.isLeader(leaderId)) {
             throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
         }
 
         if (newStatus == RecruitStatus.APPROVED) {
-            recruitment.study.increaseMemberCount()
+            recruitment.study.increaseMemberCount(schedule.recruitEndDate,schedule.isRecruitmentClosed())
         }
 
         recruitment.updateRecruitStatus(newStatus)
@@ -176,5 +177,10 @@ class StudyRecruitmentService(
         val track = trackRepository.findByIdOrNull(trackId)
             ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
         return track.trackName
+    }
+
+    private fun findScheduleById(scheduleId: Long): StudySchedule {
+        return scheduleRepository.findByIdOrNull(scheduleId)
+            ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
     }
 }

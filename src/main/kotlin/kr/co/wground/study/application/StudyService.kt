@@ -86,11 +86,13 @@ class StudyService(
         return savedStudy.id
     }
 
-    fun updateStudy(command: StudyUpdateCommand) {
+    fun updateStudy(command: StudyUpdateCommand): Long {
         val study = getStudyEntity(command.studyId)
         val schedule = studyScheduleService.getScheduleEntity(command.scheduleId)
 
-        study.isLeader(command.userId)
+        if(!study.isLeader(command.userId)){
+            throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
+        }
 
         val newTags: List<Tag>? = command.tags?.let { tagNames ->
             resolveTags(tagNames)
@@ -107,11 +109,12 @@ class StudyService(
             newTags = newTags,
             isRecruitmentClosed = schedule.isRecruitmentClosed(),
         )
+        return study.id
     }
     fun deleteStudy(studyId: Long, userId: Long, isAdmin: Boolean) {
         val study = getStudyEntity(studyId)
 
-        if (!isAdmin) {
+        if (isAdmin) {
             study.isLeader(userId)
             study.validateHardDeletable()
         }
@@ -145,6 +148,7 @@ class StudyService(
     @Transactional(readOnly = true)
     fun getStudy(studyId: Long, userId: Long?): StudyDetailResponse {
         val study = getStudyEntity(studyId)
+        val schedule = studyScheduleService.getScheduleEntity(study.scheduleId)
 
         // 채팅 링크 마스킹 로직
         val canViewChatUrl = if (userId == null) false else {
@@ -156,7 +160,7 @@ class StudyService(
                     ) // 참여자거나
         }
 
-        return StudyDetailResponse.from(study, canViewChatUrl)
+        return StudyDetailResponse.of(study, canViewChatUrl, schedule, userId)
     }
 
     private fun getStudyEntity(id: Long): Study {
@@ -164,22 +168,20 @@ class StudyService(
             ?: throw BusinessException(StudyServiceErrorCode.STUDY_NOT_FOUND)
     }
 
-    private fun resolveTags(rawTagNames: List<String>): List<Tag> {
-        if (rawTagNames.isEmpty()) return emptyList()
+    private fun resolveTags(tagNames: List<String>): List<Tag> {
+        if (tagNames.isEmpty()) return emptyList()
 
-        val distinctNormalizedNames = rawTagNames
-            .map { Tag.normalize(it) }
-            .distinct()
-            .filter { it.isNotBlank() }
+        val distinctNames = tagNames.map { Tag.normalize(it) }.distinct()
+        val existTags = tagRepository.findByNameIn(distinctNames)
 
-        if (distinctNormalizedNames.isEmpty()) return emptyList()
+        val existingTagNames = existTags.map { it.name }.toSet()
+        val newTagNames = distinctNames.filter { !existingTagNames.contains(it) }
 
-        val existingTags = tagRepository.findByNameIn(distinctNormalizedNames)
-        val existingTagMap = existingTags.associateBy { it.name }
-
-        return distinctNormalizedNames.map { name ->
-            existingTagMap[name] ?: createTag(name)
+        val newTags = newTagNames.map { name ->
+            createTag(name)
         }
+
+        return existTags + newTags
     }
 
     private fun createTag(name: String): Tag {
