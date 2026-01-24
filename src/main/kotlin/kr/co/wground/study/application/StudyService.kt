@@ -80,7 +80,7 @@ class StudyService(
         return savedStudy.id
     }
 
-    fun updateStudy(command: StudyUpdateCommand) {
+    fun updateStudy(command: StudyUpdateCommand): Long {
         val study = getStudyEntity(command.studyId)
         val schedule = studyScheduleService.getScheduleEntity(command.scheduleId)
 
@@ -103,6 +103,7 @@ class StudyService(
             newTags = newTags,
             isRecruitmentClosed = schedule.isRecruitmentClosed(),
         )
+        return study.id
     }
     fun deleteStudy(studyId: Long, userId: Long, isAdmin: Boolean) {
         val study = getStudyEntity(studyId)
@@ -139,6 +140,7 @@ class StudyService(
     @Transactional(readOnly = true)
     fun getStudy(studyId: Long, userId: Long?): StudyDetailResponse {
         val study = getStudyEntity(studyId)
+        val schedule = studyScheduleService.getScheduleEntity(study.scheduleId)
 
         // 채팅 링크 마스킹 로직
         val canViewChatUrl = if (userId == null) false else {
@@ -150,8 +152,9 @@ class StudyService(
                     ) // 참여자거나
         }
 
-        return StudyDetailResponse.from(study, canViewChatUrl)
+        return StudyDetailResponse.of(study, canViewChatUrl, schedule, userId)
     }
+
     private fun getStudyEntity(id: Long): Study {
         return studyRepository.findByIdOrNull(id)
             ?: throw BusinessException(StudyServiceErrorCode.STUDY_NOT_FOUND)
@@ -161,7 +164,7 @@ class StudyService(
     private fun resolveTags(tagNames: List<String>): List<Tag> {
         if (tagNames.isEmpty()) return emptyList()
 
-        val distinctNames = tagNames.distinct()
+        val distinctNames = tagNames.map { Tag.normalize(it) }.distinct()
         val existTags = tagRepository.findByNameIn(distinctNames)
 
         val existingTagNames = existTags.map { it.name }.toSet()
@@ -182,6 +185,4 @@ class StudyService(
                 ?: throw e
         }
     }
-
-
 }

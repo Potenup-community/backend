@@ -14,7 +14,7 @@ interface StudyRecruitmentRepository : JpaRepository<StudyRecruitment, Long> {
              SELECT COUNT(sr) FROM StudyRecruitment sr
              JOIN sr.study s
              WHERE sr.userId = :userId
-               AND s.schedule.id = :scheduleId
+               AND s.scheduleId = :scheduleId
                AND sr.recruitStatus NOT IN :excludedStatuses
          """
     )

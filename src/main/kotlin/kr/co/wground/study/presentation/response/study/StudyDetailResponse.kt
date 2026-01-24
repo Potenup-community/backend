@@ -5,10 +5,12 @@ import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.constant.BudgetType
 import kr.co.wground.study.domain.constant.StudyStatus
 import java.time.LocalDateTime
+import kr.co.wground.study.domain.StudySchedule
 
 data class StudyDetailResponse(
     val id: Long,
     val scheduleId: Long,
+    val scheduleName: String,
     val leaderId: UserId,
     val name: String,
     val description: String,
@@ -21,13 +23,15 @@ data class StudyDetailResponse(
     val tags: List<String>,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val isRecruitmentClosed: Boolean
+    val isRecruitmentClosed: Boolean,
+    val isLeader: Boolean,
 ) {
     companion object {
-        fun from(study: Study, canViewChatUrl: Boolean): StudyDetailResponse {
+        fun of(study: Study, canViewChatUrl: Boolean, schedule: StudySchedule, userId: UserId?): StudyDetailResponse {
             return StudyDetailResponse(
                 id = study.id,
-                scheduleId = study.schedule.id,
+                scheduleId = schedule.id,
+                scheduleName = schedule.months.month,
                 leaderId = study.leaderId,
                 name = study.name,
                 description = study.description,
@@ -40,8 +44,14 @@ data class StudyDetailResponse(
                 tags = study.studyTags.map { it.tag.name },
                 createdAt = study.createdAt,
                 updatedAt = study.updatedAt,
-                isRecruitmentClosed = study.schedule.isRecruitmentClosed()
+                isRecruitmentClosed = schedule.isRecruitmentClosed(),
+                isLeader = isStudyLeader(study.leaderId, userId)
             )
+        }
+
+        fun isStudyLeader(leaderId: UserId, userId: UserId?): Boolean {
+            if (userId == null) return false
+            return userId == leaderId
         }
     }
 }
