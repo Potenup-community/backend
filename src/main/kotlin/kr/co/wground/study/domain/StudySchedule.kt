@@ -82,7 +82,7 @@ class StudySchedule(
         val convertedEnd = newRecruitEnd ?: this.recruitEndDate.toLocalDate()
         val convertedStudyEnd = newStudyEnd ?: this.studyEndDate.toLocalDate()
 
-        val month = newMonths ?: this.months
+        val months = newMonths ?: this.months
         val recruitStartDate = convertedStart.atStartOfDay()
         val recruitEndDate = convertedEnd.atTime(LocalTime.MAX)
         val studyEndDate = convertedStudyEnd.atTime(LocalTime.MAX)
@@ -92,7 +92,7 @@ class StudySchedule(
             recruitEndDate,
             studyEndDate
         )
-        this.months = month
+        this.months = months
         this.recruitStartDate = recruitStartDate
         this.recruitEndDate = recruitEndDate
         this.studyEndDate = studyEndDate
@@ -109,6 +109,12 @@ class StudySchedule(
         }
         if (!recruitEnd.isBefore(studyEnd)) {
             throw BusinessException(StudyDomainErrorCode.STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE)
+        }
+    }
+
+    fun validateTrackId(trackId: TrackId) {
+        if (!this.trackId.equals(trackId)) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_SCHEDULE_IS_NOT_IN_TRACK)
         }
     }
 

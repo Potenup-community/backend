@@ -18,38 +18,37 @@ class StudyScheduleValidator {
         existSchedules: List<StudySchedule>
     ) {
         val now = LocalDateTime.now()
-        val isTargetSchedule = newInfo.studyEnd.isAfter(now)
-
-        if (isTargetSchedule && track.trackStatus != TrackStatus.ENROLLED) {
-            throw BusinessException(StudyServiceErrorCode.TRACK_IS_NOT_ENROLLED)
-        }
-
+        validateEnrolled(newInfo.studyEnd, track)
         checkOrdinalMonths(newInfo, existSchedules)
     }
 
-    fun checkOrdinalMonths(
-        newSchedule: ScheduleInfo,
+    private fun checkOrdinalMonths(
+        new: ScheduleInfo,
         existSchedules: List<StudySchedule>
     ) {
-        if (existSchedules.isEmpty()) return
+        existSchedules.forEach { existSchedule ->
+            when {
+                existSchedule.months == new.month ->
+                    throw BusinessException(StudyServiceErrorCode.DUPLICATE_SCHEDULE_MONTH)
 
-        for (schedule in existSchedules) {
-            if (schedule.months == newSchedule.month) {
-                throw BusinessException(StudyServiceErrorCode.DUPLICATE_SCHEDULE_MONTH)
-            }
-
-            if (schedule.months.ordinal < newSchedule.month.ordinal) {
-                if (!newSchedule.recruitStart.isAfter(schedule.studyEndDate)) {
-                    throw BusinessException(StudyServiceErrorCode.SCHEDULE_OVERLAP_WITH_PREVIOUS)
+                existSchedule.months.ordinal < new.month.ordinal -> {
+                    if (!new.recruitStart.isAfter(existSchedule.studyEndDate)) {
+                        throw BusinessException(StudyServiceErrorCode.SCHEDULE_OVERLAP_WITH_PREVIOUS)
+                    }
                 }
-            }
 
-            if (schedule.months.ordinal > newSchedule.month.ordinal) {
-                if (!newSchedule.studyEnd.isBefore(schedule.recruitStartDate)) {
-                    throw BusinessException(StudyServiceErrorCode.SCHEDULE_OVERLAP_WITH_NEXT)
+                existSchedule.months.ordinal > new.month.ordinal -> {
+                    if (!new.studyEnd.isBefore(existSchedule.recruitStartDate)) {
+                        throw BusinessException(StudyServiceErrorCode.SCHEDULE_OVERLAP_WITH_NEXT)
+                    }
                 }
             }
         }
     }
-}
 
+    private fun validateEnrolled(newStudyEnd: LocalDateTime, track: Track, now: LocalDateTime = LocalDateTime.now()) {
+        if (newStudyEnd.isAfter(now) && track.trackStatus != TrackStatus.ENROLLED) {
+            throw BusinessException(StudyServiceErrorCode.TRACK_IS_NOT_ENROLLED)
+        }
+    }
+}
