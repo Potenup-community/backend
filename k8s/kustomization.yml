@@ -1,8 +1,10 @@
 resources:
-  - rollout.yml
-  - service-active.yml
-  - service-preview.yml
+  - analysis-template.yml
+  - argocd-application.yml
+  - namespace.yml
   - nginx_config_map.yml
   - nginx_deployment_service.yml
   - nginx_ingress.yml
-  - analysis-template.yml
+  - rollout.yml
+  - service-active.yml
+  - service-preview.yml
