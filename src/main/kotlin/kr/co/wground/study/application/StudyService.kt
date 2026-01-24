@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Transactional
 class StudyService(
     private val studyRepository: StudyRepository,
     private val studyScheduleService: StudyScheduleService,
@@ -37,6 +38,7 @@ class StudyService(
     private val userRepository: UserRepository
 ) {
     companion object {
+        const val MAX_ENROLLED_STUDY = 2
         private val log = LoggerFactory.getLogger(StudyService::class.java)
     }
 
@@ -55,7 +57,7 @@ class StudyService(
             ?: throw BusinessException(StudyServiceErrorCode.NO_CURRENT_SCHEDULE)
 
         val enrolledStudyCount = studyRecruitmentRepository.countActiveEnrolledStudy(user.userId, schedule.id)
-        if (enrolledStudyCount >= 2) {
+        if (enrolledStudyCount >= MAX_ENROLLED_STUDY) {
             throw BusinessException(StudyServiceErrorCode.MAX_STUDY_EXCEEDED)
         }
 
@@ -67,7 +69,7 @@ class StudyService(
             name = command.name,
             leaderId = user.userId,
             trackId = track.trackId,
-            schedule = scheduleEntity,
+            scheduleId = scheduleEntity.id,
             description = command.description,
             status = StudyStatus.PENDING,
             capacity = command.capacity,
@@ -86,10 +88,9 @@ class StudyService(
 
     fun updateStudy(command: StudyUpdateCommand) {
         val study = getStudyEntity(command.studyId)
+        val schedule = studyScheduleService.getScheduleEntity(command.scheduleId)
 
-        if (!study.isLeader(command.userId)) {
-            throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
-        }
+        study.isLeader(command.userId)
 
         val newTags: List<Tag>? = command.tags?.let { tagNames ->
             resolveTags(tagNames)
@@ -100,24 +101,22 @@ class StudyService(
             newDescription = command.description ?: study.description,
             newCapacity = command.capacity ?: study.capacity,
             newBudget = command.budget ?: study.budget,
+            newScheduleId = command.scheduleId,
             newChatUrl = command.chatUrl ?: study.externalChatUrl,
             newRefUrl = command.refUrl ?: study.referenceUrl,
-            newTags = newTags
+            newTags = newTags,
+            isRecruitmentClosed = schedule.isRecruitmentClosed(),
         )
     }
-
     fun deleteStudy(studyId: Long, userId: Long, isAdmin: Boolean) {
         val study = getStudyEntity(studyId)
 
-        if (isAdmin) {
-            studyRepository.delete(study)
-        } else {
-            if (!study.isLeader(userId)) {
-                throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
-            }
+        if (!isAdmin) {
+            study.isLeader(userId)
             study.validateHardDeletable()
-            studyRepository.delete(study)
         }
+
+        studyRepository.delete(study)
     }
 
     fun approveStudy(studyId: Long) {
