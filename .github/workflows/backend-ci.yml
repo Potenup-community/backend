@@ -4,7 +4,7 @@ on:
   push:
     branches: [ test/scrum-182, main, develop ]
   pull_request:
-    branches: [ feature/scrum-182, main, develop ]
+    branches: [ feature/scrum-182, main, develop ] 
 
 jobs:
   test:
