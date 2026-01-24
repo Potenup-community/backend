@@ -35,10 +35,10 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/studies")
 class StudyController(
     private val studyService: StudyService
-) {
+): StudyApi {
 
     @PostMapping
-    fun createStudy(
+    override fun createStudy(
         userId: CurrentUserId,
         @RequestBody @Valid request: StudyCreateRequest
     ): ResponseEntity<StudyIdResponse> {
@@ -47,7 +47,7 @@ class StudyController(
     }
 
     @GetMapping("/{studyId}")
-    fun getStudy(
+    override fun getStudy(
         userId: CurrentUserId,
         @PathVariable studyId: Long
     ): ResponseEntity<StudyDetailResponse> {
@@ -56,7 +56,7 @@ class StudyController(
     }
 
     @PatchMapping("/{studyId}")
-    fun updateStudy(
+    override fun updateStudy(
         userId: CurrentUserId,
         @PathVariable studyId: Long,
         @RequestBody @Valid request: StudyUpdateRequest
@@ -66,7 +66,7 @@ class StudyController(
     }
 
     @DeleteMapping("/{studyId}")
-    fun deleteStudy(
+    override fun deleteStudy(
         @AuthenticationPrincipal userPrincipal: UserPrincipal,
         @PathVariable studyId: Long
     ): ResponseEntity<Unit> {
@@ -82,7 +82,7 @@ class StudyController(
 
     @PatchMapping("/{studyId}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    fun approveStudy(
+    override fun approveStudy(
         @PathVariable studyId: Long
     ): ResponseEntity<Unit> {
         studyService.approveStudy(studyId)
@@ -91,7 +91,7 @@ class StudyController(
 
     @PatchMapping("/{studyId}/reject")
     @PreAuthorize("hasRole('ADMIN')")
-    fun rejectStudy(
+    override fun rejectStudy(
         @PathVariable studyId: Long
     ): ResponseEntity<Unit> {
         studyService.rejectStudy(studyId)
@@ -99,7 +99,7 @@ class StudyController(
     }
 
     @GetMapping
-    fun searchStudies(
+    override fun searchStudies(
         @ModelAttribute condition: StudySearchCondition,
         @PageableDefault(size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
         userId: CurrentUserId

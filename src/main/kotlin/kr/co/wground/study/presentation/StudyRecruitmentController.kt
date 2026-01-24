@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1")
 class StudyRecruitmentController(
     private val studyRecruitmentService: StudyRecruitmentService
-) {
+): StudyRecruitmentApi {
     @PostMapping("/studies/{studyId}/recruitments")
-    fun applyStudy(
+    override fun applyStudy(
         userId: CurrentUserId,
         @PathVariable studyId: Long,
         @RequestBody @Valid request: StudyRecruitRequest
@@ -33,7 +33,7 @@ class StudyRecruitmentController(
     }
 
     @DeleteMapping("/studies/{studyId}/recruitments/{recruitmentId}")
-    fun cancelApplication(
+    override fun cancelApplication(
         userId: CurrentUserId,
         @PathVariable studyId: Long,
         @PathVariable recruitmentId: Long
@@ -44,7 +44,7 @@ class StudyRecruitmentController(
 
     // 신청 승인 (스터디장)
     @PatchMapping("/studies/{studyId}/recruitments/{recruitmentId}/approve")
-    fun approveApplication(
+    override fun approveApplication(
         userId: CurrentUserId,
         @PathVariable studyId: Long,
         @PathVariable recruitmentId: Long
@@ -55,7 +55,7 @@ class StudyRecruitmentController(
 
     // 신청 반려 (스터디장)
     @PatchMapping("/studies/{studyId}/recruitments/{recruitmentId}/reject")
-    fun rejectApplication(
+    override fun rejectApplication(
         userId: CurrentUserId,
         @PathVariable studyId: Long,
         @PathVariable recruitmentId: Long
@@ -66,7 +66,7 @@ class StudyRecruitmentController(
 
     // 내 신청 목록 조회
     @GetMapping("/users/me/recruitments")
-    fun getMyRecruitments(
+    override fun getMyRecruitments(
         userId: CurrentUserId
     ): ResponseEntity<List<StudyRecruitmentResponse>> {
         val responses = studyRecruitmentService.getMyRecruitments(userId.value)
@@ -75,7 +75,7 @@ class StudyRecruitmentController(
 
     // 스터디 신청자 목록 조회 (스터디장)
     @GetMapping("/users/me/studies/{studyId}/recruitments")
-    fun getStudyRecruitments(
+    override fun getStudyRecruitments(
         userId: CurrentUserId,
         @PathVariable studyId: Long
     ): ResponseEntity<List<StudyRecruitmentResponse>> {

@@ -1,11 +1,10 @@
 package kr.co.wground.study.application.dto
 
 import java.time.LocalDateTime
-import kr.co.wground.study.domain.constant.Months
 
 data class ScheduleDto(
     val id: Long,
-    val month: Months,
+    val month: String,
     val recruitStartDate: LocalDateTime,
     val recruitEndDate: LocalDateTime,
     val studyEndDate: LocalDateTime,
@@ -14,7 +13,7 @@ data class ScheduleDto(
         fun from(dto: StudyQueryDto): ScheduleDto {
             return ScheduleDto(
                 id = dto.schedule.id,
-                month = dto.schedule.months,
+                month = dto.schedule.months.month,
                 recruitStartDate = dto.schedule.recruitStartDate,
                 recruitEndDate = dto.schedule.recruitEndDate,
                 studyEndDate = dto.schedule.studyEndDate
