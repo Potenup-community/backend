@@ -1,0 +1,60 @@
+﻿spring:
+  datasource:
+    url: jdbc:h2:mem:potenup;MODE=MYSQL;NON_KEYWORDS=USER;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        jdbc:
+          batch_size: 50
+  mail:
+    host: localhost
+    port: 2525
+    username: test@example.com
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+            required: false
+          connectiontimeout: 1000
+          timeout: 1000
+          writetimeout: 1000
+
+jwt:
+  secret: test-secret
+  expiration-ms: 3600000
+  refresh-expiration-ms: 7200000
+  refresh-hash-secret: test-refresh-secret
+
+google:
+  auth:
+    client-id: test-client
+
+app:
+  upload:
+    local-dir: build/tmp/uploads
+    public-base-path: /uploads
+    max-image-bytes: 1048576
+    max-gif-bytes: 1048576
+    allowed-mime-types: image/png,image/jpeg,image/gif
+    cache-period: 3600
+    base-url: http://localhost
+  profile:
+    local-dir: build/tmp/profiles
+    webPathPrefix: /profiles
+    maxBytes: 1048576
+    allowedExts: [jpg, jpeg, png, gif]
+    base-url: http://localhost
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
