@@ -11,3 +11,6 @@ spec:
     - name: http
       port: 80
       targetPort: 8080
+    - name: management
+      port: 9091
+      targetPort: 9091

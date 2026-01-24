@@ -88,6 +88,8 @@ management:
   endpoint:
     health:
       show-details: never
+      probes:
+        enabled: true
   metrics:
     tags:
       application: ${spring.application.name}
@@ -97,3 +99,8 @@ management:
   tracing:
     sampling:
       probability: 1.0
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true

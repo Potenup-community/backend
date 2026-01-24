@@ -14,7 +14,6 @@ spec:
       labels:
         app: community-be
     spec:
-
       volumes:
         - name: app-logs
           emptyDir: {}
@@ -37,13 +36,33 @@ spec:
             - secretRef:
                 name: community-be-secret
 
-          # 🔽 앱 컨테이너에도 동일 경로 마운트
           volumeMounts:
             - name: app-logs
               mountPath: /app/monitoring/logs
+      livenessProbe:
+        httpGet:
+          path: /449b92a4/actuator/health/liveness
+          port: 8080
+        initialDelaySeconds: 20
+        periodSeconds: 10
+        timeoutSeconds: 2
+        failureThreshold: 3
+
+      readinessProbe:
+        httpGet:
+          path: /449b92a4/actuator/health/readiness
+          port: 8080
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        timeoutSeconds: 2
+        failureThreshold: 3
 
   strategy:
     blueGreen:
       activeService: community-be-active
       previewService: community-be-preview
-      autoPromotionEnabled: false
+      autoPromotionEnabled: true
+
+      prePromotionAnalysis:
+        templates:
+          - templateName: community-be-ready-check

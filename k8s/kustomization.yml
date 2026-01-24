@@ -1,0 +1,5 @@
+resources:
+  - nginx_deployment_service.yml
+  - nginx_ingress.yml
+  - rollout.yml
+  - analysis-template.yml

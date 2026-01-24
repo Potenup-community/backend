@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: community-be-ready-check
+  namespace: community
+spec:
+  metrics:
+    - name: readiness-http
+      interval: 5s
+      count: 3
+      successCondition: result == "200"
+      provider:
+        job:
+          spec:
+            template:
+              spec:
+                restartPolicy: Never
+                containers:
+                  - name: curl
+                    image: curlimages/curl:8.5.0
+                    command: ["sh", "-c"]
+                    args:
+                      - |
+                        code=$(curl -s -o /dev/null -w "%{http_code}" \
+                          http://community-be-preview.community.svc.cluster.local:9091/449b92a4/actuator/health/readiness);
+                        echo $code;
