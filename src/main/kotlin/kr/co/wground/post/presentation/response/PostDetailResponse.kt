@@ -27,13 +27,23 @@ data class PostDetailResponse(
     val wroteAt: LocalDateTime,
     val trackName: String,
     val profileImageUrl: String,
-    val nextPostId: PostId?,
-    val previousPostId: PostId?,
+    val previousPost: PreviousPost,
+    val nextPost: NextPost,
     val reactions: List<PostReactionDetail> = emptyList(),
 ) {
     data class PostReactionDetail(
         val reactionType: ReactionType,
         val count: Int,
+    )
+
+    data class PreviousPost(
+        val previousPostId: PostId?,
+        val previousPostTitle: String?,
+    )
+
+    data class NextPost(
+        val nextPostId: PostId?,
+        val nextPostTitle: String?,
     )
 }
 
@@ -49,7 +59,7 @@ fun PostDetailDto.toResponse() = PostDetailResponse(
     wroteAt = wroteAt,
     trackName = trackName,
     profileImageUrl = profileImageUrl,
-    nextPostId = nextPostId,
-    previousPostId = previousPostId,
+    previousPost = PostDetailResponse.PreviousPost(previousPostId, previousPostTitle),
+    nextPost = PostDetailResponse.NextPost(nextPostId, nextPostTitle),
     reactions = reactions.map { PostReactionDetail(it.reactionType, it.count) }
 )
