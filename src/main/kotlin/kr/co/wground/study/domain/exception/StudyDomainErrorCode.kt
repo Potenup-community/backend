@@ -38,6 +38,7 @@ enum class StudyDomainErrorCode(
     //StudyRecruitment
     RECRUITMENT_APPEAL_TOO_BIG(HttpStatus.BAD_REQUEST,"SR-0001","자기 소개는 최대 100자까지 작성 할 수 있습니다."),
     RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE(HttpStatus.BAD_REQUEST,"SR-0002","스터디가 확정되거나 반려된 상태에서는 신청 상태를 변경할 수 없습니다."),
-    RECRUITMENT_INVALID_STATUS_CHANGE(HttpStatus.BAD_REQUEST,"SR-0003","유효하지 않은 상태 변경입니다.")
+    RECRUITMENT_INVALID_STATUS_CHANGE(HttpStatus.BAD_REQUEST,"SR-0003","유효하지 않은 상태 변경입니다."),
+    RECRUITMENT_APPEAL_EMPTY(HttpStatus.BAD_REQUEST,"SR-0004","자기소개가 입력되지 않았습니다."),
 
 }
