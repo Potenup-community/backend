@@ -3,7 +3,7 @@ name: backend-ci
 on:
   push:
     branches: [ test/scrum-182, main, develop ]
-  pull_request: 
+  pull_request:
     branches: [ feature/scrum-182, main, develop ]
 
 jobs:
