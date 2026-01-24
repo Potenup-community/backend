@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: potenup/community-be:test-scrum-182
+          image: potenup/poten_up:af31332
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
