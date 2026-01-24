@@ -16,6 +16,7 @@ import kr.co.wground.study.domain.constant.BudgetType
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import java.time.LocalDateTime
+import kr.co.wground.study.application.exception.StudyServiceErrorCode
 
 @Entity
 class Study(
@@ -242,6 +243,11 @@ class Study(
             isRecruitmentClosed || currentMemberCount >= capacity -> StudyStatus.CLOSED
 
             else -> StudyStatus.PENDING
+        }
+    }
+    fun isLeader(userId: UserId) {
+        if (this.leaderId != userId) {
+            throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
         }
     }
 
