@@ -21,7 +21,7 @@ spec:
 
       initContainers:
         - name: init-log-dir
-          image: busybox:1.36
+          image: potenup/poten_up:sha-8250b8d
           command: ["sh", "-c", "mkdir -p /app/monitoring/logs"]
           volumeMounts:
             - name: app-logs
@@ -29,7 +29,7 @@ spec:
 
       containers:
         - name: app
-          image: potenup/poten_up:sha-93bbcc3
+          image: potenup/poten_up:sha-8250b8d
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
