@@ -73,23 +73,29 @@ class StudySchedule(
     }
 
     fun updateSchedule(
-        newRecruitStart: LocalDate,
-        newRecruitEnd: LocalDate,
-        newStudyEnd: LocalDate
+        newMonths: Months?,
+        newRecruitStart: LocalDate?,
+        newRecruitEnd: LocalDate?,
+        newStudyEnd: LocalDate?
     ) {
-        val convertedStart = newRecruitStart.atStartOfDay()
-        val convertedEnd = newRecruitEnd.atTime(LocalTime.MAX)
-        val convertedStudyEnd = newStudyEnd.atTime(LocalTime.MAX)
+        val convertedStart = newRecruitStart ?: this.recruitStartDate.toLocalDate()
+        val convertedEnd = newRecruitEnd ?: this.recruitEndDate.toLocalDate()
+        val convertedStudyEnd = newStudyEnd ?: this.studyEndDate.toLocalDate()
+
+        val months = newMonths ?: this.months
+        val recruitStartDate = convertedStart.atStartOfDay()
+        val recruitEndDate = convertedEnd.atTime(LocalTime.MAX)
+        val studyEndDate = convertedStudyEnd.atTime(LocalTime.MAX)
 
         validateTimeOrder(
-            convertedStart,
-            convertedEnd,
-            convertedStudyEnd
+            recruitStartDate,
+            recruitEndDate,
+            studyEndDate
         )
-
-        this.recruitStartDate = convertedStart
-        this.recruitEndDate = convertedEnd
-        this.studyEndDate = convertedStudyEnd
+        this.months = months
+        this.recruitStartDate = recruitStartDate
+        this.recruitEndDate = recruitEndDate
+        this.studyEndDate = studyEndDate
         this.updatedAt = LocalDateTime.now()
     }
 
@@ -106,12 +112,26 @@ class StudySchedule(
         }
     }
 
-    fun isMonthAfterPrevious(nextSchedule: StudySchedule): Boolean {
-        if (this.trackId != nextSchedule.trackId) return true
-        return this.studyEndDate.isBefore(nextSchedule.recruitStartDate)
+    fun validateTrackId(trackId: TrackId) {
+        if (!this.trackId.equals(trackId)) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_SCHEDULE_IS_NOT_IN_TRACK)
+        }
+    }
+
+    fun isMonthAfterPrevious(trackId: TrackId): Boolean {
+        if (this.trackId != trackId) return true
+        return this.studyEndDate.isBefore(this.recruitStartDate)
     }
 
     fun isRecruitmentClosed(now: LocalDateTime = LocalDateTime.now()): Boolean {
         return now.isAfter(this.recruitEndDate)
+    }
+
+    fun isCurrentRound(now: LocalDateTime = LocalDateTime.now()): Boolean {
+        return now.isAfter(this.recruitStartDate) && now.isBefore(this.studyEndDate)
+    }
+
+    fun isScheduleEnded(now: LocalDateTime = LocalDateTime.now()): Boolean {
+        return now.isAfter(this.studyEndDate)
     }
 }
