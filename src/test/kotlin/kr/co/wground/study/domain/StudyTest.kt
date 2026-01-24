@@ -22,7 +22,7 @@ class StudyTest {
 
         // To Do: 특정 값을 변경하고 싶지 않은 경우, null 을 명시적으로 전달하는 방식이 괜찮을 지 모르겠음
         val NOT_GONNA_CHANGE = null;
-        
+
         // ----- 정원 수
 
         @Test
