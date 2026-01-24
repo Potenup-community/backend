@@ -43,7 +43,8 @@ jobs:
 
       - name: Extract short SHA
         id: vars
-        run: echo "SHA_TAG=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+        shell: bash
+        run: echo "SHA_TAG=sha-${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
 
 
       - name: Build (load for test)
