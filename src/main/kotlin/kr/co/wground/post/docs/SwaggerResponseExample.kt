@@ -43,8 +43,14 @@ object SwaggerResponseExample {
       "highlightType": "BY_ADMIN",
       "commentsCount": 5,
       "wroteAt": "2026-01-07T15:00:00",
-      "nextPostId": 1,
-      "previousPostId": null
+      "previousPost": {
+        "previousPostId": 2,
+        "previousPostTitle": "Example Title"
+      },
+      "nextPost": {
+        "nextPostId": null,
+        "nextPostTitle": null
+      },
       "reactions": [
         {
           "reactionType": "LIKE",
