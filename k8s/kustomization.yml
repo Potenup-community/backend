@@ -1,5 +1,8 @@
 resources:
+  - rollout.yml
+  - service-active.yml
+  - service-preview.yml
+  - nginx_config_map.yml
   - nginx_deployment_service.yml
   - nginx_ingress.yml
-  - rollout.yml
   - analysis-template.yml
