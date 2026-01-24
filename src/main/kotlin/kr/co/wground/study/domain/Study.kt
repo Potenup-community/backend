@@ -5,12 +5,9 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
@@ -30,7 +27,7 @@ class Study(
     val leaderId: UserId,
     @Column(nullable = false)
     val trackId: TrackId,
-    schedule: StudySchedule,
+    scheduleId: Long,
     description: String,
     status: StudyStatus,
     capacity: Int = RECOMMENDED_MAX_CAPACITY,
@@ -45,9 +42,7 @@ class Study(
     var name: String = name
         protected set
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "schedule_id", nullable = false)
-    var schedule: StudySchedule = schedule
+    var scheduleId: Long = scheduleId
         protected set
 
     @Column(length = MAX_DESCRIPTION_LENGTH)
@@ -107,13 +102,12 @@ class Study(
         validateName(name)
         validateDescription(description)
         validateCapacity(capacity)
-        schedule.validateTrackId(trackId)
         validateUrl(externalChatUrl, referenceUrl)
     }
 
-    fun increaseMemberCount() {
-        if (isOverRecruit()) {
-            refreshStatus()
+    fun increaseMemberCount(recruitEndDate: LocalDateTime, isRecruitmentClosed: Boolean) {
+        if (LocalDateTime.now() > recruitEndDate) {
+            refreshStatus(isRecruitmentClosed)
             throw BusinessException(StudyDomainErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
         }
         if (this.status != StudyStatus.PENDING) {
@@ -124,66 +118,71 @@ class Study(
         }
 
         this.currentMemberCount++
-        refreshStatus()
+        refreshStatus(isRecruitmentClosed)
     }
 
-    fun decreaseMemberCount() {
+    fun decreaseMemberCount(isRecruitmentClosed: Boolean) {
         if (this.currentMemberCount <= 1) {
             throw BusinessException(StudyDomainErrorCode.STUDY_MIN_MEMBER_REQUIRED)
         }
 
         this.currentMemberCount--
 
-        refreshStatus()
+        refreshStatus(isRecruitmentClosed)
     }
 
     fun updateStudyInfo(
-        newName: String?,
-        newDescription: String?,
-        newCapacity: Int?,
-        newBudget: BudgetType?,
-        newSchedule: StudySchedule?,
-        newChatUrl: String?,
+        newName: String,
+        newDescription: String,
+        newCapacity: Int,
+        newScheduleId: Long,
+        newBudget: BudgetType,
+        newChatUrl: String,
         newRefUrl: String?,
         newTags: List<Tag>?,
-        now: LocalDateTime = LocalDateTime.now()
+        isRecruitmentClosed: Boolean,
     ) {
         validateCanUpdate()
+        validateUrl(newChatUrl, newRefUrl)
 
-        val resolvedBudget = newBudget ?: this.budget
-        val resolvedChatUrl = newChatUrl ?: this.externalChatUrl
-        val resolvedRefUrl = newRefUrl ?: this.referenceUrl
+        val isCoreInfoChanged = this.name != newName ||
+                this.description != newDescription ||
+                this.capacity != newCapacity ||
+                isTagsChanged(newTags)
 
-        validateUrl(resolvedChatUrl, resolvedRefUrl)
+        if ((this.status == StudyStatus.CLOSED || isRecruitmentClosed) && isCoreInfoChanged) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DEADLINE)
+        }
 
-        this.budget = resolvedBudget
-        this.externalChatUrl = resolvedChatUrl
-        this.referenceUrl = resolvedRefUrl
+        if (!isRecruitmentClosed) {
+            validateName(newName)
+            validateDescription(newDescription)
+            validateCapacity(newCapacity)
+            validateCurrentMemberOverCapacity(newCapacity)
 
-        if (!schedule.isRecruitmentClosed(now)) {
-            val resolvedName = newName ?: this.name
-            val resolvedDescription = newDescription ?: this.description
-            val resolvedCapacity = newCapacity ?: this.capacity
-
-            validateName(resolvedName)
-            validateDescription(resolvedDescription)
-            validateCapacity(resolvedCapacity)
-            validateCurrentMemberOverCapacity(resolvedCapacity)
-            newSchedule.validateTrackId(this.trackId)
-            this.name = resolvedName
-            this.description = resolvedDescription
-            this.capacity = resolvedCapacity
+            this.name = newName
+            this.description = newDescription
+            this.capacity = newCapacity
 
             if (newTags != null) {
                 updateTags(newTags)
             }
-        } else {
-            if (newName != null || newDescription != null || newCapacity != null || newTags != null) {
-                throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DEADLINE)
-            }
         }
+
+        this.budget = newBudget
+        this.scheduleId = newScheduleId
+        this.externalChatUrl = newChatUrl
+        this.referenceUrl = newRefUrl
         this.updatedAt = LocalDateTime.now()
-        refreshStatus(now)
+
+        refreshStatus(isRecruitmentClosed)
+    }
+
+    private fun isTagsChanged(newTags: List<Tag>?): Boolean {
+        if (newTags == null) return false
+        val currentTagIds = this.studyTags.map { it.tag.id }.toSet()
+        val newTagIds = newTags.map { it.id }.toSet()
+        return currentTagIds != newTagIds
     }
 
     private fun updateTags(newTags: List<Tag>) {
@@ -234,12 +233,12 @@ class Study(
         }
     }
 
-    fun refreshStatus(now: LocalDateTime = LocalDateTime.now()) {
+    fun refreshStatus(isRecruitmentClosed: Boolean, now: LocalDateTime = LocalDateTime.now()) {
         if (this.status == StudyStatus.APPROVED || this.status == StudyStatus.REJECTED) {
             return
         }
 
-        if (schedule.isRecruitmentClosed(now)) {
+        if (isRecruitmentClosed) {
             if (this.currentMemberCount < MIN_CAPACITY) {
                 this.status = StudyStatus.REJECTED
             } else {
@@ -294,9 +293,5 @@ class Study(
         if (newCapacity < this.currentMemberCount) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_CANNOT_LESS_THAN_CURRENT)
         }
-    }
-
-    private fun isOverRecruit(): Boolean {
-        return this.schedule.recruitEndDate < LocalDateTime.now()
     }
 }
