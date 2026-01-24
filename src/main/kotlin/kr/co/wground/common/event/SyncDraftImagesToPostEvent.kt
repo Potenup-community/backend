@@ -1,4 +1,4 @@
-package kr.co.wground.common
+package kr.co.wground.common.event
 
 import kr.co.wground.global.common.OwnerId
 import kr.co.wground.global.common.PostId
@@ -8,6 +8,6 @@ class SyncDraftImagesToPostEvent(
     val postId: PostId,
     val ownerId: OwnerId,
     val draftId: UUID,
-    val markdown: String
+    val markdown: String,
 ) {
 }
