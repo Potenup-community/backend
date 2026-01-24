@@ -141,6 +141,7 @@ class StudyRecruitmentTest {
     
     // ----- 취소
 
+    // ❌
     @Test
     fun `신청이 CANCELLED 상태일 때, 취소를 시도하면, 예외 발생 - BusinessException(SR-0003)`() {
         val thrown = assertThrows<BusinessException> {
@@ -153,6 +154,7 @@ class StudyRecruitmentTest {
         assertEquals(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE.code, thrown.code)
     }
 
+    // ❌
     @Test
     fun `신청이 REJECTED 상태일 때, 취소를 시도하면, 예외 발생 - BusinessException(SR-0003)`() {
         val thrown = assertThrows<BusinessException> {

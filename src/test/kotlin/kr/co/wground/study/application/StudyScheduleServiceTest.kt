@@ -302,7 +302,7 @@ class StudyScheduleServiceTest {
             name = "스터디 이름",
             leaderId = 1L,
             trackId = savedTrack.trackId,
-            schedule = savedSchedule,
+            scheduleId = savedSchedule.id,
             description = "스터디 설명",
             status = StudyStatus.PENDING,
             capacity = 5,
