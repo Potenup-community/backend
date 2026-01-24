@@ -87,7 +87,7 @@ jobs:
       - name: Update image tag in k8s manifest
         if: github.event_name == 'push'
         run: |
-          sed -i "s|image: .*|image: $IMAGE_NAME:${{ steps.vars.outputs.SHA_TAG }}|" k8s/rollout.yaml
+          sed -i "s|image: .*|image: $IMAGE_NAME:${{ steps.vars.outputs.SHA_TAG }}|" k8s/rollout.yml
 
       - name: Commit and push updated manifest
         if: github.event_name == 'push'
