@@ -96,7 +96,7 @@ class StudyScheduleService(
 
         val affectedStudies = studyRepository.findAllByScheduleId(schedule.id)
         affectedStudies.forEach { study ->
-            study.refreshStatus()
+            study.refreshStatus(schedule.isRecruitmentClosed())
         }
 
         return ScheduleUpdateResponse.of(schedule.id, schedule.trackId, schedule.months)
