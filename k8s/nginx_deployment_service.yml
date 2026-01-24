@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: community-gateway-nginx
+  namespace: community
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: community-gateway-nginx
+  template:
+    metadata:
+      labels:
+        app: community-gateway-nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: community-gateway-nginx-conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: community-gateway
+  namespace: community
+spec:
+  selector:
+    app: community-gateway-nginx
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+  type: NodePort
