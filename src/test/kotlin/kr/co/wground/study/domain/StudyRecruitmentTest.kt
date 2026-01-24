@@ -147,6 +147,7 @@ class StudyRecruitmentTest {
     
     // ----- 취소
 
+    // ❌
     @Test
     @DisplayName("신청이 CANCELLED 상태일 때, 취소를 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
     fun cancel_cancelled_throws() {
@@ -160,6 +161,7 @@ class StudyRecruitmentTest {
         assertEquals(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE.code, thrown.code)
     }
 
+    // ❌
     @Test
     @DisplayName("신청이 REJECTED 상태일 때, 취소를 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
     fun cancel_rejected_throws() {
