@@ -1,0 +1,76 @@
+package kr.co.wground.study.application
+
+import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.UserId
+import kr.co.wground.study.application.exception.StudyServiceErrorCode
+import kr.co.wground.study.domain.Study
+import kr.co.wground.study.domain.StudySchedule
+import kr.co.wground.study.domain.constant.RecruitStatus
+import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study.infra.StudyRecruitmentRepository
+import org.springframework.stereotype.Component
+
+@Component
+class RecruitValidator(
+    private val studyRecruitmentRepository: StudyRecruitmentRepository,
+) {
+    companion object{
+        const val MAX_STUDY_CAN_ENROLLED = 2
+    }
+
+    fun validateApply(userTrackId: Long, study: Study) {
+        if (userTrackId != study.trackId) {
+            throw BusinessException(StudyServiceErrorCode.TRACK_MISMATCH)
+        }
+        if (study.status != StudyStatus.PENDING) {
+            throw BusinessException(StudyServiceErrorCode.STUDY_NOT_RECRUITING)
+        }
+    }
+
+    fun validateDuplicateRecruit(userId: Long, studyId: Long) {
+        val statusList = listOf(RecruitStatus.PENDING, RecruitStatus.APPROVED, RecruitStatus.REJECTED)
+        if (studyRecruitmentRepository.existsByStudyIdAndUserIdAndRecruitStatusIn(
+                studyId, userId, statusList
+            )
+        ) {
+            throw BusinessException(StudyServiceErrorCode.ALREADY_APPLIED)
+        }
+    }
+
+    fun validateHasMaxStudyLimit(userId: Long, scheduleId: Long) {
+        val count = studyRecruitmentRepository.countActiveEnrolledStudy(userId, scheduleId)
+        if (count >= MAX_STUDY_CAN_ENROLLED) {
+            throw BusinessException(StudyServiceErrorCode.MAX_STUDY_EXCEEDED)
+        }
+    }
+
+    fun validateSchedule(schedule: StudySchedule) {
+        if (schedule.isRecruitmentClosed()) {
+            throw BusinessException(StudyServiceErrorCode.STUDY_NOT_RECRUITING)
+        }
+    }
+
+    fun validateCurrentMonth(schedule: StudySchedule, current: StudySchedule) {
+        if (schedule.months.ordinal < current.months.ordinal) {
+            throw BusinessException(StudyServiceErrorCode.STUDY_MONTH_IS_NOT_CURRENT_MONTH)
+        }
+    }
+
+    fun validateRecruitUserId(recruitUserId: Long, userId: UserId) {
+        if (recruitUserId != userId) {
+            throw BusinessException(StudyServiceErrorCode.NOT_RECRUITMENT_OWNER)
+        }
+    }
+
+    fun validateLeaderCancel(study: Study, userId: UserId) {
+        if (study.isLeader(userId)) {
+            throw BusinessException(StudyServiceErrorCode.LEADER_CANNOT_LEAVE)
+        }
+    }
+
+    fun validateDetermineLeader(study: Study, leaderId: Long) {
+        if (!study.isLeader(leaderId)) {
+            throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
+        }
+    }
+}
