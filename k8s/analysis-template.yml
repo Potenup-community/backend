@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: AnalysisTemplate
 metadata:
   name: community-be-ready-check
-  namespace: community
+  namespace: community 
 spec:
   metrics:
     - name: readiness-http
