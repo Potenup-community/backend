@@ -28,7 +28,7 @@ class Tag protected constructor(
             return Tag(name = normalizedName)
         }
 
-        private fun normalize(input: String): String {
+        fun normalize(input: String): String {
             return input.trim()
                 .lowercase()
                 .replace(" ", "")

@@ -8,12 +8,11 @@ import kr.co.wground.study.application.dto.ScheduleInfo
 import kr.co.wground.study.application.dto.ScheduleUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.StudySchedule
-import kr.co.wground.study.domain.constant.Months
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.StudyScheduleRepository
-import kr.co.wground.study.presentation.response.ScheduleCreateResponse
-import kr.co.wground.study.presentation.response.ScheduleQueryResponse
-import kr.co.wground.study.presentation.response.ScheduleUpdateResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
 import kr.co.wground.track.infra.TrackRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -114,4 +113,3 @@ class StudyScheduleService(
             ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
     }
 }
-

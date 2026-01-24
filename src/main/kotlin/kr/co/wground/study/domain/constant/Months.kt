@@ -3,7 +3,7 @@ package kr.co.wground.study.domain.constant
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 
-enum class Months(month: String) {
+enum class Months(val month: String) {
     FIRST("1차"),
     SECOND("2차"),
     THIRD("3차"),

@@ -16,6 +16,7 @@ import kr.co.wground.study.domain.constant.BudgetType
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import java.time.LocalDateTime
+import kr.co.wground.study.application.exception.StudyServiceErrorCode
 
 @Entity
 class Study(
@@ -68,6 +69,10 @@ class Study(
         protected set
 
     @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true)
+    protected val _recruitments: MutableList<StudyRecruitment> = ArrayList()
+    val recruitments: List<StudyRecruitment> get() = _recruitments.toList()
+
+    @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true)
     protected val _studyTags: MutableList<StudyTag> = ArrayList()
     val studyTags: List<StudyTag> get() = _studyTags.toList()
 
@@ -101,7 +106,7 @@ class Study(
         validateUrl(externalChatUrl, referenceUrl)
     }
 
-    fun increaseMemberCount(recruitEndDate: LocalDateTime, isRecruitmentClosed: Boolean,) {
+    fun increaseMemberCount(recruitEndDate: LocalDateTime, isRecruitmentClosed: Boolean) {
         if (LocalDateTime.now() > recruitEndDate) {
             refreshStatus(isRecruitmentClosed)
             throw BusinessException(StudyDomainErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
@@ -117,7 +122,7 @@ class Study(
         refreshStatus(isRecruitmentClosed)
     }
 
-    fun decreaseMemberCount(isRecruitmentClosed: Boolean,) {
+    fun decreaseMemberCount(isRecruitmentClosed: Boolean) {
         if (this.currentMemberCount <= 1) {
             throw BusinessException(StudyDomainErrorCode.STUDY_MIN_MEMBER_REQUIRED)
         }
@@ -135,18 +140,36 @@ class Study(
         newBudget: BudgetType,
         newChatUrl: String,
         newRefUrl: String?,
+        newTags: List<Tag>?,
         isRecruitmentClosed: Boolean,
     ) {
         validateCanUpdate()
-        validateName(newName)
-        validateDescription(newDescription)
-        validateCapacity(newCapacity)
         validateUrl(newChatUrl, newRefUrl)
-        validateCurrentMemberOverCapacity(newCapacity)
 
-        this.name = newName
-        this.description = newDescription
-        this.capacity = newCapacity
+        val isCoreInfoChanged = this.name != newName ||
+                this.description != newDescription ||
+                this.capacity != newCapacity ||
+                isTagsChanged(newTags)
+
+        if ((this.status == StudyStatus.CLOSED || isRecruitmentClosed) && isCoreInfoChanged) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DEADLINE)
+        }
+
+        if (!isRecruitmentClosed) {
+            validateName(newName)
+            validateDescription(newDescription)
+            validateCapacity(newCapacity)
+            validateCurrentMemberOverCapacity(newCapacity)
+
+            this.name = newName
+            this.description = newDescription
+            this.capacity = newCapacity
+
+            if (newTags != null) {
+                updateTags(newTags)
+            }
+        }
+
         this.budget = newBudget
         this.scheduleId = newScheduleId
         this.externalChatUrl = newChatUrl
@@ -154,6 +177,30 @@ class Study(
         this.updatedAt = LocalDateTime.now()
 
         refreshStatus(isRecruitmentClosed)
+    }
+
+    private fun isTagsChanged(newTags: List<Tag>?): Boolean {
+        if (newTags == null) return false
+        val currentTagIds = this.studyTags.map { it.tag.id }.toSet()
+        val newTagIds = newTags.map { it.id }.toSet()
+        return currentTagIds != newTagIds
+    }
+
+    private fun updateTags(newTags: List<Tag>) {
+        val tags = this._studyTags.iterator()
+        while (tags.hasNext()) {
+            val currentStudyTag = tags.next()
+            if (newTags.none { it.id == currentStudyTag.tag.id }) {
+                tags.remove()
+            }
+        }
+
+        newTags.forEach { newTag ->
+            val isAlreadyExist = this._studyTags.any { it.tag.id == newTag.id }
+            if (!isAlreadyExist) {
+                this.addTag(newTag)
+            }
+        }
     }
 
     fun addTag(tag: Tag) {
@@ -168,10 +215,6 @@ class Study(
 
         val studyTag = StudyTag(study = this, tag = tag)
         this._studyTags.add(studyTag)
-    }
-
-    fun removeTag(tag: Tag) {
-        this._studyTags.removeIf { it.tag.id == tag.id }
     }
 
     fun approve() {
@@ -200,6 +243,11 @@ class Study(
             isRecruitmentClosed || currentMemberCount >= capacity -> StudyStatus.CLOSED
 
             else -> StudyStatus.PENDING
+        }
+    }
+    fun isLeader(userId: UserId) {
+        if (this.leaderId != userId) {
+            throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
         }
     }
 
