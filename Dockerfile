@@ -36,14 +36,10 @@ WORKDIR /app
 
 # 보안: non-root 사용자
 RUN useradd -u 10001 -m appuser
-
-RUN mkdir -p /app/monitoring/logs \
- && chown -R appuser:appuser /app
+USER appuser
 
 # 빌드 산출물만 복사
 COPY --from=build /workspace/build/libs/*.jar app.jar
-
-USER appuser
 
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","/app/app.jar"]
