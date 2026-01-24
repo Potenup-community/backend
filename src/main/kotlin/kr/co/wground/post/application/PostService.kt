@@ -1,8 +1,8 @@
 package kr.co.wground.post.application
 
-import java.util.*
+import java.util.UUID
 import kr.co.wground.comment.infra.CommentRepository
-import kr.co.wground.common.SyncDraftImagesToPostEvent
+import kr.co.wground.common.event.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
@@ -35,7 +35,7 @@ class PostService(
     private val commentRepository: CommentRepository,
     private val userRepository: CustomUserRepository,
     private val postReactionRepository: PostReactionJpaRepository,
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
     fun createPost(dto: PostCreateDto): Long {
         val postId = postRepository.save(dto.toDomain()).id
@@ -144,7 +144,7 @@ class PostService(
 
     private fun assembleSummaryDtos(
         posts: Slice<Post>,
-        userId: UserId
+        userId: UserId,
     ): Slice<PostSummaryDto> {
         val postIds = posts.map { it.id }.toSet()
         val writerIds = posts.map { it.writerId }.toSet()
