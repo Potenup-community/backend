@@ -10,8 +10,10 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.presentation.request.study.StudyCreateRequest
 import kr.co.wground.study.presentation.request.study.StudyUpdateRequest
+import kr.co.wground.study.presentation.response.CustomSliceResponse
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
 import kr.co.wground.study.presentation.response.study.StudyIdResponse
+import kr.co.wground.study.presentation.response.study.StudyQueryResponse
 import kr.co.wground.study.presentation.response.study.StudySearchResponse
 import kr.co.wground.user.domain.constant.UserRole
 import org.springframework.data.domain.Pageable
@@ -99,9 +101,10 @@ class StudyController(
     @GetMapping
     fun searchStudies(
         @ModelAttribute condition: StudySearchCondition,
-        @PageableDefault(size = 10, sort = ["createdAt"], direction = Sort.Direction.ASC) pageable: Pageable
-    ): ResponseEntity<Slice<StudySearchResponse>> {
-        val response = studyService.searchStudies(condition, pageable)
-        return ResponseEntity.ok(response)
+        @PageableDefault(size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
+        userId: CurrentUserId
+    ): ResponseEntity<CustomSliceResponse<StudyQueryResponse>> {
+        val response = studyService.searchStudies(condition, pageable, userId.value)
+        return ResponseEntity.ok(CustomSliceResponse.from(response))
     }
 }

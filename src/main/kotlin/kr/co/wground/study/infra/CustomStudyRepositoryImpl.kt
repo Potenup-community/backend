@@ -4,12 +4,16 @@ import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
+import kr.co.wground.study.application.dto.QStudyQueryDto
+import kr.co.wground.study.application.dto.StudyQueryDto
 import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.domain.QStudy.study
-import kr.co.wground.study.domain.QStudyTag.studyTag
+import kr.co.wground.study.domain.QStudySchedule.studySchedule
 import kr.co.wground.study.domain.QTag.tag
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.track.domain.QTrack.track
+import kr.co.wground.user.domain.QUser.user
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -21,14 +25,15 @@ class CustomStudyRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : CustomStudyRepository {
 
-    override fun searchStudies(condition: StudySearchCondition, pageable: Pageable): Slice<Study> {
+    override fun searchStudies(condition: StudySearchCondition, pageable: Pageable): Slice<StudyQueryDto> {
         val pageSize = pageable.pageSize
 
         val content = queryFactory
-            .selectFrom(study)
-            .distinct()
-            .leftJoin(study._studyTags, studyTag)
-            .leftJoin(studyTag.tag, tag)
+            .select(QStudyQueryDto(study, studySchedule, user, track))
+            .from(study)
+            .join(studySchedule).on(study.scheduleId.eq(studySchedule.id))
+            .join(user).on(study.leaderId.eq(user.userId))
+            .join(track).on(user.trackId.eq(track.trackId))
             .where(
                 trackIdEq(condition.trackId),
                 statusEq(condition.status),
@@ -38,15 +43,12 @@ class CustomStudyRepositoryImpl(
             .orderBy(*getOrderSpecifiers(pageable.sort))
             .fetch()
 
-        return checkHasNext(pageSize, pageable, content)
-    }
-
-    private fun checkHasNext(pageSize: Int, pageable: Pageable, content: MutableList<Study>): Slice<Study> {
         var hasNext = false
         if (content.size > pageSize) {
             content.removeAt(pageSize)
             hasNext = true
         }
+
         return SliceImpl(content, pageable, hasNext)
     }
 

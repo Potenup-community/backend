@@ -1,6 +1,9 @@
 package kr.co.wground.study.application
 
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.UserId
+import kr.co.wground.study.application.dto.LeaderDto
+import kr.co.wground.study.application.dto.ScheduleDto
 import kr.co.wground.study.application.dto.StudyCreateCommand
 import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.application.dto.StudyUpdateCommand
@@ -14,7 +17,7 @@ import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.TagRepository
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
-import kr.co.wground.study.presentation.response.study.StudySearchResponse
+import kr.co.wground.study.presentation.response.study.StudyQueryResponse
 import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
@@ -90,7 +93,7 @@ class StudyService(
         val study = getStudyEntity(command.studyId)
         val schedule = studyScheduleService.getScheduleEntity(command.scheduleId)
 
-        if(!study.isLeader(command.userId)){
+        if (!study.isLeader(command.userId)) {
             throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
         }
 
@@ -111,6 +114,7 @@ class StudyService(
         )
         return study.id
     }
+
     fun deleteStudy(studyId: Long, userId: Long, isAdmin: Boolean) {
         val study = getStudyEntity(studyId)
 
@@ -140,9 +144,35 @@ class StudyService(
     }
 
     @Transactional(readOnly = true)
-    fun searchStudies(condition: StudySearchCondition, pageable: Pageable): Slice<StudySearchResponse> {
-        return studyRepository.searchStudies(condition, pageable)
-            .map { StudySearchResponse.from(it) }
+    fun searchStudies(
+        condition: StudySearchCondition,
+        pageable: Pageable,
+        userId: UserId
+    ): Slice<StudyQueryResponse> {
+        val result = studyRepository.searchStudies(condition, pageable)
+
+        val joinedStudyIds = if (userId != null) {
+            val studyIds = result.content.map { it.study.id }
+            studyRecruitmentRepository.findApprovedStudyIdsByUserIdAndStudyIds(userId, studyIds).toSet()
+        } else emptySet()
+
+        return result.map { dto ->
+            val leaderDto = LeaderDto.from(dto)
+            val scheduleDto = ScheduleDto.from(dto)
+
+            val isJoined = joinedStudyIds.contains(dto.study.id)
+            val canViewChatUrl = (userId == dto.study.leaderId) || isJoined
+            val isRecruitmentClosed = dto.schedule.isRecruitmentClosed()
+
+            StudyQueryResponse.of(
+                study = dto.study,
+                canViewChatUrl = canViewChatUrl,
+                schedule = scheduleDto,
+                userId = userId,
+                leaderDto = leaderDto,
+                isRecruitmentClosed = isRecruitmentClosed
+            )
+        }
     }
 
     @Transactional(readOnly = true)

@@ -54,7 +54,7 @@ class StudyRecruitmentService(
     }
 
     fun cancelRecruit(userId: Long, recruitmentId: Long) {
-        val recruitment = getRecruitment(recruitmentId)
+        val recruitment = findRecruitment(recruitmentId)
         val schedule = findScheduleById(recruitment.study.scheduleId)
 
         recruitValidator.validateRecruitUserId(recruitment.userId, userId)
@@ -67,7 +67,7 @@ class StudyRecruitmentService(
     }
 
     fun determineRecruit(leaderId: Long, recruitmentId: Long, newStatus: RecruitStatus) {
-        val recruitment = getRecruitment(recruitmentId)
+        val recruitment = findRecruitment(recruitmentId)
         val schedule = findScheduleById(recruitment.study.scheduleId)
 
         recruitValidator.validateDetermineLeader(recruitment.study, leaderId)
@@ -118,7 +118,7 @@ class StudyRecruitmentService(
         return studyRecruitmentRepository.findAllByUserId(userId)
     }
 
-    private fun getRecruitment(id: Long): StudyRecruitment {
+    private fun findRecruitment(id: Long): StudyRecruitment {
         return studyRecruitmentRepository.findByIdOrNull(id)
             ?: throw BusinessException(StudyServiceErrorCode.RECRUITMENT_NOT_FOUND)
     }

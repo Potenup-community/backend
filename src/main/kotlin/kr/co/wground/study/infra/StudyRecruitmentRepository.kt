@@ -7,6 +7,7 @@ import kr.co.wground.study.domain.constant.RecruitStatus
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 
 interface StudyRecruitmentRepository : JpaRepository<StudyRecruitment, Long> {
     fun findAllByStudyIdAndRecruitStatus(studyId: Long, status: RecruitStatus): List<StudyRecruitment>
@@ -45,6 +46,20 @@ interface StudyRecruitmentRepository : JpaRepository<StudyRecruitment, Long> {
         status: RecruitStatus = RecruitStatus.REJECTED,
         now: LocalDateTime = LocalDateTime.now()
     ): Int
+
+    @Query(
+        """
+             SELECT r.study.id
+            FROM StudyRecruitment r
+             WHERE r.userId = :userId
+              AND r.recruitStatus = 'APPROVED'
+              AND r.study.id IN :studyIds
+        """
+    )
+    fun findApprovedStudyIdsByUserIdAndStudyIds(
+        @Param("userId") userId: Long,
+        @Param("studyIds") studyIds: List<Long>
+    ): List<Long>
 
     fun findAllByUserId(userId: UserId): List<StudyRecruitment>
 
