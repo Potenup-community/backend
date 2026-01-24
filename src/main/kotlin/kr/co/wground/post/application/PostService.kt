@@ -132,7 +132,9 @@ class PostService(
             commentsCount = commentsCount,
             nextPostId = postNavigationDto.nextPostId,
             previousPostId = postNavigationDto.previousPostId,
-            reactions = reactionsByPostId
+            reactions = reactionsByPostId,
+            nextPostTitle = postNavigationDto.nextPostTitle,
+            previousPostTitle = postNavigationDto.previousPostTitle
         )
     }
 
