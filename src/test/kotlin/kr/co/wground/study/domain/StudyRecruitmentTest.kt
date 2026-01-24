@@ -14,38 +14,6 @@ import java.time.LocalDate
 
 class StudyRecruitmentTest {
 
-    // factories
-
-    private fun createRecruitingStudySchedule(): StudySchedule {
-        return StudySchedule(
-            trackId = 3L,
-            months = Months.FIRST,
-            recruitStartDate = LocalDate.now().minusDays(4),
-            recruitEndDate = LocalDate.now().plusDays(3),
-            studyEndDate = LocalDate.now().plusDays(26)
-        )
-    }
-
-    private fun createSampleStudy(schedule: StudySchedule): Study {
-        return Study(
-            budget = BudgetType.BOOK,
-            name = "스터디 제목",
-            description = "스터디 소개글",
-            leaderId = 1L,
-            trackId = 3L,
-            scheduleId = schedule.id,
-            status = StudyStatus.PENDING
-        )
-    }
-
-    private fun createStudyRecruitmentWithAppeal(schedule: StudySchedule, appeal: String): StudyRecruitment {
-        return StudyRecruitment.apply(
-            userId = 2L,
-            study = createSampleStudy(schedule),
-            appeal = appeal
-        )
-    }
-
     // ----- 자기 소개, ⚠️ SR-0001 에 해당하는 에러 코드가 RECRUITMENT_APPEAL_INVALID 와 같이 변경됨을 가정함️
 
     // ❌
@@ -233,5 +201,37 @@ class StudyRecruitmentTest {
         }
 
         assertEquals(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE.code, thrown.code)
+    }
+
+    // factories
+
+    private fun createRecruitingStudySchedule(): StudySchedule {
+        return StudySchedule(
+            trackId = 3L,
+            months = Months.FIRST,
+            recruitStartDate = LocalDate.now().minusDays(4),
+            recruitEndDate = LocalDate.now().plusDays(3),
+            studyEndDate = LocalDate.now().plusDays(26)
+        )
+    }
+
+    private fun createSampleStudy(schedule: StudySchedule): Study {
+        return Study(
+            budget = BudgetType.BOOK,
+            name = "스터디 제목",
+            description = "스터디 소개글",
+            leaderId = 1L,
+            trackId = 3L,
+            scheduleId = schedule.id,
+            status = StudyStatus.PENDING
+        )
+    }
+
+    private fun createStudyRecruitmentWithAppeal(schedule: StudySchedule, appeal: String): StudyRecruitment {
+        return StudyRecruitment.apply(
+            userId = 2L,
+            study = createSampleStudy(schedule),
+            appeal = appeal
+        )
     }
 }

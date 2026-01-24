@@ -21,163 +21,6 @@ class StudyTest {
 
         // To Do: 특정 값을 변경하고 싶지 않은 경우, null 을 명시적으로 전달하는 방식이 괜찮을 지 모르겠음
         val NOT_GONNA_CHANGE = null;
-
-        // ----- factories for test
-
-        private fun createRecruitingStudySchedule(): StudySchedule {
-            return StudySchedule(
-                trackId = 3L,
-                months = Months.FIRST,
-                recruitStartDate = LocalDate.now().minusDays(4),
-                recruitEndDate = LocalDate.now().plusDays(3),
-                studyEndDate = LocalDate.now().plusDays(26)
-            )
-        }
-
-        private fun createAlreadyStartedStudySchedule(): StudySchedule {
-            return StudySchedule(
-                trackId = 3L,
-                months = Months.THIRD,
-                recruitStartDate = LocalDate.now().minusDays(7),
-                recruitEndDate = LocalDate.now().minusDays(3),
-                studyEndDate = LocalDate.now().plusDays(21)
-            )
-        }
-
-        private fun createStudyWithCapacity(schedule: StudySchedule, capacity: Int): Study {
-            return Study(
-                capacity = capacity,
-                budget = BudgetType.BOOK,
-                name = "스터디 제목",
-                description = "스터디 소개글",
-                leaderId = 1L,
-                trackId = 3L,
-                scheduleId = schedule.id,
-                status = StudyStatus.PENDING
-            )
-        }
-
-        private fun createStudyWithName(schedule: StudySchedule, name: String): Study {
-            return Study(
-                budget = BudgetType.BOOK,
-                name = name,
-                description = "스터디 소개글",
-                leaderId = 1L,
-                trackId = 3L,
-                scheduleId = schedule.id,
-                status = StudyStatus.PENDING
-            )
-        }
-
-        private fun createStudyWithDescription(schedule: StudySchedule, description: String): Study {
-            return Study(
-                budget = BudgetType.BOOK,
-                name = "유효한 제목",
-                description = description,
-                leaderId = 1L,
-                trackId = 3L,
-                scheduleId = schedule.id,
-                status = StudyStatus.PENDING
-            )
-        }
-
-        private fun createStudyWithExternalChatUrl(schedule: StudySchedule, externalChatUrl: String): Study {
-            return Study(
-                budget = BudgetType.BOOK,
-                name = "유효한 제목",
-                description = "유효한 소개글",
-                leaderId = 1L,
-                trackId = 3L,
-                scheduleId = schedule.id,
-                status = StudyStatus.PENDING,
-                externalChatUrl = externalChatUrl
-            )
-        }
-
-        private fun createStudyWithReferenceUrl(schedule: StudySchedule, referenceUrl: String): Study {
-            return Study(
-                budget = BudgetType.BOOK,
-                name = "유효한 제목",
-                description = "유효한 소개글",
-                leaderId = 1L,
-                trackId = 3L,
-                scheduleId = schedule.id,
-                status = StudyStatus.PENDING,
-                referenceUrl = referenceUrl
-            )
-        }
-
-        // ----- helpers
-
-        private fun updateStudyCapacity(study: Study, capacity: Int, isRecruitmentClosed: Boolean) {
-            return study.updateStudyInfo(
-                newCapacity = capacity,
-                newName = study.name,
-                newDescription = study.description,
-                newBudget = study.budget,
-                newChatUrl = study.externalChatUrl,
-                newRefUrl = study.referenceUrl,
-                newTags = NOT_GONNA_CHANGE,
-                newScheduleId = study.scheduleId,
-                isRecruitmentClosed = isRecruitmentClosed
-            )
-        }
-
-        private fun updateStudyName(study: Study, name: String, isRecruitmentClosed: Boolean) {
-            return study.updateStudyInfo(
-                newCapacity = study.capacity,
-                newName = name,
-                newDescription = study.description,
-                newBudget = study.budget,
-                newChatUrl = study.externalChatUrl,
-                newRefUrl = study.referenceUrl,
-                newTags = NOT_GONNA_CHANGE,
-                newScheduleId = study.scheduleId,
-                isRecruitmentClosed = isRecruitmentClosed
-            )
-        }
-
-        private fun updateStudyDescription(study: Study, description: String, isRecruitmentClosed: Boolean) {
-            return study.updateStudyInfo(
-                newCapacity = study.capacity,
-                newName = study.name,
-                newDescription = description,
-                newBudget = study.budget,
-                newChatUrl = study.externalChatUrl,
-                newRefUrl = study.referenceUrl,
-                newTags = NOT_GONNA_CHANGE,
-                newScheduleId = study.scheduleId,
-                isRecruitmentClosed = isRecruitmentClosed
-            )
-        }
-
-        private fun updateStudyExternalChatUrl(study: Study, externalChatUrl: String, isRecruitmentClosed: Boolean) {
-            return study.updateStudyInfo(
-                newCapacity = study.capacity,
-                newName = study.name,
-                newDescription = study.description,
-                newBudget = study.budget,
-                newChatUrl = externalChatUrl,
-                newRefUrl = study.referenceUrl,
-                newTags = NOT_GONNA_CHANGE,
-                newScheduleId = study.scheduleId,
-                isRecruitmentClosed = isRecruitmentClosed
-            )
-        }
-
-        private fun updateStudyReferenceUrl(study: Study, referenceUrl: String, isRecruitmentClosed: Boolean) {
-            return study.updateStudyInfo(
-                newCapacity = study.capacity,
-                newName = study.name,
-                newDescription = study.description,
-                newBudget = study.budget,
-                newChatUrl = study.externalChatUrl,
-                newRefUrl = referenceUrl,
-                newTags = NOT_GONNA_CHANGE,
-                newScheduleId = study.scheduleId,
-                isRecruitmentClosed = isRecruitmentClosed
-            )
-        }
         
         // ----- 정원 수
 
@@ -600,6 +443,163 @@ class StudyTest {
             }
 
             assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DETERMINED.code, thrown.code)
+        }
+
+        // ----- factories for test
+
+        private fun createRecruitingStudySchedule(): StudySchedule {
+            return StudySchedule(
+                trackId = 3L,
+                months = Months.FIRST,
+                recruitStartDate = LocalDate.now().minusDays(4),
+                recruitEndDate = LocalDate.now().plusDays(3),
+                studyEndDate = LocalDate.now().plusDays(26)
+            )
+        }
+
+        private fun createAlreadyStartedStudySchedule(): StudySchedule {
+            return StudySchedule(
+                trackId = 3L,
+                months = Months.THIRD,
+                recruitStartDate = LocalDate.now().minusDays(7),
+                recruitEndDate = LocalDate.now().minusDays(3),
+                studyEndDate = LocalDate.now().plusDays(21)
+            )
+        }
+
+        private fun createStudyWithCapacity(schedule: StudySchedule, capacity: Int): Study {
+            return Study(
+                capacity = capacity,
+                budget = BudgetType.BOOK,
+                name = "스터디 제목",
+                description = "스터디 소개글",
+                leaderId = 1L,
+                trackId = 3L,
+                scheduleId = schedule.id,
+                status = StudyStatus.PENDING
+            )
+        }
+
+        private fun createStudyWithName(schedule: StudySchedule, name: String): Study {
+            return Study(
+                budget = BudgetType.BOOK,
+                name = name,
+                description = "스터디 소개글",
+                leaderId = 1L,
+                trackId = 3L,
+                scheduleId = schedule.id,
+                status = StudyStatus.PENDING
+            )
+        }
+
+        private fun createStudyWithDescription(schedule: StudySchedule, description: String): Study {
+            return Study(
+                budget = BudgetType.BOOK,
+                name = "유효한 제목",
+                description = description,
+                leaderId = 1L,
+                trackId = 3L,
+                scheduleId = schedule.id,
+                status = StudyStatus.PENDING
+            )
+        }
+
+        private fun createStudyWithExternalChatUrl(schedule: StudySchedule, externalChatUrl: String): Study {
+            return Study(
+                budget = BudgetType.BOOK,
+                name = "유효한 제목",
+                description = "유효한 소개글",
+                leaderId = 1L,
+                trackId = 3L,
+                scheduleId = schedule.id,
+                status = StudyStatus.PENDING,
+                externalChatUrl = externalChatUrl
+            )
+        }
+
+        private fun createStudyWithReferenceUrl(schedule: StudySchedule, referenceUrl: String): Study {
+            return Study(
+                budget = BudgetType.BOOK,
+                name = "유효한 제목",
+                description = "유효한 소개글",
+                leaderId = 1L,
+                trackId = 3L,
+                scheduleId = schedule.id,
+                status = StudyStatus.PENDING,
+                referenceUrl = referenceUrl
+            )
+        }
+
+        // ----- helpers
+
+        private fun updateStudyCapacity(study: Study, capacity: Int, isRecruitmentClosed: Boolean) {
+            return study.updateStudyInfo(
+                newCapacity = capacity,
+                newName = study.name,
+                newDescription = study.description,
+                newBudget = study.budget,
+                newChatUrl = study.externalChatUrl,
+                newRefUrl = study.referenceUrl,
+                newTags = NOT_GONNA_CHANGE,
+                newScheduleId = study.scheduleId,
+                isRecruitmentClosed = isRecruitmentClosed
+            )
+        }
+
+        private fun updateStudyName(study: Study, name: String, isRecruitmentClosed: Boolean) {
+            return study.updateStudyInfo(
+                newCapacity = study.capacity,
+                newName = name,
+                newDescription = study.description,
+                newBudget = study.budget,
+                newChatUrl = study.externalChatUrl,
+                newRefUrl = study.referenceUrl,
+                newTags = NOT_GONNA_CHANGE,
+                newScheduleId = study.scheduleId,
+                isRecruitmentClosed = isRecruitmentClosed
+            )
+        }
+
+        private fun updateStudyDescription(study: Study, description: String, isRecruitmentClosed: Boolean) {
+            return study.updateStudyInfo(
+                newCapacity = study.capacity,
+                newName = study.name,
+                newDescription = description,
+                newBudget = study.budget,
+                newChatUrl = study.externalChatUrl,
+                newRefUrl = study.referenceUrl,
+                newTags = NOT_GONNA_CHANGE,
+                newScheduleId = study.scheduleId,
+                isRecruitmentClosed = isRecruitmentClosed
+            )
+        }
+
+        private fun updateStudyExternalChatUrl(study: Study, externalChatUrl: String, isRecruitmentClosed: Boolean) {
+            return study.updateStudyInfo(
+                newCapacity = study.capacity,
+                newName = study.name,
+                newDescription = study.description,
+                newBudget = study.budget,
+                newChatUrl = externalChatUrl,
+                newRefUrl = study.referenceUrl,
+                newTags = NOT_GONNA_CHANGE,
+                newScheduleId = study.scheduleId,
+                isRecruitmentClosed = isRecruitmentClosed
+            )
+        }
+
+        private fun updateStudyReferenceUrl(study: Study, referenceUrl: String, isRecruitmentClosed: Boolean) {
+            return study.updateStudyInfo(
+                newCapacity = study.capacity,
+                newName = study.name,
+                newDescription = study.description,
+                newBudget = study.budget,
+                newChatUrl = study.externalChatUrl,
+                newRefUrl = referenceUrl,
+                newTags = NOT_GONNA_CHANGE,
+                newScheduleId = study.scheduleId,
+                isRecruitmentClosed = isRecruitmentClosed
+            )
         }
     }
 }
