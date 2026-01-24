@@ -52,9 +52,8 @@ class CustomPostRepositoryImpl(private val jpaQueryFactory: JPAQueryFactory): Cu
         currentPostId: Long,
         currentCreatedAt: LocalDateTime
     ): PostNavigationDto {
-        val previousPostId = jpaQueryFactory
-            .select(post.id)
-            .from(post)
+        val previousPost = jpaQueryFactory
+            .selectFrom(post)
             .where(
                 post.createdAt.gt(currentCreatedAt)
                     .or(
@@ -65,9 +64,8 @@ class CustomPostRepositoryImpl(private val jpaQueryFactory: JPAQueryFactory): Cu
             .orderBy(post.createdAt.asc(), post.id.asc())
             .fetchFirst()
 
-        val nextPostId = jpaQueryFactory
-            .select(post.id)
-            .from(post)
+        val nextPost = jpaQueryFactory
+            .selectFrom(post)
             .where(
                 post.createdAt.lt(currentCreatedAt)
                     .or(
@@ -78,7 +76,12 @@ class CustomPostRepositoryImpl(private val jpaQueryFactory: JPAQueryFactory): Cu
             .orderBy(post.createdAt.desc(), post.id.desc())
             .fetchFirst()
 
-        return PostNavigationDto(previousPostId, nextPostId)
+        return PostNavigationDto(
+            previousPostId = previousPost?.id,
+            previousPostTitle = previousPost?.postBody?.title,
+            nextPostId = nextPost?.id,
+            nextPostTitle = nextPost?.postBody?.title
+        )
     }
 
     private data class PopularityParams(
