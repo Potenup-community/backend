@@ -234,22 +234,14 @@ class Study(
     }
 
     fun refreshStatus(isRecruitmentClosed: Boolean, now: LocalDateTime = LocalDateTime.now()) {
-        if (this.status == StudyStatus.APPROVED || this.status == StudyStatus.REJECTED) {
-            return
-        }
+        if (status == StudyStatus.APPROVED || status == StudyStatus.REJECTED) return
 
-        if (isRecruitmentClosed) {
-            if (this.currentMemberCount < MIN_CAPACITY) {
-                this.status = StudyStatus.REJECTED
-            } else {
-                this.status = StudyStatus.CLOSED
-            }
-        } else {
-            this.status = if (this.currentMemberCount >= this.capacity) {
-                StudyStatus.CLOSED
-            } else {
-                StudyStatus.PENDING
-            }
+        this.status = when {
+            isRecruitmentClosed && currentMemberCount < MIN_CAPACITY -> StudyStatus.REJECTED
+
+            isRecruitmentClosed || currentMemberCount >= capacity -> StudyStatus.CLOSED
+
+            else -> StudyStatus.PENDING
         }
     }
 
