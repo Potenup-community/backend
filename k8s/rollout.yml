@@ -29,7 +29,7 @@ spec:
 
       containers:
         - name: app
-          image: potenup/poten_up:sha-7e084af
+          image: potenup/poten_up:sha-93bbcc3
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
