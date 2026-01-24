@@ -52,13 +52,14 @@ interface StudyRecruitmentRepository : JpaRepository<StudyRecruitment, Long> {
              SELECT r.study.id
             FROM StudyRecruitment r
              WHERE r.userId = :userId
-              AND r.recruitStatus = 'APPROVED'
+              AND r.recruitStatus = :status
               AND r.study.id IN :studyIds
         """
     )
     fun findApprovedStudyIdsByUserIdAndStudyIds(
         @Param("userId") userId: Long,
-        @Param("studyIds") studyIds: List<Long>
+        @Param("studyIds") studyIds: List<Long>,
+        @Param("status") status: RecruitStatus = RecruitStatus.APPROVED,
     ): List<Long>
 
     fun findAllByUserId(userId: UserId): List<StudyRecruitment>

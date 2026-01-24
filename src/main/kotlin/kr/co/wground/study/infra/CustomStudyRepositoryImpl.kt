@@ -10,7 +10,6 @@ import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.domain.QStudy.study
 import kr.co.wground.study.domain.QStudySchedule.studySchedule
 import kr.co.wground.study.domain.QTag.tag
-import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.track.domain.QTrack.track
 import kr.co.wground.user.domain.QUser.user
