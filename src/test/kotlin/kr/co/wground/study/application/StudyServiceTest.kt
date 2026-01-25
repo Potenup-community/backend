@@ -826,6 +826,8 @@ class StudyServiceTest {
 
     // ----- 참여 스터디 수 제한 테스트
 
+    // To Do: 현재 차수 스터디에 2개 생성한 상태에서, 한 번 더 생성 시 예외 발생 - BusinessException
+
     @Test
     fun `과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 PENDING 상태일 때, 신규 스터디 생성 시 예외 발생 - BusinessException`() {
 
