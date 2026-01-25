@@ -13,4 +13,5 @@ enum class NotificationErrorCode(
     INVALID_RECIPIENT_ID(HttpStatus.BAD_REQUEST, "N-0003", "수신자 ID가 올바르지 않습니다."),
     INVALID_ACTOR_ID(HttpStatus.BAD_REQUEST, "N-0004", "행위자 ID가 올바르지 않습니다."),
     INVALID_EXPIRES_AT(HttpStatus.BAD_REQUEST, "N-0005", "만료일은 생성일 이후여야 합니다."),
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "N-0006", "알림을 찾을 수 없습니다."),
 }

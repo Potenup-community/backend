@@ -2,6 +2,8 @@ package kr.co.wground.notification.application.command
 
 import java.time.LocalDateTime
 import java.util.UUID
+import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.NotificationId
 import kr.co.wground.global.common.RecipientId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.notification.domain.Notification
@@ -9,6 +11,7 @@ import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.repository.NotificationRepository
 import kr.co.wground.notification.domain.vo.NotificationContent
 import kr.co.wground.notification.domain.vo.NotificationReference
+import kr.co.wground.notification.exception.NotificationErrorCode
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -45,5 +48,17 @@ class NotificationCommandService(
         } catch (_: DataIntegrityViolationException) {
             return
         }
+    }
+
+    @Transactional
+    fun markAsRead(notificationId: NotificationId, recipientId: RecipientId) {
+        val notification = notificationRepository.findByIdAndRecipientId(notificationId, recipientId)
+            ?: throw BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND)
+        notification.markAsRead()
+    }
+
+    @Transactional
+    fun markAllAsRead(recipientId: RecipientId) {
+        notificationRepository.markAllAsReadByRecipientId(recipientId)
     }
 }
