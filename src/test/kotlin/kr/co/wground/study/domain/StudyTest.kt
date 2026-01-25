@@ -403,7 +403,7 @@ class StudyTest {
         }
 
         @Test
-        fun `이미 모집 기간이 마감된 경우, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(SD-0014)`() {
+        fun `이미 모집 기간이 마감된 경우, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(SD-0013)`() {
             val thrown = assertThrows<BusinessException> {
                 val alreadyStartedSchedule = createAlreadyStartedStudySchedule()
                 val created = createStudyWithName(alreadyStartedSchedule, "유효한 이름")
