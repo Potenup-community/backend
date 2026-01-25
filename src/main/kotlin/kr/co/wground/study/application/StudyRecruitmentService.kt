@@ -63,7 +63,7 @@ class StudyRecruitmentService(
         if (recruitment.recruitStatus == RecruitStatus.APPROVED || recruitment.recruitStatus == RecruitStatus.PENDING) {
             recruitment.study.decreaseMemberCount(schedule.isRecruitmentClosed())
         }
-        recruitment.updateRecruitStatus(RecruitStatus.CANCELLED)
+        recruitment.cancel()
     }
 
     fun determineRecruit(leaderId: Long, recruitmentId: Long, newStatus: RecruitStatus) {
