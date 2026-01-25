@@ -51,6 +51,7 @@ class StudyRecruitment(
 
     companion object {
         const val MAX_APPEAL_LENGTH = 200
+        const val MIN_APPEAL_LENGTH = 2
         const val LEADER_DEFAULT_APPEAL = "스터디장 자동 참여"
 
         fun apply(userId: UserId, appeal: String, study: Study): StudyRecruitment {
@@ -75,13 +76,20 @@ class StudyRecruitment(
         }
 
         private fun validateAppealLength(appeal: String) {
-            if (appeal.isBlank()) {
-                throw BusinessException(StudyDomainErrorCode.RECRUITMENT_APPEAL_EMPTY)
-            }
-            if (appeal.length > MAX_APPEAL_LENGTH) {
-                throw BusinessException(StudyDomainErrorCode.RECRUITMENT_APPEAL_TOO_BIG)
+            if(appeal.isBlank()) throw BusinessException(StudyDomainErrorCode.RECRUITMENT_APPEAL_EMPTY)
+
+            if (appeal.length !in MIN_APPEAL_LENGTH..MAX_APPEAL_LENGTH) {
+                throw BusinessException(StudyDomainErrorCode.RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE)
             }
         }
+    }
+
+    fun cancel() {
+        if (this.recruitStatus == RecruitStatus.CANCELLED || this.recruitStatus == RecruitStatus.REJECTED) {
+            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE)
+        }
+
+        updateRecruitStatus(RecruitStatus.CANCELLED)
     }
 
     fun updateAppeal(newAppeal: String) {
