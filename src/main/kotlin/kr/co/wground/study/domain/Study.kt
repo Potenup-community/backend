@@ -94,7 +94,9 @@ class Study(
         const val ABSOLUTE_MAX_CAPACITY = 60
         const val MAX_TAG_COUNT = 5
         const val MAX_NAME_LENGTH = 50
+        const val MIN_NAME_LENGTH = 2
         const val MAX_DESCRIPTION_LENGTH = 300
+        const val MIN_DESCRIPTION_LENGTH = 2
         const val DEFAULT_CHAT_URL = "https://www.kakaocorp.com/page/service/service/openchat"
         val URL_PATTERN = Regex("^(http|https)://.*$")
     }
@@ -111,11 +113,13 @@ class Study(
             refreshStatus(isRecruitmentClosed)
             throw BusinessException(StudyDomainErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
         }
-        if (this.status != StudyStatus.PENDING) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_NOT_RECRUITING)
-        }
+
         if (this.currentMemberCount >= this.capacity) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_FULL)
+        }
+
+        if (this.status != StudyStatus.PENDING) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_NOT_RECRUITING)
         }
 
         this.currentMemberCount++
@@ -151,7 +155,7 @@ class Study(
                 this.capacity != newCapacity ||
                 isTagsChanged(newTags)
 
-        if ((this.status == StudyStatus.CLOSED || isRecruitmentClosed) && isCoreInfoChanged) {
+        if (isRecruitmentClosed && isCoreInfoChanged) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DEADLINE)
         }
 
@@ -225,6 +229,7 @@ class Study(
     }
 
     fun reject() {
+        validateRejectStatus()
         this.status = StudyStatus.REJECTED
     }
 
@@ -245,6 +250,7 @@ class Study(
             else -> StudyStatus.PENDING
         }
     }
+
     fun isLeader(userId: UserId): Boolean {
         return this.leaderId == userId
     }
@@ -256,13 +262,13 @@ class Study(
     }
 
     private fun validateName(name: String) {
-        if (name.trim().isBlank() || name.length > MAX_NAME_LENGTH) {
+        if (name.trim().length !in MIN_NAME_LENGTH..MAX_NAME_LENGTH) {
             throw BusinessException(StudyDomainErrorCode.STUDY_NAME_INVALID)
         }
     }
 
     private fun validateDescription(description: String) {
-        if (description.trim().isBlank() || description.length > MAX_DESCRIPTION_LENGTH) {
+        if (description.trim().length !in MIN_DESCRIPTION_LENGTH..MAX_DESCRIPTION_LENGTH) {
             throw BusinessException(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID)
         }
     }
@@ -288,6 +294,12 @@ class Study(
     private fun validateCurrentMemberOverCapacity(newCapacity: Int) {
         if (newCapacity < this.currentMemberCount) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_CANNOT_LESS_THAN_CURRENT)
+        }
+    }
+
+    private fun validateRejectStatus() {
+        if (this.status == StudyStatus.APPROVED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_REJECTED_IN_APPROVED_STATUS)
         }
     }
 }
