@@ -3,6 +3,7 @@ package kr.co.wground.notification.application.command
 import java.time.LocalDateTime
 import java.util.UUID
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.NotificationId
 import kr.co.wground.global.common.RecipientId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.notification.domain.Notification
@@ -47,5 +48,17 @@ class NotificationCommandService(
         } catch (e: DataIntegrityViolationException) {
             throw BusinessException(NotificationErrorCode.DUPLICATE_NOTIFICATION, cause = e)
         }
+    }
+
+    @Transactional
+    fun markAsRead(notificationId: NotificationId, recipientId: RecipientId) {
+        val notification = notificationRepository.findByIdAndRecipientId(notificationId, recipientId)
+            ?: throw BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND)
+        notification.markAsRead()
+    }
+
+    @Transactional
+    fun markAllAsRead(recipientId: RecipientId) {
+        notificationRepository.markAllAsReadByRecipientId(recipientId)
     }
 }

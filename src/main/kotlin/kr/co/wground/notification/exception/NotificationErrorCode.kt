@@ -15,4 +15,6 @@ enum class NotificationErrorCode(
     INVALID_EXPIRES_AT(HttpStatus.BAD_REQUEST, "N-0005", "만료일은 생성일 이후여야 합니다."),
 
     DUPLICATE_NOTIFICATION(HttpStatus.CONFLICT, "N-0006", "이미 처리된 알림입니다."),
+
+    NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "N-0007", "알림을 찾을 수 없습니다."),
 }
