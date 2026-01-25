@@ -2,7 +2,7 @@ package kr.co.wground.reaction.application
 
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.Delta
-import kr.co.wground.common.UpdateReactionEvent
+import kr.co.wground.common.event.UpdateReactionEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
@@ -40,9 +40,11 @@ class ReactionCommandService(
             LocalDateTime.now()
         )
 
-        eventPublisher.publishEvent(UpdateReactionEvent(
-            UUID.randomUUID(), command.postId, Delta.PLUS
-        ))
+        eventPublisher.publishEvent(
+            UpdateReactionEvent(
+                UUID.randomUUID(), command.postId, Delta.PLUS
+            )
+        )
     }
 
     fun reactToComment(command: CommentReactCommand) {
@@ -60,16 +62,20 @@ class ReactionCommandService(
 
     fun unreactToPost(command: PostReactCommand) {
         postReactionJpaRepository.deleteByUserIdAndPostIdAndReactionType(
-            command.userId, command.postId, command.reactionType)
+            command.userId, command.postId, command.reactionType
+        )
 
-        eventPublisher.publishEvent(UpdateReactionEvent(
-            UUID.randomUUID(), command.postId, Delta.MINUS
-        ))
+        eventPublisher.publishEvent(
+            UpdateReactionEvent(
+                UUID.randomUUID(), command.postId, Delta.MINUS
+            )
+        )
     }
 
     fun unreactToComment(command: CommentReactCommand) {
         commentReactionJpaRepository.deleteByUserIdAndCommentIdAndReactionType(
-            command.userId, command.commentId, command.reactionType)
+            command.userId, command.commentId, command.reactionType
+        )
     }
 
     // validation --------------------
