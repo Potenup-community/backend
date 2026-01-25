@@ -34,6 +34,7 @@ enum class StudyDomainErrorCode(
     STUDY_ALREADY_FINISH_TO_RECRUIT(HttpStatus.BAD_REQUEST,"SD-0013","해당 스터디의 모집기한이 이미 지났습니다."),
     STUDY_MIN_MEMBER_REQUIRED(HttpStatus.BAD_REQUEST,"SD-0014","스터디장은 탈퇴 할 수 없습니다."),
     STUDY_CANNOT_MODIFY_AFTER_DEADLINE(HttpStatus.BAD_REQUEST,"SD-0015","모집 마감 상태에서 수정할 수 없는 항목입니다."),
+    STUDY_CANT_REJECTED_IN_APPROVED_STATUS(HttpStatus.BAD_REQUEST, "SD-0018", "승인된 스터디는 거부할 수 없습니다."),
 
     //StudyRecruitment
     RECRUITMENT_APPEAL_TOO_BIG(HttpStatus.BAD_REQUEST,"SR-0001","자기 소개는 최대 100자까지 작성 할 수 있습니다."),
