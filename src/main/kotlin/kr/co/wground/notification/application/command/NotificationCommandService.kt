@@ -1,41 +1,48 @@
 package kr.co.wground.notification.application.command
 
-import kr.co.wground.common.NotificationCreateEvent
-import kr.co.wground.notification.application.CreateNotificationUseCase
+import java.time.LocalDateTime
+import java.util.UUID
+import kr.co.wground.global.common.RecipientId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.notification.domain.Notification
+import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.repository.NotificationRepository
+import kr.co.wground.notification.domain.vo.NotificationContent
+import kr.co.wground.notification.domain.vo.NotificationReference
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.event.TransactionPhase
-import org.springframework.transaction.event.TransactionalEventListener
 
 @Service
 class NotificationCommandService(
     private val notificationRepository: NotificationRepository,
-) : CreateNotificationUseCase {
+) {
 
-    @Async("notificationExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    override fun createNotification(event: NotificationCreateEvent) {
-        if (notificationRepository.findByEventId(event.eventId)) return
+    fun create(
+        recipientId: RecipientId,
+        actorId: UserId?,
+        type: NotificationType,
+        content: NotificationContent,
+        reference: NotificationReference?,
+        expiresAt: LocalDateTime? = null,
+    ) {
+        val eventId = UUID.randomUUID()
 
         try {
             notificationRepository.save(
                 Notification(
-                    eventId = event.eventId,
-                    recipientId = event.recipientId,
-                    actorId = event.actorId,
-                    content = event.content,
-                    reference = event.reference,
-                    type = event.type,
-                    expiresAt = event.expiresAt,
+                    eventId = eventId,
+                    recipientId = recipientId,
+                    actorId = actorId,
+                    content = content,
+                    reference = reference,
+                    type = type,
+                    expiresAt = expiresAt,
                 )
             )
-        } catch (e: DataIntegrityViolationException) {
+        } catch (_: DataIntegrityViolationException) {
             return
         }
     }
