@@ -1,18 +1,23 @@
 package kr.co.wground.reaction.application
 
+import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.Delta
+import kr.co.wground.common.event.CommentReactionCreatedEvent
+import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.common.event.UpdateReactionEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
-import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
+import kr.co.wground.post.domain.Post
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.dto.CommentReactCommand
 import kr.co.wground.reaction.application.dto.PostReactCommand
 import kr.co.wground.reaction.exception.ReactionErrorCode
 import kr.co.wground.reaction.infra.jpa.CommentReactionJpaRepository
+import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -31,7 +36,7 @@ class ReactionCommandService(
     // reacts --------------------
 
     fun reactToPost(command: PostReactCommand) {
-        validatePostExistence(command.postId)
+        val post = findPostOrThrow(command.postId)
 
         postReactionJpaRepository.saveIdempotentlyForMysqlOrH2(
             command.userId,
@@ -45,16 +50,32 @@ class ReactionCommandService(
                 UUID.randomUUID(), command.postId, Delta.PLUS
             )
         )
+
+        eventPublisher.publishEvent(
+            PostReactionCreatedEvent(
+                postId = command.postId,
+                postWriterId = post.writerId,
+                reactorId = command.userId,
+            )
+        )
     }
 
     fun reactToComment(command: CommentReactCommand) {
-        validateCommentExistence(command.commentId)
+        val comment = findCommentOrThrow(command.commentId)
 
         commentReactionJpaRepository.saveIdempotentlyForMysqlOrH2(
             command.userId,
             command.commentId,
             command.reactionType,
             LocalDateTime.now()
+        )
+
+        eventPublisher.publishEvent(
+            CommentReactionCreatedEvent(
+                commentId = command.commentId,
+                commentWriterId = comment.writerId,
+                reactorId = command.userId,
+            )
         )
     }
 
@@ -78,17 +99,13 @@ class ReactionCommandService(
         )
     }
 
-    // validation --------------------
-
-    fun validatePostExistence(postId: PostId) {
-        if (!postRepository.existsById(postId)) {
-            throw BusinessException(ReactionErrorCode.POST_NOT_FOUND)
-        }
+    private fun findPostOrThrow(postId: PostId): Post {
+        return postRepository.findByIdOrNull(postId)
+            ?: throw BusinessException(ReactionErrorCode.POST_NOT_FOUND)
     }
 
-    fun validateCommentExistence(commentId: CommentId) {
-        if (!commentRepository.existsById(commentId)) {
-            throw BusinessException(ReactionErrorCode.COMMENT_NOT_FOUND)
-        }
+    private fun findCommentOrThrow(commentId: CommentId): Comment {
+        return commentRepository.findByIdOrNull(commentId)
+            ?: throw BusinessException(ReactionErrorCode.COMMENT_NOT_FOUND)
     }
 }

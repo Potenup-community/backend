@@ -2,8 +2,11 @@ package kr.co.wground.comment.application
 
 import java.time.LocalDateTime
 import java.util.Optional
+import kr.co.wground.comment.application.dto.CommentCreateDto
 import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.infra.CommentRepository
+import kr.co.wground.common.event.CommentCreatedEvent
+import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.HighlightType
@@ -21,9 +24,14 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyList
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.SliceImpl
 
@@ -32,11 +40,13 @@ class CommentServiceTest {
     private val postRepository = mock(PostRepository::class.java)
     private val userRepository = mock(UserRepository::class.java)
     private val reactionQueryService = mock(ReactionQueryService::class.java)
+    private val eventPublisher = mock(ApplicationEventPublisher::class.java)
     private lateinit var commentService: CommentService
 
     @BeforeEach
     fun setUp() {
-        commentService = CommentService(commentRepository, postRepository, userRepository, reactionQueryService)
+        commentService =
+            CommentService(commentRepository, postRepository, userRepository, reactionQueryService, eventPublisher)
     }
 
     @DisplayName("내가 좋아요한 댓글을 조회한다 (삭제 댓글은 [삭제된 댓글]로 반환)")
@@ -371,5 +381,156 @@ class CommentServiceTest {
         assertThat(trackNameByAuthorId[2L]).isEqualTo("트랙2")
     }
 
+    @DisplayName("댓글 작성 시 CommentCreatedEvent가 발행된다")
+    @Test
+    fun write_shouldPublishCommentCreatedEvent() {
+        // given
+        val postId = 1L
+        val postWriterId = 100L
+        val commentWriterId = 2L
 
+        val post = Post.from(
+            writerId = postWriterId,
+            topic = Topic.KNOWLEDGE,
+            title = "테스트 게시글",
+            content = "테스트 본문",
+            highlightType = HighlightType.NONE
+        )
+
+        val comment = Comment.create(commentWriterId, postId, null, "테스트 댓글")
+        setCommentId(comment, 10L)
+
+        val dto = CommentCreateDto(
+            writerId = commentWriterId,
+            postId = postId,
+            parentId = null,
+            content = "테스트 댓글",
+            mentionUserIds = null,
+        )
+
+        `when`(postRepository.findById(postId)).thenReturn(Optional.of(post))
+        `when`(commentRepository.save(any(Comment::class.java))).thenReturn(comment)
+
+        // when
+        commentService.write(dto)
+
+        // then
+        val captor = ArgumentCaptor.forClass(CommentCreatedEvent::class.java)
+        verify(eventPublisher).publishEvent(captor.capture())
+
+        val event = captor.value
+        assertThat(event.postId).isEqualTo(postId)
+        assertThat(event.postWriterId).isEqualTo(postWriterId)
+        assertThat(event.commentWriterId).isEqualTo(commentWriterId)
+        assertThat(event.parentCommentId).isNull()
+        assertThat(event.parentCommentWriterId).isNull()
+    }
+
+    @DisplayName("멘션이 포함된 댓글 작성 시 MentionCreatedEvent도 발행된다")
+    @Test
+    fun write_withMentions_shouldPublishMentionCreatedEvent() {
+        // given
+        val postId = 1L
+        val postWriterId = 100L
+        val commentWriterId = 2L
+        val mentionedUserId = 3L
+
+        val post = Post.from(
+            writerId = postWriterId,
+            topic = Topic.KNOWLEDGE,
+            title = "테스트 게시글",
+            content = "테스트 본문",
+            highlightType = HighlightType.NONE
+        )
+
+        val comment = Comment.create(commentWriterId, postId, null, "테스트 댓글 @user")
+        setCommentId(comment, 10L)
+
+        val mentionedUser = User(
+            userId = mentionedUserId,
+            trackId = 100L,
+            email = "mentioned@test.com",
+            name = "멘션유저",
+            phoneNumber = "010-3333-3333",
+            provider = "KAKAO",
+            role = UserRole.ADMIN,
+            status = UserStatus.ACTIVE
+        )
+
+        val dto = CommentCreateDto(
+            writerId = commentWriterId,
+            postId = postId,
+            parentId = null,
+            content = "테스트 댓글 @user",
+            mentionUserIds = listOf(mentionedUserId),
+        )
+
+        `when`(postRepository.findById(postId)).thenReturn(Optional.of(post))
+        `when`(commentRepository.save(any(Comment::class.java))).thenReturn(comment)
+        `when`(userRepository.findByUserIdIn(listOf(mentionedUserId))).thenReturn(listOf(mentionedUser))
+
+        // when
+        commentService.write(dto)
+
+        // then
+        val captor = ArgumentCaptor.forClass(Any::class.java)
+        verify(eventPublisher, times(2)).publishEvent(captor.capture())
+
+        val events = captor.allValues
+        assertThat(events).hasSize(2)
+        assertThat(events.filterIsInstance<CommentCreatedEvent>()).hasSize(1)
+        assertThat(events.filterIsInstance<MentionCreatedEvent>()).hasSize(1)
+
+        val mentionEvent = events.filterIsInstance<MentionCreatedEvent>().first()
+        assertThat(mentionEvent.mentionedUserIds).containsExactly(mentionedUserId)
+        assertThat(mentionEvent.mentionerId).isEqualTo(commentWriterId)
+    }
+
+    @DisplayName("대댓글 작성 시 부모 댓글 정보가 이벤트에 포함된다")
+    @Test
+    fun write_reply_shouldIncludeParentCommentInfo() {
+        // given
+        val postId = 1L
+        val postWriterId = 100L
+        val parentCommentId = 5L
+        val parentCommentWriterId = 50L
+        val commentWriterId = 2L
+
+        val post = Post.from(
+            writerId = postWriterId,
+            topic = Topic.KNOWLEDGE,
+            title = "테스트 게시글",
+            content = "테스트 본문",
+            highlightType = HighlightType.NONE
+        )
+
+        val parentComment = Comment.create(parentCommentWriterId, postId, null, "부모 댓글")
+        setCommentId(parentComment, parentCommentId)
+
+        val replyComment = Comment.create(commentWriterId, postId, parentCommentId, "대댓글")
+        setCommentId(replyComment, 10L)
+
+        val dto = CommentCreateDto(
+            writerId = commentWriterId,
+            postId = postId,
+            parentId = parentCommentId,
+            content = "대댓글",
+            mentionUserIds = null,
+        )
+
+        `when`(postRepository.findById(postId)).thenReturn(Optional.of(post))
+        `when`(commentRepository.findById(parentCommentId)).thenReturn(Optional.of(parentComment))
+        `when`(commentRepository.save(any(Comment::class.java))).thenReturn(replyComment)
+
+        // when
+        commentService.write(dto)
+
+        // then
+        val captor = ArgumentCaptor.forClass(CommentCreatedEvent::class.java)
+        verify(eventPublisher).publishEvent(captor.capture())
+
+        val event = captor.value
+        assertThat(event.parentCommentId).isEqualTo(parentCommentId)
+        assertThat(event.parentCommentWriterId).isEqualTo(parentCommentWriterId)
+    }
 }
