@@ -24,7 +24,7 @@ class StudyRecruitmentTest {
                 createRecruitingStudySchedule(), "  \t  \n  ")
         }
 
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_TOO_BIG.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_EMPTY.code, thrown.code)
     }
 
     // ❌
@@ -35,7 +35,7 @@ class StudyRecruitmentTest {
                 createRecruitingStudySchedule(), "  \t A \n  ")
         }
 
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_TOO_BIG.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE.code, thrown.code)
     }
 
     @Test
@@ -47,7 +47,7 @@ class StudyRecruitmentTest {
             )
         }
 
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_TOO_BIG.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE.code, thrown.code)
     }
 
     // ❌
@@ -60,7 +60,7 @@ class StudyRecruitmentTest {
             created.updateAppeal("  \t \n  ")
         }
 
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_TOO_BIG.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_EMPTY.code, thrown.code)
     }
 
     // ❌
@@ -73,7 +73,7 @@ class StudyRecruitmentTest {
             created.updateAppeal("1")
         }
 
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_TOO_BIG.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE.code, thrown.code)
     }
 
     @Test
@@ -85,7 +85,7 @@ class StudyRecruitmentTest {
             created.updateAppeal("*".repeat(StudyRecruitment.MAX_APPEAL_LENGTH + 1))
         }
 
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_TOO_BIG.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE .code, thrown.code)
     }
 
     // ----- 승인
