@@ -46,6 +46,7 @@ class Notification(
         validateExpiresAt()
     }
 
+    @Enumerated(EnumType.STRING)
     var status = status
         protected set
 
