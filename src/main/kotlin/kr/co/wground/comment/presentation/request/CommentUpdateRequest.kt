@@ -14,6 +14,7 @@ data class CommentUpdateRequest(
 ) {
     fun toDto(commentId: CommentId) = CommentUpdateDto(
         commentId = commentId,
-        content = content
+        content = content,
+        mentionUserIds = mentionUserIds,
     )
 }

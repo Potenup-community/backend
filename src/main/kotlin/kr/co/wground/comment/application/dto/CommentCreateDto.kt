@@ -9,4 +9,5 @@ data class CommentCreateDto(
     val postId: PostId,
     val parentId: CommentId? = null,
     val content: String,
+    val mentionUserIds: List<Long>?,
 )

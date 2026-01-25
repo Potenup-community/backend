@@ -37,7 +37,6 @@ class CommentController(
         @Valid @RequestBody request: CommentCreateRequest,
         writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
-        commentService.validateMentionUserIds(request.mentionUserIds, writerId.value)
         val commentDto = request.toDto(writerId)
         val location = "/api/v1/comments/${commentService.write(commentDto)}"
         return ResponseEntity.created(URI.create(location)).build()
@@ -49,7 +48,6 @@ class CommentController(
         @Valid @RequestBody request: CommentUpdateRequest,
         writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
-        commentService.validateMentionUserIds(request.mentionUserIds, writerId.value)
         val commentDto = request.toDto(id)
         commentService.update(commentDto, writerId)
         return ResponseEntity.noContent().build()
@@ -67,7 +65,7 @@ class CommentController(
     @GetMapping("/{postId}")
     override fun getComments(
         @PathVariable postId: PostId,
-        writerId: CurrentUserId
+        writerId: CurrentUserId,
     ): ResponseEntity<CommentsResponse> {
         val result = commentService.getCommentsByPost(postId, writerId)
 
@@ -82,7 +80,7 @@ class CommentController(
         @PageableDefault(size = 20)
         @SortDefault(sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable,
-        userId: CurrentUserId
+        userId: CurrentUserId,
     ): ResponseEntity<MyCommentsResponse> {
         val result = commentService.getCommentsByMe(userId, pageable)
 

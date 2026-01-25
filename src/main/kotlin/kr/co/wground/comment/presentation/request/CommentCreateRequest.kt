@@ -30,5 +30,6 @@ data class CommentCreateRequest(
         postId = postId,
         parentId = parentId,
         content = content,
+        mentionUserIds = mentionUserIds,
     )
 }
