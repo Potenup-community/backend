@@ -8,6 +8,8 @@ import kr.co.wground.comment.application.dto.MyCommentSummaryDto
 import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.exception.CommentErrorCode
 import kr.co.wground.comment.infra.CommentRepository
+import kr.co.wground.common.event.CommentCreatedEvent
+import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
@@ -18,6 +20,7 @@ import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -31,25 +34,66 @@ class CommentService(
     private val postRepository: PostRepository,
     private val userRepository: UserRepository,
     private val reactionQueryService: ReactionQueryService,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
     @Transactional
     fun write(dto: CommentCreateDto): Long {
-        validateExistTargetPost(dto.postId)
-        validateParentId(dto.parentId)
+        val post = postRepository.findByIdOrNull(dto.postId)
+            ?: throw BusinessException(CommentErrorCode.TARGET_POST_IS_NOT_FOUND)
+
+        val parentComment = validateAndGetParentComment(dto.parentId)
+        val validMentionUserIds = validateMentionUserIds(dto.mentionUserIds, dto.writerId)
+
         val comment = Comment.create(
             dto.writerId,
             dto.postId,
             dto.parentId,
             dto.content,
         )
-        return commentRepository.save(comment).id
+        val savedComment = commentRepository.save(comment)
+
+        eventPublisher.publishEvent(
+            CommentCreatedEvent(
+                postId = dto.postId,
+                postWriterId = post.writerId,
+                commentId = savedComment.id,
+                commentWriterId = dto.writerId,
+                parentCommentId = parentComment?.id,
+                parentCommentWriterId = parentComment?.writerId,
+            )
+        )
+
+        if (validMentionUserIds.isNotEmpty()) {
+            eventPublisher.publishEvent(
+                MentionCreatedEvent(
+                    postId = dto.postId,
+                    commentId = savedComment.id,
+                    mentionerId = dto.writerId,
+                    mentionUserIds = validMentionUserIds,
+                )
+            )
+        }
+
+        return savedComment.id
     }
 
     @Transactional
     fun update(dto: CommentUpdateDto, writerId: CurrentUserId) {
         val comment = findByCommentId(dto.commentId)
         validateWriter(comment, writerId)
+        val validMentionUserIds = validateMentionUserIds(dto.mentionUserIds, writerId.value)
         dto.content?.let(comment::updateContent)
+
+        if (validMentionUserIds.isNotEmpty()) {
+            eventPublisher.publishEvent(
+                MentionCreatedEvent(
+                    postId = comment.postId,
+                    commentId = comment.id,
+                    mentionerId = writerId.value,
+                    mentionUserIds = validMentionUserIds,
+                )
+            )
+        }
     }
 
     @Transactional
@@ -62,7 +106,7 @@ class CommentService(
     @Transactional(readOnly = true)
     fun getCommentsByPost(
         postId: PostId,
-        userId: CurrentUserId
+        userId: CurrentUserId,
     ): List<CommentSummaryDto> {
         validateExistTargetPost(postId)
 
@@ -125,7 +169,7 @@ class CommentService(
         return SliceImpl(summaries, pageable, likedReactions.hasNext())
     }
 
-    fun validateMentionUserIds(mentionUserIds: List<Long>?, writerId: UserId): List<Long> {
+    private fun validateMentionUserIds(mentionUserIds: List<Long>?, writerId: UserId): List<Long> {
         if (mentionUserIds.isNullOrEmpty()) return emptyList()
 
         val users = userRepository.findByUserIdIn(mentionUserIds)
@@ -145,12 +189,14 @@ class CommentService(
         postRepository.findByIdOrNull(postId) ?: throw BusinessException(CommentErrorCode.TARGET_POST_IS_NOT_FOUND)
     }
 
-    private fun validateParentId(parentId: CommentId?) {
-        parentId?.let {
+    private fun validateAndGetParentComment(parentId: CommentId?): Comment? {
+        return parentId?.let {
             val parentComment = commentRepository.findByIdOrNull(it)
                 ?: throw BusinessException(CommentErrorCode.COMMENT_PARENT_ID_NOT_FOUND)
-            if (!parentComment.isParent())
+            if (!parentComment.isParent()) {
                 throw BusinessException(CommentErrorCode.COMMENT_REPLY_NOT_ALLOWED)
+            }
+            parentComment
         }
     }
 
@@ -160,14 +206,14 @@ class CommentService(
 
     private fun validateWriter(
         comment: Comment,
-        writerId: CurrentUserId
+        writerId: CurrentUserId,
     ) {
         if (comment.writerId != writerId.value)
             throw BusinessException(CommentErrorCode.COMMENT_NOT_WRITER)
     }
 
     private fun loadUsersByComments(
-        comments: List<Comment>
+        comments: List<Comment>,
     ): Map<UserId, UserDisplayInfoDto> {
         val writerIds = comments.map { it.writerId }.toSet()
         return userRepository.findUserDisplayInfos(writerIds.toList())
