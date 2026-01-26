@@ -1,5 +1,7 @@
 package kr.co.wground.study.application
 
+import kr.co.wground.common.event.StudyRecruitEvent
+import kr.co.wground.common.event.StudyDetermineEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
@@ -17,6 +19,7 @@ import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.infra.UserRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,7 +32,8 @@ class StudyRecruitmentService(
     private val userRepository: UserRepository,
     private val trackRepository: TrackRepository,
     private val scheduleRepository: StudyScheduleRepository,
-    private val recruitValidator: RecruitValidator
+    private val recruitValidator: RecruitValidator,
+    private val eventPublisher: ApplicationEventPublisher
 ) {
 
     fun requestRecruit(userId: Long, studyId: Long, appeal: String): Long {
@@ -42,7 +46,7 @@ class StudyRecruitmentService(
             .firstOrNull { it.isCurrentRound() } ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
 
         recruitValidator.validateSchedule(schedule)
-        recruitValidator.validateCurrentMonth(schedule,requestMonth)
+        recruitValidator.validateCurrentMonth(schedule, requestMonth)
         recruitValidator.validateApply(user.trackId, study)
         recruitValidator.validateDuplicateRecruit(userId, studyId)
         recruitValidator.validateHasMaxStudyLimit(userId, schedule.id)
@@ -50,6 +54,12 @@ class StudyRecruitmentService(
         val recruitment = StudyRecruitment.apply(userId, appeal, study)
         val savedRecruitment = studyRecruitmentRepository.save(recruitment)
 
+        eventPublisher.publishEvent(
+            StudyRecruitEvent(
+                studyId = study.id,
+                studyLeaderId = study.leaderId
+            )
+        )
         return savedRecruitment.id
     }
 
@@ -73,10 +83,18 @@ class StudyRecruitmentService(
         recruitValidator.validateDetermineLeader(recruitment.study, leaderId)
 
         if (newStatus == RecruitStatus.APPROVED) {
-            recruitment.study.increaseMemberCount(schedule.recruitEndDate,schedule.isRecruitmentClosed())
+            recruitment.study.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
         }
 
         recruitment.updateRecruitStatus(newStatus)
+
+        eventPublisher.publishEvent(
+            StudyDetermineEvent(
+                studyId = recruitment.study.id,
+                recruitmentId = recruitment.userId,
+                recruitStatus = recruitment.recruitStatus
+            )
+        )
     }
 
     @Transactional(readOnly = true)

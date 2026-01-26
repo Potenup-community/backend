@@ -1,5 +1,6 @@
 package kr.co.wground.study.application
 
+import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.LeaderDto
@@ -23,6 +24,7 @@ import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.infra.UserRepository
 import org.slf4j.LoggerFactory
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
@@ -38,7 +40,8 @@ class StudyService(
     private val studyRecruitmentRepository: StudyRecruitmentRepository,
     private val trackRepository: TrackRepository,
     private val tagRepository: TagRepository,
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
     companion object {
         const val MAX_ENROLLED_STUDY = 2
@@ -122,8 +125,19 @@ class StudyService(
             study.isLeader(userId)
             study.validateHardDeletable()
         }
+        val studyId = study.id
+        val recruitIds = study.recruitments.map { recruitment -> recruitment.userId }
+        val studyName = study.name
 
         studyRepository.delete(study)
+
+        eventPublisher.publishEvent(
+            StudyDeletedEvent(
+                studyId = studyId,
+                studyTitle = studyName,
+                recruitUserIds = recruitIds
+            )
+        )
     }
 
     fun approveStudy(studyId: Long) {
@@ -132,7 +146,6 @@ class StudyService(
         study.approve()
 
         studyRecruitmentRepository.rejectAllByStudyIdWithExceptStatus(studyId, RecruitStatus.APPROVED)
-
     }
 
     fun rejectStudy(studyId: Long) {

@@ -1,9 +1,9 @@
 package kr.co.wground.common.event
 
-import kr.co.wground.global.common.UserId
+import kr.co.wground.study.domain.constant.RecruitStatus
 
-data class StudyDecidedEvent(
+data class StudyDetermineEvent(
     val studyId: Long,
-    val applicantId: UserId,
-    val status: Status, // ACCEPTED or REJECTED
+    val recruitmentId: Long,
+    val recruitStatus: RecruitStatus,
 )
