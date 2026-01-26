@@ -1,7 +1,7 @@
 package kr.co.wground.study.application
 
 import kr.co.wground.common.event.StudyRecruitEvent
-import kr.co.wground.common.event.StudyDecidedEvent
+import kr.co.wground.common.event.StudyDetermineEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
@@ -89,7 +89,7 @@ class StudyRecruitmentService(
         recruitment.updateRecruitStatus(newStatus)
 
         eventPublisher.publishEvent(
-            StudyDecidedEvent(
+            StudyDetermineEvent(
                 studyId = recruitment.study.id,
                 recruitmentId = recruitment.userId,
                 recruitStatus = recruitment.recruitStatus
