@@ -62,11 +62,11 @@ class ProfileImageServiceImpl(
         val targetPath = Path.of(profilePolicy.localDir, "$userId/$storedFileName")
 
         try {
+            log.info("UserId: $userId, 프로필 파일 저장 완료: $storedFileName")
             Files.createDirectories(targetPath.parent)
             file.inputStream.use { inputStream ->
                 Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING)
             }
-            log.info("UserId: $userId, 프로필 파일 저장 완료: $storedFileName")
             return storedFileName to targetPath
         } catch (e: Exception) {
             log.error("UserId: $userId, 파일 저장 중 오류 발생: ${e.message}")
