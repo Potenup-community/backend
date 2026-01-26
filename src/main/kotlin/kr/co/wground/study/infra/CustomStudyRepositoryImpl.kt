@@ -38,7 +38,7 @@ class CustomStudyRepositoryImpl(
                 statusEq(condition.status),
             )
             .offset(pageable.offset)
-            .limit(pageSize.toLong() + 1)
+            .limit(pageSize.toLong() + 2)
             .orderBy(*getOrderSpecifiers(pageable.sort))
             .fetch()
 
