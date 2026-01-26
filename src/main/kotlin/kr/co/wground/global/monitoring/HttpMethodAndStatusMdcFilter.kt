@@ -23,8 +23,8 @@ class HttpMethodAndStatusMdcFilter : OncePerRequestFilter() {
         val startTimeMs = System.currentTimeMillis()
 
         val exactUrl: String = request.requestURL.toString()
-        val errCode: String = request.getAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG) as String
-        val errMessage: String = request.getAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG) as String
+        val errCode: String? = request.getAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG) as? String
+        val errMessage: String? = request.getAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG) as? String
 
         try {
             MDC.put("http_method", request.method)
