@@ -72,7 +72,7 @@ class  AuthController(
 
     private fun setCookie(token: String, type: TokenType, maxAge: Long? = null): ResponseCookie {
         val duration = maxAge ?: when (type) {
-            TokenType.ACCESS -> refreshExpirationMs
+            TokenType.ACCESS -> accessExpirationMs
             TokenType.REFRESH -> refreshExpirationMs
         }
 
@@ -82,7 +82,6 @@ class  AuthController(
             .path("/")
             .maxAge(Duration.ofMillis(duration))
             .sameSite(CSRF)
-            // .domain("www.depth.co.kr")
             .build()
     }
 }
