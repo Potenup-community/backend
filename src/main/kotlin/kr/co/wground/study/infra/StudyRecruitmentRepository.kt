@@ -37,13 +37,31 @@ interface StudyRecruitmentRepository : JpaRepository<StudyRecruitment, Long> {
         UPDATE StudyRecruitment sr 
         SET sr.recruitStatus = :status, sr.updatedAt = :now 
         WHERE sr.study.id = :studyId 
+          AND sr.recruitStatus = :targetStatus
+    """
+    )
+    fun rejectAllByStudyIdWithStatus(
+        studyId: Long,
+        targetStatus: RecruitStatus = RecruitStatus.PENDING,
+        status: RecruitStatus = RecruitStatus.REJECTED,
+
+        now: LocalDateTime = LocalDateTime.now()
+    ): Int
+
+    @Modifying
+    @Query(
+        """
+        UPDATE StudyRecruitment sr 
+        SET sr.recruitStatus = :status, sr.updatedAt = :now 
+        WHERE sr.study.id = :studyId 
           AND sr.recruitStatus != :targetStatus
     """
     )
     fun rejectAllByStudyIdWithExceptStatus(
         studyId: Long,
-        targetStatus: RecruitStatus,
+        targetStatus: RecruitStatus = RecruitStatus.CANCELLED,
         status: RecruitStatus = RecruitStatus.REJECTED,
+
         now: LocalDateTime = LocalDateTime.now()
     ): Int
 

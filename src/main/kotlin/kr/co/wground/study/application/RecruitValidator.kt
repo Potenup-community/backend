@@ -8,13 +8,14 @@ import kr.co.wground.study.domain.StudySchedule
 import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.infra.StudyRecruitmentRepository
+import kr.co.wground.track.domain.constant.TrackStatus
 import org.springframework.stereotype.Component
 
 @Component
 class RecruitValidator(
     private val studyRecruitmentRepository: StudyRecruitmentRepository,
 ) {
-    companion object{
+    companion object {
         const val MAX_STUDY_CAN_ENROLLED = 2
     }
 
@@ -72,5 +73,15 @@ class RecruitValidator(
         if (!study.isLeader(leaderId)) {
             throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
         }
+    }
+
+    fun validateGraduated(trackStatus: TrackStatus) {
+        if(isGraduated(trackStatus)){
+            throw BusinessException(StudyServiceErrorCode.GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY)
+        }
+    }
+
+    fun isGraduated(trackStatus: TrackStatus): Boolean {
+        return trackStatus == TrackStatus.GRADUATED
     }
 }
