@@ -228,7 +228,7 @@ class NotificationEventListenerTest {
             val event = MentionCreatedEvent(
                 commentId = 10L,
                 mentionerId = 100L,
-                mentionedUserIds = listOf(200L, 300L)
+                mentionUserIds = listOf(200L, 300L)
             )
 
             // when
@@ -252,7 +252,7 @@ class NotificationEventListenerTest {
             val event = MentionCreatedEvent(
                 commentId = 10L,
                 mentionerId = 100L,
-                mentionedUserIds = listOf(100L)
+                mentionUserIds = listOf(100L)
             )
 
             // when

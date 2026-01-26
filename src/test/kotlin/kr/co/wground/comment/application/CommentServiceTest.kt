@@ -482,7 +482,7 @@ class CommentServiceTest {
         assertThat(events.filterIsInstance<MentionCreatedEvent>()).hasSize(1)
 
         val mentionEvent = events.filterIsInstance<MentionCreatedEvent>().first()
-        assertThat(mentionEvent.mentionedUserIds).containsExactly(mentionedUserId)
+        assertThat(mentionEvent.mentionUserIds).containsExactly(mentionedUserId)
         assertThat(mentionEvent.mentionerId).isEqualTo(commentWriterId)
     }
 

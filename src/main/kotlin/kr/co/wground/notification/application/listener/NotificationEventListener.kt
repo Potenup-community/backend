@@ -102,7 +102,7 @@ class NotificationEventListener(
     @Async("notificationExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleMentionCreated(event: MentionCreatedEvent) {
-        event.mentionedUserIds
+        event.mentionUserIds
             .filter { it != event.mentionerId }
             .forEach { mentionedUserId ->
                 notificationCommandService.create(

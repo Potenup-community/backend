@@ -68,7 +68,7 @@ class CommentService(
                 MentionCreatedEvent(
                     commentId = savedComment.id,
                     mentionerId = dto.writerId,
-                    mentionedUserIds = validMentionUserIds,
+                    mentionUserIds = validMentionUserIds,
                 )
             )
         }
@@ -88,7 +88,7 @@ class CommentService(
                 MentionCreatedEvent(
                     commentId = comment.id,
                     mentionerId = writerId.value,
-                    mentionedUserIds = validMentionUserIds,
+                    mentionUserIds = validMentionUserIds,
                 )
             )
         }
