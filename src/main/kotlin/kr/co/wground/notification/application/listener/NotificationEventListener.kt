@@ -25,13 +25,18 @@ class NotificationEventListener(
     @Async("notificationExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleCommentCreated(event: CommentCreatedEvent) {
-        if (event.postWriterId == event.commentWriterId) return
+        val isSelfComment = event.postWriterId == event.commentWriterId
+        if (isSelfComment) return
 
-        if (event.parentCommentId != null && event.parentCommentWriterId != null) {
-            if (event.parentCommentWriterId != event.commentWriterId) {
+        val isReplyComment = event.parentCommentId != null && event.parentCommentWriterId != null
+        val isSelfReply = event.parentCommentWriterId == event.commentWriterId
+
+        if (isReplyComment) {
+            val parentWriterId = event.parentCommentWriterId ?: return
+            if (!isSelfReply) {
                 createNotificationSafely {
                     notificationCommandService.create(
-                        recipientId = event.parentCommentWriterId,
+                        recipientId = parentWriterId,
                         actorId = event.commentWriterId,
                         type = NotificationType.COMMENT_REPLY,
                         content = NotificationContent(
