@@ -3,12 +3,14 @@ package kr.co.wground.exception.handler
 import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import com.fasterxml.jackson.databind.exc.InvalidNullException
 import com.fasterxml.jackson.databind.exc.MismatchedInputException
+import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.ConstraintViolationException
 import kr.co.wground.comment.exception.CommentErrorCode
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.exception.CommonErrorCode
 import kr.co.wground.exception.ErrorCode
 import kr.co.wground.global.common.response.ErrorResponse
+import kr.co.wground.global.monitoring.MonitoringConstants
 import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.track.domain.exception.TrackDomainErrorCode
 import kr.co.wground.user.application.exception.UserServiceErrorCode
@@ -32,15 +34,27 @@ class GlobalExceptionHandler {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @ExceptionHandler(BusinessException::class)
-    fun handleBusinessException(e: BusinessException): ResponseEntity<ErrorResponse> {
+    fun handleBusinessException(request: HttpServletRequest, e: BusinessException): ResponseEntity<ErrorResponse> {
+
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, e.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, e.message)
+
         val body = ErrorResponse.of(e)
         return ResponseEntity.status(e.httpStatus).body(body)
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException::class)
-    fun handleMaxUploadSizeExceededException(e: MaxUploadSizeExceededException): ResponseEntity<ErrorResponse> {
+    fun handleMaxUploadSizeExceededException(request: HttpServletRequest, e: MaxUploadSizeExceededException): ResponseEntity<ErrorResponse> {
         val errorCode = CommonErrorCode.MAX_UPLOAD_SIZE_EXCEEDED
-        val body = ErrorResponse.of(errorCode = errorCode, additionalInfo = "허용된 최대 파일 크기 = " + e.maxUploadSize)
+        val additionalInfo = "허용된 최대 파일 크기 = " + e.maxUploadSize
+        val errorMessage = CommonErrorCode.MAX_UPLOAD_SIZE_EXCEEDED.message + ", " + additionalInfo
+
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, errorCode.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, errorMessage)
+
+        val body = ErrorResponse.of(errorCode = errorCode, additionalInfo = additionalInfo)
         return ResponseEntity.status(errorCode.httpStatus).body(body)
     }
 
@@ -68,12 +82,23 @@ class GlobalExceptionHandler {
             else -> CommonErrorCode.INVALID_INPUT
         }
 
+        val errorMessage: String = errorCode.message + ", " + errors
+            .groupBy { it.field }
+            .entries
+            .sortedBy { it.key }
+            .joinToString("; ") { (field, errs) ->
+                "$field: ${errs.map { it.reason }.distinct().joinToString(", ")}"
+            }
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e, WebRequest.SCOPE_REQUEST)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, errorCode.code, WebRequest.SCOPE_REQUEST)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, errorMessage, WebRequest.SCOPE_REQUEST)
+
         val body = ErrorResponse.of(errorCode, errors)
         return ResponseEntity.status(errorCode.httpStatus).body(body)
     }
 
     @ExceptionHandler(HandlerMethodValidationException::class)
-    fun handleHandlerMethodValidationException(e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
+    fun handleHandlerMethodValidationException(request: HttpServletRequest, e: HandlerMethodValidationException): ResponseEntity<ErrorResponse> {
         val errorCode = CommonErrorCode.INVALID_INPUT
         val errors = e.parameterValidationResults.map { result ->
 
@@ -88,12 +113,27 @@ class GlobalExceptionHandler {
             ErrorResponse.CustomError(fieldName, reason)
         }
 
+        val errorMessage: String = errorCode.message + ", " + errors
+            .groupBy { it.field }
+            .entries
+            .sortedBy { it.key }
+            .joinToString(separator = "; ") { (field, errs) ->
+                val reasons = errs
+                    .map { it.reason }
+                    .distinct()
+                    .joinToString(", ")
+                "$field: $reasons"
+            }
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, errorCode.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, errorMessage)
+
         val body = ErrorResponse.of(errorCode, errors)
         return ResponseEntity.status(errorCode.httpStatus).body(body)
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun handleHttpMessageNotReadableException(e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
+    fun handleHttpMessageNotReadableException(request: HttpServletRequest, e: HttpMessageNotReadableException): ResponseEntity<ErrorResponse> {
         val errorCode = CommonErrorCode.INVALID_INPUT
         val errors = mutableListOf<ErrorResponse.CustomError>()
 
@@ -110,9 +150,16 @@ class GlobalExceptionHandler {
             else -> "입력 형식이 올바르지 않습니다."
         }
 
-        errors.add(ErrorResponse.CustomError(field = fieldName.ifEmpty { "unknown" }, reason = reason))
+        val customError = ErrorResponse.CustomError(field = fieldName.ifEmpty { "unknown" }, reason = reason)
+        errors.add(customError)
 
         val body = ErrorResponse.of(errorCode, errors)
+
+        val errorMessage = "${errorCode.message}, field = ${customError.field}, reason = ${customError.reason}"
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, errorCode.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, errorMessage)
+
         return ResponseEntity.status(errorCode.httpStatus).body(body)
     }
 
@@ -121,7 +168,7 @@ class GlobalExceptionHandler {
         MethodArgumentTypeMismatchException::class,
         HttpRequestMethodNotSupportedException::class,
     )
-    fun handleBadServletRequests(e: Exception): ResponseEntity<ErrorResponse> {
+    fun handleBadServletRequests(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
         val message = when (e) {
             is MissingServletRequestParameterException ->
                 "필수 파라미터가 누락되었습니다: ${e.parameterName}"
@@ -135,25 +182,34 @@ class GlobalExceptionHandler {
             else -> CommonErrorCode.INVALID_INPUT.message
         }
 
-        val body = ErrorResponse.of(CommonErrorCode.INVALID_INPUT)
-
         val status = if (e is HttpRequestMethodNotSupportedException) {
             e.statusCode
         } else {
             CommonErrorCode.INVALID_INPUT.httpStatus
         }
+
+        val errorMessage = "${CommonErrorCode.INVALID_INPUT.message}, ${message}"
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, CommonErrorCode.INVALID_INPUT.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, errorMessage)
+
+        val body = ErrorResponse.of(CommonErrorCode.INVALID_INPUT)
         return ResponseEntity.status(status).body(body)
     }
 
     @ExceptionHandler(Exception::class)
-    fun handleException(e: Exception): ResponseEntity<ErrorResponse> {
-        logger.error("Unhandled exception", e)
+    fun handleException(request: HttpServletRequest, e: Exception): ResponseEntity<ErrorResponse> {
+
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, CommonErrorCode.INTERNAL_SERVER_ERROR.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, CommonErrorCode.INTERNAL_SERVER_ERROR.message)
+
         val body = ErrorResponse.of(CommonErrorCode.INTERNAL_SERVER_ERROR)
         return ResponseEntity.status(CommonErrorCode.INTERNAL_SERVER_ERROR.httpStatus).body(body)
     }
 
     @ExceptionHandler(ConstraintViolationException::class)
-    fun handleConstraintViolation(e: ConstraintViolationException): ResponseEntity<ErrorResponse> {
+    fun handleConstraintViolation(request: HttpServletRequest, e: ConstraintViolationException): ResponseEntity<ErrorResponse> {
         val errors = e.constraintViolations.map { violation ->
             val field = violation.propertyPath
                 .iterator()
@@ -168,24 +224,50 @@ class GlobalExceptionHandler {
             )
         }
 
+        val errorMessages: String = CommonErrorCode.INVALID_INPUT.message + ", " + errors
+            .groupBy { it.field }
+            .entries
+            .sortedBy { it.key }
+            .joinToString("; ") { (field, errs) ->
+                "$field: ${errs.map { it.reason }.distinct().joinToString(", ")}"
+            }
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, CommonErrorCode.INVALID_INPUT.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, errorMessages)
+
         val body = ErrorResponse.of(CommonErrorCode.INVALID_INPUT, errors)
         return ResponseEntity.status(CommonErrorCode.INVALID_INPUT.httpStatus).body(body)
     }
 
     @ExceptionHandler(AccessDeniedException::class)
-    fun handleAccessDenied(e: AccessDeniedException): ResponseEntity<ErrorResponse> {
+    fun handleAccessDenied(request: HttpServletRequest, e: AccessDeniedException): ResponseEntity<ErrorResponse> {
+
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, CommonErrorCode.ACCESS_DENIED_ROLE.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, CommonErrorCode.ACCESS_DENIED_ROLE.message)
+
         val body = ErrorResponse.of(CommonErrorCode.ACCESS_DENIED_ROLE)
         return ResponseEntity.status(CommonErrorCode.ACCESS_DENIED_ROLE.httpStatus).body(body)
     }
 
     @ExceptionHandler(AuthorizationDeniedException::class)
-    fun handleAuthorizationDenied(e: AuthorizationDeniedException): ResponseEntity<ErrorResponse> {
+    fun handleAuthorizationDenied(request: HttpServletRequest, e: AuthorizationDeniedException): ResponseEntity<ErrorResponse> {
+
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, CommonErrorCode.ACCESS_DENIED_ROLE.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, CommonErrorCode.ACCESS_DENIED_ROLE.message)
+
         val body = ErrorResponse.of(CommonErrorCode.ACCESS_DENIED_ROLE)
         return ResponseEntity.status(CommonErrorCode.ACCESS_DENIED_ROLE.httpStatus).body(body)
     }
 
     @ExceptionHandler(AuthenticationException::class)
-    fun handleAuthenticationException(e: AuthenticationException): ResponseEntity<ErrorResponse> {
+    fun handleAuthenticationException(request: HttpServletRequest, e: AuthenticationException): ResponseEntity<ErrorResponse> {
+
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, CommonErrorCode.AUTHORIZATION_FAILURE.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, CommonErrorCode.AUTHORIZATION_FAILURE.message)
+
         val body = ErrorResponse.of(CommonErrorCode.AUTHORIZATION_FAILURE)
         return ResponseEntity.status(CommonErrorCode.AUTHORIZATION_FAILURE.httpStatus).body(body)
     }
