@@ -127,10 +127,17 @@ class StudyService(
         }
         val studyId = study.id
         val recruitIds = study.recruitments.map { recruitment -> recruitment.userId }
+        val studyName = study.name
 
         studyRepository.delete(study)
 
-        eventPublisher.publishEvent(StudyDeletedEvent(studyId, recruitIds))
+        eventPublisher.publishEvent(
+            StudyDeletedEvent(
+                studyId = studyId,
+                studyTitle = studyName,
+                recruitUserIds = recruitIds
+            )
+        )
     }
 
     fun approveStudy(studyId: Long) {
@@ -139,7 +146,6 @@ class StudyService(
         study.approve()
 
         studyRecruitmentRepository.rejectAllByStudyIdWithExceptStatus(studyId, RecruitStatus.APPROVED)
-
     }
 
     fun rejectStudy(studyId: Long) {

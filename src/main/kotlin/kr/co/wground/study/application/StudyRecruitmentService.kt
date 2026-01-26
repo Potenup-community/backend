@@ -1,6 +1,6 @@
 package kr.co.wground.study.application
 
-import kr.co.wground.common.event.StudyAppliedEvent
+import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.common.event.StudyDecidedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
@@ -54,7 +54,12 @@ class StudyRecruitmentService(
         val recruitment = StudyRecruitment.apply(userId, appeal, study)
         val savedRecruitment = studyRecruitmentRepository.save(recruitment)
 
-        eventPublisher.publishEvent(StudyAppliedEvent(study.id, study.leaderId))
+        eventPublisher.publishEvent(
+            StudyRecruitEvent(
+                studyId = study.id,
+                studyLeaderId = study.leaderId
+            )
+        )
         return savedRecruitment.id
     }
 
@@ -84,7 +89,11 @@ class StudyRecruitmentService(
         recruitment.updateRecruitStatus(newStatus)
 
         eventPublisher.publishEvent(
-            StudyDecidedEvent(recruitment.study.id, recruitment.userId, recruitment.recruitStatus)
+            StudyDecidedEvent(
+                studyId = recruitment.study.id,
+                recruitmentId = recruitment.userId,
+                recruitStatus = recruitment.recruitStatus
+            )
         )
     }
 
