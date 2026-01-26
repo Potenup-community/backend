@@ -66,6 +66,7 @@ class CommentService(
         if (validMentionUserIds.isNotEmpty()) {
             eventPublisher.publishEvent(
                 MentionCreatedEvent(
+                    postId = dto.postId,
                     commentId = savedComment.id,
                     mentionerId = dto.writerId,
                     mentionUserIds = validMentionUserIds,
@@ -86,6 +87,7 @@ class CommentService(
         if (validMentionUserIds.isNotEmpty()) {
             eventPublisher.publishEvent(
                 MentionCreatedEvent(
+                    postId = comment.postId,
                     commentId = comment.id,
                     mentionerId = writerId.value,
                     mentionUserIds = validMentionUserIds,

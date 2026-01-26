@@ -107,8 +107,9 @@ class NotificationEventListener(
                     content = "회원님의 댓글에 좋아요가 눌렸습니다.",
                 ),
                 reference = NotificationReference(
-                    referenceType = ReferenceType.COMMENT,
-                    referenceId = event.commentId,
+                    referenceType = ReferenceType.POST,
+                    referenceId = event.postId,
+                    subReferenceId = event.commentId,
                 ),
             )
         }
@@ -130,8 +131,9 @@ class NotificationEventListener(
                             content = "회원님이 멘션되었습니다.",
                         ),
                         reference = NotificationReference(
-                            referenceType = ReferenceType.COMMENT,
-                            referenceId = event.commentId,
+                            referenceType = ReferenceType.POST,
+                            referenceId = event.postId,
+                            subReferenceId = event.commentId,
                         ),
                     )
                 }

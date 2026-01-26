@@ -110,6 +110,7 @@ class ReactionCommandServiceTest {
         verify(eventPublisher).publishEvent(captor.capture())
 
         val event = captor.value
+        assertThat(event.postId).isEqualTo(1L)
         assertThat(event.commentId).isEqualTo(commentId)
         assertThat(event.commentWriterId).isEqualTo(commentWriterId)
         assertThat(event.reactorId).isEqualTo(reactorId)

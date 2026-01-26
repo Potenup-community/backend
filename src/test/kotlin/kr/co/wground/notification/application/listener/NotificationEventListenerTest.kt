@@ -195,6 +195,7 @@ class NotificationEventListenerTest {
         fun shouldCreateNotification_whenDifferentUsers() {
             // given
             val event = CommentReactionCreatedEvent(
+                postId = 1L,
                 commentId = 10L,
                 commentWriterId = 100L,
                 reactorId = 200L
@@ -226,6 +227,7 @@ class NotificationEventListenerTest {
         fun shouldCreateNotificationForEachMentionedUser() {
             // given
             val event = MentionCreatedEvent(
+                postId = 1L,
                 commentId = 10L,
                 mentionerId = 100L,
                 mentionUserIds = listOf(200L, 300L)
@@ -250,6 +252,7 @@ class NotificationEventListenerTest {
         fun shouldNotCreateNotification_whenMentionSelf() {
             // given
             val event = MentionCreatedEvent(
+                postId = 1L,
                 commentId = 10L,
                 mentionerId = 100L,
                 mentionUserIds = listOf(100L)

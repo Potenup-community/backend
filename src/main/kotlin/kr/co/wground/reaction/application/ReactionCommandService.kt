@@ -72,6 +72,7 @@ class ReactionCommandService(
 
         eventPublisher.publishEvent(
             CommentReactionCreatedEvent(
+                postId = comment.postId,
                 commentId = command.commentId,
                 commentWriterId = comment.writerId,
                 reactorId = command.userId,
