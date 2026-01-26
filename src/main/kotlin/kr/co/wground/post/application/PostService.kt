@@ -1,7 +1,8 @@
 package kr.co.wground.post.application
 
+import java.util.UUID
 import kr.co.wground.comment.infra.CommentRepository
-import kr.co.wground.common.SyncDraftImagesToPostEvent
+import kr.co.wground.common.event.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.common.UserId
@@ -15,27 +16,26 @@ import kr.co.wground.post.application.dto.toDtos
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.post.exception.PostErrorCode
-import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import kr.co.wground.post.infra.PostRepository
+import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
-import kr.co.wground.user.domain.User
-import kr.co.wground.user.infra.UserRepository
+import kr.co.wground.user.infra.CustomUserRepository
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 
 @Service
 @Transactional
 class PostService(
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
-    private val userRepository: UserRepository,
+    private val userRepository: CustomUserRepository,
     private val postReactionRepository: PostReactionJpaRepository,
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
     fun createPost(dto: PostCreateDto): Long {
         val postId = postRepository.save(dto.toDomain()).id
@@ -104,38 +104,69 @@ class PostService(
     }
 
     fun getSummary(userId: UserId, pageable: Pageable, topic: Topic?): Slice<PostSummaryDto> {
-        val predicate = GetPostSummaryPredicate(pageable, topic)
+        val predicate = GetPostSummaryPredicate(pageable = pageable, topic = topic)
 
         val posts = postRepository.findAllByPredicate(predicate)
 
-        val postIds = posts.map { it.id }.toSet()
-        val writerIds = posts.map { it.writerId }.toSet()
-        
-        val writers = userRepository.findAllById(writerIds)
-        val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
-        val commentsCountById = commentRepository.countByPostIds(postIds.toList())
-
-        return posts.toDtos(writers, commentsCountById, postReactionStats)
+        return assembleSummaryDtos(posts, userId)
     }
 
     fun getPostDetail(id: PostId): PostDetailDto {
         val foundCourse = findPostByIdOrThrow(id)
-        val writer = findUserByIdOrThrow(foundCourse.writerId)
+        val writer = findUserDisplayInfoByIdOrThrow(foundCourse.writerId)
 
         val reactionsByPostId = postReactionRepository.findPostReactionsByPostId(id)
 
         val commentsCount = commentRepository.countByPostIds(listOf(id))
             .firstOrNull()?.count ?: 0
 
+        val postNavigationDto = postRepository.findIdsOfPreviousAndNext(
+            foundCourse.id,
+            foundCourse.createdAt
+        )
+
         return foundCourse.toDto(
             writerName = writer.name,
+            trackName = writer.trackName,
+            profileImageUrl = writer.profileImageUrl,
             commentsCount = commentsCount,
-            reactions = reactionsByPostId
+            nextPostId = postNavigationDto.nextPostId,
+            previousPostId = postNavigationDto.previousPostId,
+            reactions = reactionsByPostId,
+            nextPostTitle = postNavigationDto.nextPostTitle,
+            previousPostTitle = postNavigationDto.previousPostTitle
         )
     }
 
-    private fun findUserByIdOrThrow(id: WriterId): User {
-        return userRepository.findByIdOrNull(id) ?:
-            throw BusinessException(PostErrorCode.NOT_FOUND_WRITER)
+    fun getMyPosts(userId: UserId, pageable: Pageable): Slice<PostSummaryDto> {
+        val predicate = GetPostSummaryPredicate(pageable = pageable, userId = userId)
+        val posts = postRepository.findAllByPredicate(predicate)
+
+        return assembleSummaryDtos(posts, userId)
+    }
+
+    fun getMyLikedPosts(userId: UserId, pageable: Pageable): Slice<PostSummaryDto> {
+        val posts = postReactionRepository.findAllLikedByUser(userId, pageable)
+
+        return assembleSummaryDtos(posts, userId)
+    }
+
+    private fun assembleSummaryDtos(
+        posts: Slice<Post>,
+        userId: UserId,
+    ): Slice<PostSummaryDto> {
+        val postIds = posts.map { it.id }.toSet()
+        val writerIds = posts.map { it.writerId }.toSet()
+
+        val writersById = userRepository.findUserDisplayInfos(writerIds.toList())
+        val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
+        val commentsCountById = commentRepository.countByPostIds(postIds.toList())
+
+        return posts.toDtos(writersById, commentsCountById, postReactionStats)
+    }
+
+    private fun findUserDisplayInfoByIdOrThrow(id: WriterId): UserDisplayInfoDto {
+        return userRepository.findUserDisplayInfos(listOf(id))[id]
+            ?: throw BusinessException(PostErrorCode.NOT_FOUND_WRITER)
     }
 }

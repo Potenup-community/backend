@@ -5,11 +5,18 @@ import java.net.URI
 import kr.co.wground.comment.application.CommentService
 import kr.co.wground.comment.presentation.request.CommentCreateRequest
 import kr.co.wground.comment.presentation.request.CommentUpdateRequest
-import kr.co.wground.comment.presentation.response.CommentsResponse
 import kr.co.wground.comment.presentation.response.CommentSummaryResponse
+import kr.co.wground.comment.presentation.response.CommentsResponse
+import kr.co.wground.comment.presentation.response.LikedCommentsResponse
+import kr.co.wground.comment.presentation.response.MyCommentsResponse
+import kr.co.wground.comment.presentation.response.toResponse
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.global.config.resolver.CurrentUserId
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
+import org.springframework.data.web.SortDefault
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -24,9 +31,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/comments")
 class CommentController(
     private val commentService: CommentService,
-) {
+) : CommentApi {
     @PostMapping
-    fun writeComment(
+    override fun writeComment(
         @Valid @RequestBody request: CommentCreateRequest,
         writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
@@ -36,7 +43,7 @@ class CommentController(
     }
 
     @PutMapping("/{id}")
-    fun updateComment(
+    override fun updateComment(
         @PathVariable id: CommentId,
         @Valid @RequestBody request: CommentUpdateRequest,
         writerId: CurrentUserId,
@@ -47,7 +54,7 @@ class CommentController(
     }
 
     @DeleteMapping("/{id}")
-    fun deleteComment(
+    override fun deleteComment(
         @PathVariable id: CommentId,
         writerId: CurrentUserId,
     ): ResponseEntity<Unit> {
@@ -56,9 +63,9 @@ class CommentController(
     }
 
     @GetMapping("/{postId}")
-    fun getComments(
+    override fun getComments(
         @PathVariable postId: PostId,
-        writerId: CurrentUserId
+        writerId: CurrentUserId,
     ): ResponseEntity<CommentsResponse> {
         val result = commentService.getCommentsByPost(postId, writerId)
 
@@ -66,5 +73,27 @@ class CommentController(
             CommentsResponse(result.map { CommentSummaryResponse.from(it) }
             )
         )
+    }
+
+    @GetMapping("/me")
+    override fun getCommentsByMe(
+        @PageableDefault(size = 20)
+        @SortDefault(sort = ["createdAt"], direction = Sort.Direction.DESC)
+        pageable: Pageable,
+        userId: CurrentUserId,
+    ): ResponseEntity<MyCommentsResponse> {
+        val result = commentService.getCommentsByMe(userId, pageable)
+
+        return ResponseEntity.ok(result.toResponse())
+    }
+
+    @GetMapping("/me/liked")
+    override fun getLikedComments(
+        @PageableDefault(size = 20)
+        @SortDefault(sort = ["createdAt"], direction = Sort.Direction.DESC)
+        pageable: Pageable,
+        userId: CurrentUserId,
+    ): ResponseEntity<LikedCommentsResponse> {
+        return ResponseEntity.ok(commentService.getLikedComments(userId, pageable).toResponse())
     }
 }

@@ -6,7 +6,7 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.dto.MyInfoDto
 import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.UserRepository
-import org.springframework.data.repository.findByIdOrNull
+import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -18,12 +18,17 @@ class UserServiceImpl(
 
     @Transactional(readOnly = true)
     override fun getMyInfo(userId: UserId): MyInfoDto {
-        val user = userRepository.findByIdOrNull(userId)
+        val user = userRepository.findUserAndTrack(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        if(user.status!= UserStatus.ACTIVE){
+        if (user.status != UserStatus.ACTIVE) {
             throw BusinessException(UserServiceErrorCode.INACTIVE_USER)
         }
         return MyInfoDto.from(user)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getUsersForMention(size: Int, cursorId: Long?): List<UserDisplayInfoDto> {
+        return userRepository.findUserDisplayInfosForMention(size, cursorId)
     }
 }

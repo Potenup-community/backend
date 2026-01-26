@@ -8,6 +8,7 @@ import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.DecisionDto
 import kr.co.wground.user.presentation.request.MultipleDecisionRequest
+import kr.co.wground.user.presentation.response.UserCountResponse
 import kr.co.wground.user.presentation.response.UserPageResponse
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -26,9 +27,9 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/admin")
 class AdminController(
     private val adminService: AdminService
-) {
+): AdminApi {
     @PutMapping("/users/{userId}/decision")
-    fun decisionSignUp(
+    override fun decisionSignUp(
         @PathVariable userId: UserId,
         @RequestBody request: DecisionStatusRequest
     ): ResponseEntity<Unit> {
@@ -37,18 +38,24 @@ class AdminController(
     }
 
     @PutMapping("/users/decisions")
-    fun multipleDecision(@RequestBody request: MultipleDecisionRequest): ResponseEntity<Unit> {
+    override fun multipleDecision(@RequestBody request: MultipleDecisionRequest): ResponseEntity<Unit> {
         adminService.decisionSignup(DecisionDto.from(request))
         return ResponseEntity.noContent().build()
     }
 
     @GetMapping("/users")
-    fun getAllUsers(
+    override fun getAllUsers(
         @ModelAttribute condition: UserSearchRequest,
         @PageableDefault(size = 20) pageable: Pageable
     ): ResponseEntity<UserPageResponse<AdminSearchUserDto>> {
         val userInfos = adminService.findUsersByConditions(ConditionDto.from(condition), pageable)
         val response = UserPageResponse.fromAdminSearchUserDto(userInfos)
         return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/users/count")
+    override fun getUserCount(@ModelAttribute condition: UserSearchRequest): ResponseEntity<UserCountResponse>{
+        val userCount = adminService.countUserWithCondition(ConditionDto.from(condition))
+        return ResponseEntity.ok(UserCountResponse.from(userCount))
     }
 }

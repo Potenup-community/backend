@@ -6,3 +6,5 @@ typealias CommentId = Long
 typealias WriterId = Long
 typealias TrackId = Long
 typealias OwnerId = Long
+typealias NotificationId = Long
+typealias RecipientId = Long

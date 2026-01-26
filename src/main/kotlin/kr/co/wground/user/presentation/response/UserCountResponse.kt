@@ -1,0 +1,27 @@
+package kr.co.wground.user.presentation.response
+
+import kr.co.wground.user.application.operations.dto.AcademicCount
+import kr.co.wground.user.application.operations.dto.RoleCount
+import kr.co.wground.user.application.operations.dto.SignupCount
+import kr.co.wground.user.application.operations.dto.StatusCount
+import kr.co.wground.user.application.operations.dto.UserConditionCountDto
+
+data class UserCountResponse(
+    val totalCount: Long,
+    val signupSummary: SignupCount,
+    val roleSummary: RoleCount,
+    val statusSummary: StatusCount,
+    val academicSummary: AcademicCount
+){
+    companion object {
+        fun from(dto : UserConditionCountDto): UserCountResponse{
+            return UserCountResponse(
+                totalCount = dto.totalCount,
+                signupSummary = dto.signupSummary,
+                roleSummary = dto.roleSummary,
+                statusSummary = dto.statusSummary,
+                academicSummary = dto.academicSummary
+            )
+        }
+    }
+}

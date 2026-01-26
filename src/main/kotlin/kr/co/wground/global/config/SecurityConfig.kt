@@ -4,6 +4,7 @@ import kr.co.wground.exception.handler.CustomAccessDeniedHandler
 import kr.co.wground.exception.handler.CustomAuthenticationEntryPoint
 import kr.co.wground.global.jwt.JwtAuthenticationFilter
 import kr.co.wground.image.policy.UploadPolicy
+import kr.co.wground.user.utils.defaultimage.policy.ProfilePolicy
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
@@ -21,6 +22,7 @@ class SecurityConfig(
     private val jwtAuthenticationFilter: JwtAuthenticationFilter,
     private val uploadPolicy: UploadPolicy,
     private val actuatorPolicy: ActuatorPolicy,
+    private val profilePolicy: ProfilePolicy,
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
@@ -32,6 +34,7 @@ class SecurityConfig(
                     "/api/v1/auth/login",
                     "/api/v1/admin/tracks",
                     "/swagger-ui/**",
+                    "/swagger-ui.html",
                     "/v3/api-docs/**",
                     "${actuatorPolicy.basePath}/**"
                     ).permitAll()
@@ -55,6 +58,9 @@ class SecurityConfig(
             web.ignoring()
                 .requestMatchers("/assets/**")
                 .requestMatchers("${uploadPolicy.publicBasePath}/**")
+                .requestMatchers("/swagger-ui/**")
+                .requestMatchers("/swagger-ui.html")
+                .requestMatchers("${profilePolicy.webPathPrefix}/**")
         }
     }
 }

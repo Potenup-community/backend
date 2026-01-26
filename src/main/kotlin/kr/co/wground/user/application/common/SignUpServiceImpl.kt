@@ -7,7 +7,6 @@ import kr.co.wground.user.application.operations.event.SignUpEvent
 import kr.co.wground.user.application.operations.event.toUserEntity
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.SignUpRequest
-import kr.co.wground.user.utils.defaultimage.application.event.UserProfileEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,7 +28,8 @@ class SignUpServiceImpl(
 
         val savedUser = userRepository.save(newUser)
 
-        eventPublisher.publishEvent(UserProfileEvent(savedUser.userId,savedUser.email,savedUser.name))
+        savedUser.fixAccessProfile()
+
         eventPublisher.publishEvent(SignUpEvent(savedUser.userId))
     }
 
@@ -40,7 +40,7 @@ class SignUpServiceImpl(
     }
 
     private fun validatePhoneNumber(phoneNumber: String) {
-        if(userRepository.existsByPhoneNumber(phoneNumber)){
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
             throw BusinessException(UserServiceErrorCode.DUPLICATED_PHONE_NUMBER)
         }
     }

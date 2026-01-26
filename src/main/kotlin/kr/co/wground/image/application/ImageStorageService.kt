@@ -1,6 +1,6 @@
 package kr.co.wground.image.application
 
-import kr.co.wground.common.SyncDraftImagesToPostEvent
+import kr.co.wground.common.event.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.OwnerId
 import kr.co.wground.image.application.dto.LocalStoredDto
@@ -29,7 +29,7 @@ class ImageStorageService(
     private val imageRepository: ImageRepository,
     private val validator: ImageUploadValidator,
 ) {
-    companion object{
+    companion object {
         private val MD_IMAGE_URL_REGEX = Regex("""!\[[^\]]*]\(([^)]+)\)""")
         private val log = LoggerFactory.getLogger(ImageStorageService::class.java)
     }
@@ -136,10 +136,11 @@ class ImageStorageService(
     private fun uploadedUrl(relativePath: String): String {
         val base = props.baseUrl.trimEnd('/')
         val path = props.publicBasePath.trimEnd('/')
-        val rel  = relativePath.trimStart('/')
+        val rel = relativePath.trimStart('/')
         return if (base.isBlank()) "$path/$rel" else "$base$path/$rel"
     }
-    private fun relativePath(ownerId: OwnerId, id: String, ext: String) ="tmp/$ownerId/$id.$ext"
+
+    private fun relativePath(ownerId: OwnerId, id: String, ext: String) = "tmp/$ownerId/$id.$ext"
 
     private fun extFromMime(mime: String?): String? = when (mime?.lowercase()) {
         "image/jpeg" -> "jpg"

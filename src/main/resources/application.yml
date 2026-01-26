@@ -9,7 +9,21 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
-
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${EMAIL_ACCOUNT}
+    password: ${EMAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: ${MAIL_TIMEOUT}
+          timeout: ${MAIL_TIMEOUT}
+          writetimeout: ${MAIL_TIMEOUT}
   jpa:
     hibernate:
       ddl-auto: update #TODO validate로 바꾸기
@@ -29,7 +43,7 @@ logging:
 # Swagger
 springdoc:
   api-docs:
-    path: /api-docs
+    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
   info:
@@ -55,14 +69,12 @@ app:
     allowed-mime-types: ${ALLOWED_MIME_TYPES}
     cache-period: ${CACHE_PERIOD}
     base-url: ${BASE_URL}
-  avatar:
-    upload-path: ${LOCAL_PROFILE_DIR}
+  profile:
+    local-dir: ${LOCAL_PROFILE_DIR}
     webPathPrefix: ${PUBLIC_PROFILE_PATH}
-    retry-max-attempts: ${RETRY_MAX}
-    retry-delay: ${RETRY_DELAY}
-    default-size: ${PROFILE_SIZE}
-    image-quality: ${PROFILE_QUALITY}
-    placeholder-path: ${PROFILE_PLACEHOLDER}
+    maxBytes: ${PROFILE_MAX_BYTE}
+    allowedExts: ${ALLOWED_EXTENSIONS}
+    base-url: ${BASE_URL}
 
 management:
   server:
