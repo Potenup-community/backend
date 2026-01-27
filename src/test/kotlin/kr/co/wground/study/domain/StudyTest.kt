@@ -438,11 +438,55 @@ class StudyTest {
         val schedule = createRecruitingStudySchedule()
         val created = createStudyWithCapacity(schedule, 2)
 
+        val newCapacity = created.capacity + 1
+        val newName = created.name + "a"
+        val newDescription = created.description + "a"
+        val newBudget = if (created.budget == BudgetType.BOOK) BudgetType.MEAL else BudgetType.BOOK
+        val newChatUrl = created.externalChatUrl + "a"
+        val newRefUrl =
+            if (created.referenceUrl == null) "https://tecoble.techcourse.co.kr/" else created.referenceUrl + "a"
+
         val tagSizeBefore = created.studyTags.size
         val newTags = created.studyTags
             .map { studyTag -> studyTag.tag }
             .toMutableList()
         newTags.add(Tag.create("아마도새로운태그일걸요1"))
+
+        created.updateStudyInfo(
+            newCapacity = newCapacity,
+            newName = newName,
+            newDescription = newDescription,
+            newBudget = newBudget,
+            newChatUrl = newChatUrl,
+            newRefUrl = newRefUrl,
+            newTags = newTags,
+
+            newScheduleId = created.scheduleId,
+            isRecruitmentClosed = schedule.isRecruitmentClosed(),
+        )
+
+        // 문제 사유 addTag 내부에서 Tag 존재 여부를 id 로 구분하고 있으나, 새로 생성된 태그들은 모두 id 가 0 이어서 구분되지 않음.
+        created.addTag(Tag.create("아마도새로운태그일걸요2"))
+
+        assertAll(
+            { assertEquals(newCapacity, created.capacity) },
+            { assertEquals(newName, created.name) },
+            { assertEquals(newDescription, created.description) },
+            { assertEquals(newBudget, created.budget) },
+            { assertEquals(newChatUrl, created.externalChatUrl) },
+            { assertEquals(newRefUrl, created.referenceUrl) },
+            { assertTrue { 1 == created.studyTags.filter { studyTag -> studyTag.tag.name.contains("아마도새로운태그일걸요1") }.size } },
+            { assertTrue { 1 == created.studyTags.filter { studyTag -> studyTag.tag.name.contains("아마도새로운태그일걸요2") }.size } }
+        )
+    }
+
+    @Test
+    fun `CLOSED 상태이고 모집 기간 마감 전일 때, 생성 시점에만 설정 가능한 임의 항목을 수정할 시, 성공한다`() {
+        val schedule = createRecruitingStudySchedule()
+        val created = createStudyWithCapacity(schedule, 2)
+        created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+
+        assertEquals(StudyStatus.CLOSED, created.status)
 
         val newCapacity = created.capacity + 1
         val newName = created.name + "a"
@@ -451,6 +495,12 @@ class StudyTest {
         val newChatUrl = created.externalChatUrl + "a"
         val newRefUrl =
             if (created.referenceUrl == null) "https://tecoble.techcourse.co.kr/" else created.referenceUrl + "a"
+
+        val tagSizeBefore = created.studyTags.size
+        val newTags = created.studyTags
+            .map { studyTag -> studyTag.tag }
+            .toMutableList()
+        newTags.add(Tag.create("아마도새로운태그일걸요1"))
 
         created.updateStudyInfo(
             newCapacity = newCapacity,
