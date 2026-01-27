@@ -23,8 +23,6 @@ class HttpMethodAndStatusMdcFilter : OncePerRequestFilter() {
         val startTimeMs = System.currentTimeMillis()
 
         val exactUrl: String = request.requestURL.toString()
-        val errCode: String? = request.getAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG) as? String
-        val errMessage: String? = request.getAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG) as? String
 
         try {
             MDC.put("http_method", request.method)
@@ -33,6 +31,9 @@ class HttpMethodAndStatusMdcFilter : OncePerRequestFilter() {
             val elapsedTimeMs = System.currentTimeMillis() - startTimeMs
             MDC.put("http_status", response.status.toString())
             MDC.put("elapsed_time_ms", elapsedTimeMs)
+
+            val errCode: String? = request.getAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG) as? String
+            val errMessage: String? = request.getAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG) as? String
 
             // 응답 이후 로그를 한 번 찍어서 http status 및 요청 처리 시간 기록
             if (HttpStatusCode.valueOf(response.status).is2xxSuccessful) {
