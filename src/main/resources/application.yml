@@ -26,7 +26,7 @@ spring:
           writetimeout: ${MAIL_TIMEOUT}
   jpa:
     hibernate:
-      ddl-auto: update #TODO validate로 바꾸기
+      ddl-auto: ${DDL_AUTO} #TODO validate로 바꾸기
     properties:
       hibernate:
         format_sql: true
@@ -61,6 +61,7 @@ google:
     client-id: ${GOOGLE_CLIENT_KEY}
 
 app:
+  frontend-url: ${FRONTEND_URL}
   upload:
     local-dir: ${LOCAL_UPLOAD_DIR}
     public-base-path: ${PUBLIC_BASE_PATH}
@@ -75,6 +76,11 @@ app:
     maxBytes: ${PROFILE_MAX_BYTE}
     allowedExts: ${ALLOWED_EXTENSIONS}
     base-url: ${BASE_URL}
+
+# 슬랙 알림 웹 훅 설정
+slack:
+  webhook:
+    url: ${SLACK_WEBHOOK_URL}
 
 management:
   server:
