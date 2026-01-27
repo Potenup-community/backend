@@ -321,7 +321,7 @@ class StudyServiceTest {
      *   스터디 참여 개수를 점유하기 때문임
      */
     @Test
-    fun `스터디가 거부된 경우, 관련된 모든 신청 건이 반려(REJECTED)된다`() {
+    fun `스터디가 거부된 경우, CACELLED 상태가 아닌 모든 신청 건이 반려(REJECTED)된다`() {
         /*
          * given
          * 1. 스터디가 존재한다.
@@ -371,27 +371,63 @@ class StudyServiceTest {
         val savedStudy = studyRepository.findByIdOrNull(studyId)
         assertNotNull(savedStudy)
 
+        val studentPending = User(
+            trackId = savedTrack.trackId,
+            email = "test@gmail.com",
+            name = "PENDING 상태 학생",
+            phoneNumber = "010-1111-1111",
+            provider = "GOOGLE",
+            role = UserRole.MEMBER,
+            status = UserStatus.ACTIVE
+        )
         val pendingRecruitment = StudyRecruitment(
-            userId = 2L,
+            userId = studentPending.userId,
             study = savedStudy!!,
             appeal = "신청",
             recruitStatus = RecruitStatus.PENDING
         )
+        val studentApproved = User(
+            trackId = savedTrack.trackId,
+            email = "test@gmail.com",
+            name = "APPROVED 상태 학생",
+            phoneNumber = "010-1111-1111",
+            provider = "GOOGLE",
+            role = UserRole.MEMBER,
+            status = UserStatus.ACTIVE
+        )
         val approvedRecruitment = StudyRecruitment(
-            userId = 3L,
+            userId = studentApproved.userId,
             study = savedStudy,
             appeal = "승인",
             recruitStatus = RecruitStatus.APPROVED,
             approvedAt = LocalDateTime.now()
         )
+        val studentCancelled = User(
+            trackId = savedTrack.trackId,
+            email = "test@gmail.com",
+            name = "CANCELLED 상태 학생",
+            phoneNumber = "010-1111-1111",
+            provider = "GOOGLE",
+            role = UserRole.MEMBER,
+            status = UserStatus.ACTIVE
+        )
         val cancelledRecruitment = StudyRecruitment(
-            userId = 4L,
+            userId = studentCancelled.userId,
             study = savedStudy,
             appeal = "취소",
             recruitStatus = RecruitStatus.CANCELLED
         )
+        val studentRejected = User(
+            trackId = savedTrack.trackId,
+            email = "test@gmail.com",
+            name = "REJECTED 상태 학생",
+            phoneNumber = "010-1111-1111",
+            provider = "GOOGLE",
+            role = UserRole.MEMBER,
+            status = UserStatus.ACTIVE
+        )
         val rejectedRecruitment = StudyRecruitment(
-            userId = 5L,
+            userId = studentRejected.userId,
             study = savedStudy,
             appeal = "반려",
             recruitStatus = RecruitStatus.REJECTED
@@ -410,10 +446,10 @@ class StudyServiceTest {
             .associateBy { it.userId }
 
         assertEquals(RecruitStatus.REJECTED, updated[savedLeader.userId]?.recruitStatus)
-        assertEquals(RecruitStatus.REJECTED, updated[2L]?.recruitStatus)
-        assertEquals(RecruitStatus.REJECTED, updated[3L]?.recruitStatus)
-        assertEquals(RecruitStatus.CANCELLED, updated[4L]?.recruitStatus)
-        assertEquals(RecruitStatus.REJECTED, updated[5L]?.recruitStatus)
+        assertEquals(RecruitStatus.REJECTED, updated[studentPending.userId]?.recruitStatus)
+        assertEquals(RecruitStatus.REJECTED, updated[studentApproved.userId]?.recruitStatus)
+        assertEquals(RecruitStatus.CANCELLED, updated[studentCancelled.userId]?.recruitStatus)
+        assertEquals(RecruitStatus.REJECTED, updated[studentRejected.userId]?.recruitStatus)
     }
 
     // ----- 결재 테스트
