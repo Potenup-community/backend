@@ -2295,6 +2295,11 @@ class StudyRecruitmentServiceTest {
             )
         )
 
+        val pendingRecruitmentId = studyRecruitmentService.requestRecruit(
+            userId = pendingStudent.userId,
+            studyId = studyId,
+            appeal = "대기 신청"
+        )
         val approvedRecruitmentId = studyRecruitmentService.requestRecruit(
             userId = approvedStudent.userId,
             studyId = studyId,
@@ -2304,12 +2309,6 @@ class StudyRecruitmentServiceTest {
             leaderId = leader.userId,
             recruitmentId = approvedRecruitmentId,
             newStatus = RecruitStatus.APPROVED
-        )
-
-        val pendingRecruitmentId = studyRecruitmentService.requestRecruit(
-            userId = pendingStudent.userId,
-            studyId = studyId,
-            appeal = "대기 신청"
         )
 
         // when: 정원이 가득 찬 스터디에서 신청 승인 시도
