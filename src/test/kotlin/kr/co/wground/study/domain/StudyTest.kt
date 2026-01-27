@@ -465,6 +465,7 @@ class StudyTest {
             isRecruitmentClosed = schedule.isRecruitmentClosed(),
         )
 
+        // 문제 사유 addTag 내부에서 Tag 존재 여부를 id 로 구분하고 있으나, 새로 생성된 태그들은 모두 id 가 0 이어서 구분되지 않음.
         created.addTag(Tag.create("아마도새로운태그일걸요2"))
 
         assertAll(
