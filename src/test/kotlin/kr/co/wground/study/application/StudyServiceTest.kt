@@ -321,7 +321,7 @@ class StudyServiceTest {
      *   스터디 참여 개수를 점유하기 때문임
      */
     @Test
-    fun `스터디가 거부된 경우, CACELLED 상태가 아닌 모든 신청 건이 반려(REJECTED)된다`() {
+    fun `스터디가 거부된 경우, CANCELLED 상태가 아닌 모든 신청 건이 반려(REJECTED)된다`() {
         /*
          * given
          * 1. 스터디가 존재한다.
