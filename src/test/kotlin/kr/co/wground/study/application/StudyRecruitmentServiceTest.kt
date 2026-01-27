@@ -121,7 +121,7 @@ class StudyRecruitmentServiceTest {
         }
 
         // then: 예외 발생(TRACK_IS_NOT_ENROLLED)
-        assertEquals(StudyServiceErrorCode.TRACK_IS_NOT_ENROLLED.code, thrown.code)
+        assertEquals(StudyServiceErrorCode.GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY.code, thrown.code)
     }
 
     @Test
@@ -742,7 +742,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `특정  교육생의 REJECTED 상태의 신청 건이 존재해도, 해당 교육생은 같은 스터디에 다시 신청 가능하다`() {
+    fun `특정 교육생의 REJECTED 상태의 신청 건이 존재해도, 해당 교육생은 같은 스터디에 다시 신청 가능하다`() {
 
         /*
          * given
