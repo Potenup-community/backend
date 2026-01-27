@@ -418,7 +418,6 @@ class StudyServiceTest {
 
     // ----- 결재 테스트
 
-    // ❌ CANCELLED 상태인 신청도 REJECTED 상태로 변경되버림
     @Test
     fun `스터디가 결재된 경우, 관련된 모든 신청 건 중 PENDING 상태인 신청만 REJECTED 상태로 변경되어야 한다`() {
 
