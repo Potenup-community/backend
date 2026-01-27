@@ -19,12 +19,16 @@ import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import java.time.LocalDateTime
+import kr.co.wground.notification.application.port.NotificationSender
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
 
 class NotificationEventListenerTest {
     @Mock
     private lateinit var notificationCommandService: NotificationCommandService
+
+    @Mock
+    private lateinit var notificationSender: NotificationSender
 
     @Captor
     private lateinit var recipientCaptor: ArgumentCaptor<Long>
@@ -49,7 +53,7 @@ class NotificationEventListenerTest {
     @BeforeEach
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        listener = NotificationEventListener(notificationCommandService)
+        listener = NotificationEventListener(notificationCommandService, notificationSender, "http://frontend-url")
     }
 
     @Nested
