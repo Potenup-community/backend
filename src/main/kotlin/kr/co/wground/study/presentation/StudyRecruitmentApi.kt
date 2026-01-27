@@ -15,6 +15,7 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.docs.StudySwaggerErrorExample
 import kr.co.wground.study.docs.StudySwaggerResponseExample
 import kr.co.wground.study.presentation.request.recruitment.StudyRecruitRequest
+import kr.co.wground.study.presentation.response.recruit.StudyRecruitmentListResponse
 import kr.co.wground.study.presentation.response.recruit.StudyRecruitmentResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
@@ -297,7 +298,7 @@ interface StudyRecruitmentApi {
             description = "현재 로그인한 사용자 ID",
             schema = Schema(type = "string", example = "token_value")
         ) userId: CurrentUserId
-    ): ResponseEntity<List<StudyRecruitmentResponse>>
+    ): ResponseEntity<StudyRecruitmentListResponse>
 
     @Operation(summary = "스터디 신청자 목록 조회 (스터디장)", description = "특정 스터디의 신청자 목록을 조회합니다.")
     @ApiResponses(
