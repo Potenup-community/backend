@@ -121,7 +121,7 @@ class StudyService(
     fun deleteStudy(studyId: Long, userId: Long, isAdmin: Boolean) {
         val study = getStudyEntity(studyId)
 
-        if (isAdmin) {
+        if (!isAdmin) {
             study.isLeader(userId)
             study.validateHardDeletable()
         }
@@ -145,7 +145,7 @@ class StudyService(
 
         study.approve()
 
-        studyRecruitmentRepository.rejectAllByStudyIdWithExceptStatus(studyId, RecruitStatus.APPROVED)
+        studyRecruitmentRepository.rejectAllByStudyIdWithStatus(studyId, RecruitStatus.PENDING)
     }
 
     fun rejectStudy(studyId: Long) {

@@ -15,6 +15,7 @@ import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.StudyScheduleRepository
 import kr.co.wground.study.presentation.response.recruit.StudyRecruitmentResponse
 import kr.co.wground.track.application.exception.TrackServiceErrorCode
+import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.User
@@ -38,17 +39,18 @@ class StudyRecruitmentService(
 
     fun requestRecruit(userId: Long, studyId: Long, appeal: String): Long {
         val user = findUser(userId)
+        val trackStatus = findTrackStatus(user.trackId)
+        recruitValidator.validateGraduated(trackStatus)
 
         val study = findStudyById(studyId)
-        val schedule = findScheduleById(study.scheduleId)
+        recruitValidator.validateDuplicateRecruit(userId, studyId)
+        recruitValidator.validateApply(user.trackId, study)
 
+        val schedule = findScheduleById(study.scheduleId)
         val requestMonth = scheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId)
             .firstOrNull { it.isCurrentRound() } ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
-
         recruitValidator.validateSchedule(schedule)
         recruitValidator.validateCurrentMonth(schedule, requestMonth)
-        recruitValidator.validateApply(user.trackId, study)
-        recruitValidator.validateDuplicateRecruit(userId, studyId)
         recruitValidator.validateHasMaxStudyLimit(userId, schedule.id)
 
         val recruitment = StudyRecruitment.apply(userId, appeal, study)
@@ -70,7 +72,7 @@ class StudyRecruitmentService(
         recruitValidator.validateRecruitUserId(recruitment.userId, userId)
         recruitValidator.validateLeaderCancel(recruitment.study, userId)
 
-        if (recruitment.recruitStatus == RecruitStatus.APPROVED || recruitment.recruitStatus == RecruitStatus.PENDING) {
+        if (recruitment.recruitStatus == RecruitStatus.APPROVED) {
             recruitment.study.decreaseMemberCount(schedule.isRecruitmentClosed())
         }
         recruitment.cancel()
@@ -150,6 +152,12 @@ class StudyRecruitmentService(
         val track = trackRepository.findByIdOrNull(trackId)
             ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
         return track.trackName
+    }
+
+    private fun findTrackStatus(trackId: TrackId): TrackStatus {
+        val track = trackRepository.findByIdOrNull(trackId)
+            ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
+        return track.trackStatus
     }
 
     private fun findScheduleById(scheduleId: Long): StudySchedule {
