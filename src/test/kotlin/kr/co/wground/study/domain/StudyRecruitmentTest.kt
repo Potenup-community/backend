@@ -9,29 +9,26 @@ import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import org.junit.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.assertThrows
-import java.lang.reflect.Modifier
 import java.time.LocalDate
 
 class StudyRecruitmentTest {
 
     // ----- 자기 소개, ⚠️ SR-0001 에 해당하는 에러 코드가 RECRUITMENT_APPEAL_INVALID 와 같이 변경됨을 가정함️
 
-    // ❌
     @Test
     fun `자기소개 생성 시, 앞뒤 공백 제거 기준, 자기소개가 blank 인 경우 예외 발생 - BusinessException(SR-0001)`() {
         val thrown = assertThrows<BusinessException> {
-            val created = createStudyRecruitmentWithAppeal(
+            createStudyRecruitmentWithAppeal(
                 createRecruitingStudySchedule(), "  \t  \n  ")
         }
 
         assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_EMPTY.code, thrown.code)
     }
 
-    // ❌
     @Test
     fun `자기소개 생성 시, 앞뒤 공백 제거 기준, 자기소개 길이가 2 미만인 경우, 예외 발생 - BusinessException(SR-0001)`() {
         val thrown = assertThrows<BusinessException> {
-            val created = createStudyRecruitmentWithAppeal(
+            createStudyRecruitmentWithAppeal(
                 createRecruitingStudySchedule(), "  \t A \n  ")
         }
 
@@ -41,7 +38,7 @@ class StudyRecruitmentTest {
     @Test
     fun `자기소개 생성 시, 앞뒤 공백 제거 기준, 자기소개 길이가 MAX_APPEAL_LENGTH 초과인 경우, 예외 발생 - BusinessException(SR-0001)`() {
         val thrown = assertThrows<BusinessException> {
-            val created = createStudyRecruitmentWithAppeal(
+            createStudyRecruitmentWithAppeal(
                 createRecruitingStudySchedule(),
                 "*".repeat(StudyRecruitment.MAX_APPEAL_LENGTH) + 1
             )
@@ -50,7 +47,6 @@ class StudyRecruitmentTest {
         assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE.code, thrown.code)
     }
 
-    // ❌
     @Test
     fun `자기소개 수정 시, 앞뒤 공백 제거 기준, 자기소개가 blank 인 경우 예외 발생 - BusinessException(SR-0001)`() {
         val thrown = assertThrows<BusinessException> {
@@ -63,7 +59,6 @@ class StudyRecruitmentTest {
         assertEquals(StudyDomainErrorCode.RECRUITMENT_APPEAL_EMPTY.code, thrown.code)
     }
 
-    // ❌
     @Test
     fun `자기소개 수정 시, 앞뒤 공백 제거 기준, 자기소개 길이가 2 미만인 경우, 예외 발생 - BusinessException(SR-0001)`() {
         val thrown = assertThrows<BusinessException> {
@@ -141,7 +136,6 @@ class StudyRecruitmentTest {
     
     // ----- 취소
 
-    // ❌
     @Test
     fun `신청이 CANCELLED 상태일 때, 취소를 시도하면, 예외 발생 - BusinessException(SR-0003)`() {
         val thrown = assertThrows<BusinessException> {
@@ -154,7 +148,6 @@ class StudyRecruitmentTest {
         assertEquals(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE.code, thrown.code)
     }
 
-    // ❌
     @Test
     fun `신청이 REJECTED 상태일 때, 취소를 시도하면, 예외 발생 - BusinessException(SR-0003)`() {
         val thrown = assertThrows<BusinessException> {
