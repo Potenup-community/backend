@@ -433,6 +433,52 @@ class StudyTest {
         assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DETERMINED.code, thrown.code)
     }
 
+    @Test
+    fun `PENDING 상태일 때, 생성 시점에 설정 가능한 임의의 항목을 수정할 시, 성공한다`() {
+        val schedule = createRecruitingStudySchedule()
+        val created = createStudyWithCapacity(schedule, 2)
+
+        val tagSizeBefore = created.studyTags.size
+        val newTags = created.studyTags
+            .map { studyTag -> studyTag.tag }
+            .toMutableList()
+        newTags.add(Tag.create("아마도새로운태그일걸요1"))
+
+        val newCapacity = created.capacity + 1
+        val newName = created.name + "a"
+        val newDescription = created.description + "a"
+        val newBudget = if (created.budget == BudgetType.BOOK) BudgetType.MEAL else BudgetType.BOOK
+        val newChatUrl = created.externalChatUrl + "a"
+        val newRefUrl =
+            if (created.referenceUrl == null) "https://tecoble.techcourse.co.kr/" else created.referenceUrl + "a"
+
+        created.updateStudyInfo(
+            newCapacity = newCapacity,
+            newName = newName,
+            newDescription = newDescription,
+            newBudget = newBudget,
+            newChatUrl = newChatUrl,
+            newRefUrl = newRefUrl,
+            newTags = newTags,
+
+            newScheduleId = created.scheduleId,
+            isRecruitmentClosed = schedule.isRecruitmentClosed(),
+        )
+
+        created.addTag(Tag.create("아마도새로운태그일걸요2"))
+
+        assertAll(
+            { assertEquals(newCapacity, created.capacity) },
+            { assertEquals(newName, created.name) },
+            { assertEquals(newDescription, created.description) },
+            { assertEquals(newBudget, created.budget) },
+            { assertEquals(newChatUrl, created.externalChatUrl) },
+            { assertEquals(newRefUrl, created.referenceUrl) },
+            { assertTrue { 1 == created.studyTags.filter { studyTag -> studyTag.tag.name.contains("아마도새로운태그일걸요1") }.size } },
+            { assertTrue { 1 == created.studyTags.filter { studyTag -> studyTag.tag.name.contains("아마도새로운태그일걸요2") }.size } }
+        )
+    }
+
     // ----- factories for test
 
     private fun createRecruitingStudySchedule(): StudySchedule {
