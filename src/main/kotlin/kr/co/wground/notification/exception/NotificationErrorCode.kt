@@ -17,4 +17,6 @@ enum class NotificationErrorCode(
     DUPLICATE_NOTIFICATION(HttpStatus.CONFLICT, "N-0006", "이미 처리된 알림입니다."),
 
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "N-0007", "알림을 찾을 수 없습니다."),
+
+    TEMPLATE_NOT_FOUND(HttpStatus.BAD_REQUEST, "N-0008", "알림 메시지 템플릿을 찾을 수 없습니다."),
 }

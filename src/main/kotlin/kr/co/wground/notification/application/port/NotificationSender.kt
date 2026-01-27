@@ -6,10 +6,8 @@ interface NotificationSender {
 
 data class NotificationMessage(
     val type: NotificationMessageType,
-    val title: String,
-    val content: String,
     val link: String? = null,
-    val metadata: Map<String, Any> = emptyMap(),
+    val metadata: Map<String, String> = emptyMap(),
 )
 
 enum class NotificationMessageType {
