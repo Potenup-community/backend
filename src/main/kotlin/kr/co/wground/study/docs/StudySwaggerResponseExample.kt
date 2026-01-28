@@ -1,7 +1,7 @@
 package kr.co.wground.study.docs
 
 object StudySwaggerResponseExample {
-         const val STUDY_DETAIL_RESPONSE = """
+    const val STUDY_DETAIL_RESPONSE = """
           {
            "id": 1,
            "scheduleId": 10,
@@ -26,7 +26,7 @@ object StudySwaggerResponseExample {
            "isLeader": true
          }
          """
-             const val STUDY_SEARCH_RESPONSE = """
+    const val STUDY_SEARCH_RESPONSE = """
          {
            "content": [
              {
@@ -69,42 +69,44 @@ object StudySwaggerResponseExample {
          }
          """
 
-         const val STUDY_ID_RESPONSE = """
+    const val STUDY_ID_RESPONSE = """
          {
              "studyId": 1
          }
          """
 
-         const val RECRUITMENT_LIST_RESPONSE = """
-         [
-           {
-             "id": 5,
-             "studyId": 1,
-             "studyName": "코틀린 정복 스터디",
-             "trackName": "백엔드 4기",
-             "userId": 101,
-             "userName": "이순신",
-             "appeal": "열심히 참여하겠습니다.",
-             "status": "PENDING",
-             "createdAt": "2026-01-26T09:00:00",
-             "approvedAt": null
-           },
-           {
-             "id": 6,
-             "studyId": 1,
-             "studyName": "코틀린 정복 스터디",
-             "trackName": "백엔드 4기",
-             "userId": 102,
-             "userName": "장보고",
-             "appeal": "코틀린 마스터가 되고 싶어요.",
-             "status": "APPROVED",
-             "createdAt": "2026-01-26T10:00:00",
-             "approvedAt": "2026-01-27T10:00:00"
-          }
-        ]
+    const val RECRUITMENT_LIST_RESPONSE = """
+         {
+             "content": [
+                {
+                    "id": 1,
+                    "studyId": 1,
+                    "studyName": "wqewqeqw",
+                    "trackName": "ewqe",
+                    "userId": 1,
+                    "userName": "안세준",
+                    "appeal": "I am interested in participating in this study and would like to be recruited.",
+                    "status": "PENDING",
+                    "createdAt": "2026-01-27T10:58:18.03575",
+                    "approvedAt": null
+                },
+                {
+                    "id": 2,
+                    "studyId": 2,
+                    "studyName": "mb,l",
+                    "trackName": "ewqe",
+                    "userId": 1,
+                    "userName": "안세준",
+                    "appeal": "I am interested in participating in this study and would like to be recruited.",
+                    "status": "PENDING",
+                    "createdAt": "2026-01-27T10:59:19.02089",
+                    "approvedAt": null
+                }
+             ]
+}
         """
 
-         const val SCHEDULE_CREATE_RESPONSE = """
+    const val SCHEDULE_CREATE_RESPONSE = """
         {
           "id": 15,
           "trackId": 3,
@@ -112,7 +114,7 @@ object StudySwaggerResponseExample {
         }
         """
 
-         const val SCHEDULE_UPDATE_RESPONSE = """
+    const val SCHEDULE_UPDATE_RESPONSE = """
         {
           "id": 15,
           "trackId": 3,
@@ -156,4 +158,4 @@ object StudySwaggerResponseExample {
     "studyEndDate": "2028-01-27T10:14:56"
 }
     """
-     }
+}

@@ -5,6 +5,7 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.application.StudyRecruitmentService
 import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.study.presentation.request.recruitment.StudyRecruitRequest
+import kr.co.wground.study.presentation.response.recruit.StudyRecruitmentListResponse
 import kr.co.wground.study.presentation.response.recruit.StudyRecruitmentResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -68,9 +69,10 @@ class StudyRecruitmentController(
     @GetMapping("/users/me/recruitments")
     override fun getMyRecruitments(
         userId: CurrentUserId
-    ): ResponseEntity<List<StudyRecruitmentResponse>> {
-        val responses = studyRecruitmentService.getMyRecruitments(userId.value)
-        return ResponseEntity.ok(responses)
+    ): ResponseEntity<StudyRecruitmentListResponse> {
+        val result = studyRecruitmentService.getMyRecruitments(userId.value)
+        val response = StudyRecruitmentListResponse(result)
+        return ResponseEntity.ok(response)
     }
 
     // 스터디 신청자 목록 조회 (스터디장)

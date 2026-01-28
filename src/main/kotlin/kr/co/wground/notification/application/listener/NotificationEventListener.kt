@@ -7,11 +7,15 @@ import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.notification.application.command.NotificationCommandService
+import kr.co.wground.notification.application.port.NotificationMessage
+import kr.co.wground.notification.application.port.NotificationMessageType
+import kr.co.wground.notification.application.port.NotificationSender
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.enums.ReferenceType
 import kr.co.wground.notification.domain.vo.NotificationContent
 import kr.co.wground.notification.domain.vo.NotificationReference
 import kr.co.wground.notification.exception.NotificationErrorCode
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
@@ -20,6 +24,8 @@ import org.springframework.transaction.event.TransactionalEventListener
 @Component
 class NotificationEventListener(
     private val notificationCommandService: NotificationCommandService,
+    private val notificationSender: NotificationSender,
+    @Value("\${app.frontend-url}") private val frontendUrl: String,
 ) {
 
     @Async("notificationExecutor")
@@ -140,10 +146,21 @@ class NotificationEventListener(
             }
     }
 
+    // 현재 공지사항은 슬랙 알림으로만 전송
+    // TODO : 나중에 앱 푸시 알림 추가 예정
     @Async("notificationExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleAnnouncementCreated(event: AnnouncementCreatedEvent) {
-        // TODO: 전체 활성 사용자에게 알림 발송
+        val postLink = "$frontendUrl/post/${event.postId}"
+        notificationSender.send(
+            NotificationMessage(
+                type = NotificationMessageType.ANNOUNCEMENT,
+                link = postLink,
+                metadata = mapOf(
+                    "title" to event.title,
+                )
+            )
+        )
     }
 
     private fun createNotificationSafely(action: () -> Unit) {
