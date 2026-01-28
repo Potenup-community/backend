@@ -36,5 +36,6 @@ enum class StudyServiceErrorCode(
     ALREADY_APPLIED(HttpStatus.BAD_REQUEST,"SR-0009","이미 신청하거나 승인된 스터디입니다."),
     RECRUITMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"SR-0010","해당 스터디에 대한 신청기록을 찾을 수 없습니다."),
     STUDY_MONTH_IS_NOT_CURRENT_MONTH(HttpStatus.BAD_REQUEST,"SR-0011","신청한 차수는 현재 진행되는 차수에 해당하지 않습니다."),
+    GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY(HttpStatus.FORBIDDEN,"SR-0012","수료생은 지원할 수 없는 스터디입니다.")
 
 }
