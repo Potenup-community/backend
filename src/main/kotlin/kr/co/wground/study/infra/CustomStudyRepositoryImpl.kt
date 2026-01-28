@@ -39,7 +39,7 @@ class CustomStudyRepositoryImpl(
             )
             .offset(pageable.offset)
             .limit(pageSize.toLong() + 1)
-            .orderBy(*getOrderSpecifiers(pageable.sort))
+            .orderBy(sortType.getOrderSpecifier())
             .fetch()
 
         var hasNext = false
