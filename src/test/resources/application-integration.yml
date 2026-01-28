@@ -39,6 +39,7 @@ google:
     client-id: test-client
 
 app:
+  frontend-url: ${FRONTEND_URL}
   upload:
     local-dir: build/tmp/uploads
     public-base-path: /uploads
@@ -53,6 +54,11 @@ app:
     maxBytes: 1048576
     allowedExts: [jpg, jpeg, png, gif]
     base-url: http://localhost
+
+# 슬랙 알림 웹 훅 설정
+slack:
+  webhook:
+    url: ${SLACK_WEBHOOK_URL}
 
 management:
   endpoints:
