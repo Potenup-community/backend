@@ -3,9 +3,11 @@ package kr.co.wground.study.application
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.ScheduleCreateCommand
 import kr.co.wground.study.application.dto.ScheduleInfo
 import kr.co.wground.study.application.dto.ScheduleUpdateCommand
+import kr.co.wground.study.application.dto.StudyCreateScheduleDto
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.StudySchedule
 import kr.co.wground.study.infra.StudyRepository
@@ -14,6 +16,8 @@ import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
 import kr.co.wground.track.infra.TrackRepository
+import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class StudyScheduleService(
     private val studyScheduleRepository: StudyScheduleRepository,
+    private val userRepository: UserRepository,
     private val trackRepository: TrackRepository,
     private val studyRepository: StudyRepository,
     private val scheduleValidator: StudyScheduleValidator
@@ -111,5 +116,12 @@ class StudyScheduleService(
     fun getScheduleEntity(id: Long): StudySchedule {
         return studyScheduleRepository.findByIdOrNull(id)
             ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
+    }
+
+    fun getSchedules(userId: UserId): List<StudyCreateScheduleDto> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+
+        return studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId).map { StudyCreateScheduleDto.from(it) }
     }
 }

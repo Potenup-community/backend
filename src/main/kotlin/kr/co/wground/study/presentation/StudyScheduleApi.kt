@@ -8,13 +8,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import kr.co.wground.global.common.response.ErrorResponse
+import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.docs.StudySwaggerErrorExample
 import kr.co.wground.study.docs.StudySwaggerResponseExample
 import kr.co.wground.study.presentation.request.schedule.ScheduleCreateRequest
 import kr.co.wground.study.presentation.request.schedule.ScheduleUpdateRequest
 import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleListResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 
@@ -175,4 +179,8 @@ interface StudyScheduleApi {
         ]
     )
     fun deleteSchedule(@PathVariable id: Long): ResponseEntity<Unit>
+
+    fun getSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>
+
+    fun getCurrentSchedule(userId: CurrentUserId): ResponseEntity<ScheduleQueryResponse>
 }
