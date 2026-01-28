@@ -4,12 +4,12 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 
 enum class Months(val month: String) {
-    FIRST("1차"),
-    SECOND("2차"),
-    THIRD("3차"),
-    FOURTH("4차"),
-    FIFTH("5차"),
-    SIXTH("6차"),
+    FIRST("1"),
+    SECOND("2"),
+    THIRD("3"),
+    FOURTH("4"),
+    FIFTH("5"),
+    SIXTH("6"),
     ;
 
     companion object {
