@@ -2,6 +2,21 @@ package kr.co.wground.notification.infra.slack
 
 import kr.co.wground.notification.application.port.NotificationMessage
 import kr.co.wground.notification.application.port.NotificationMessageTemplate
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.BLOCK_TYPE_ACTIONS
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.BLOCK_TYPE_BUTTON
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.BLOCK_TYPE_DIVIDER
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.BLOCK_TYPE_HEADER
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.BLOCK_TYPE_SECTION
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.KEY_BLOCKS
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.KEY_ELEMENTS
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.KEY_EMOJI
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.KEY_STYLE
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.KEY_TEXT
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.KEY_TYPE
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.KEY_URL
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.STYLE_PRIMARY
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.TEXT_TYPE_MRKDWN
+import kr.co.wground.notification.infra.slack.SlackBlockKitConstants.TEXT_TYPE_PLAIN
 import kr.co.wground.notification.infra.template.SlackTemplate
 import org.springframework.stereotype.Component
 
@@ -34,7 +49,7 @@ class SlackBlockKitBuilder(
     private fun payload(init: BlockBuilder.() -> Unit): Map<String, Any> {
         val builder = BlockBuilder()
         builder.init()
-        return mapOf("blocks" to builder.blocks)
+        return mapOf(KEY_BLOCKS to builder.blocks)
     }
 
     private class BlockBuilder {
@@ -43,46 +58,46 @@ class SlackBlockKitBuilder(
         fun header(text: String) {
             blocks.add(
                 mapOf(
-                    "type" to "header",
-                    "text" to mapOf(
-                        "type" to "plain_text",
-                        "text" to text,
-                        "emoji" to true
+                    KEY_TYPE to BLOCK_TYPE_HEADER,
+                    KEY_TEXT to mapOf(
+                        KEY_TYPE to TEXT_TYPE_PLAIN,
+                        KEY_TEXT to text,
+                        KEY_EMOJI to true
                     )
                 )
             )
         }
 
         fun divider() {
-            blocks.add(mapOf("type" to "divider"))
+            blocks.add(mapOf(KEY_TYPE to BLOCK_TYPE_DIVIDER))
         }
 
         fun section(text: String) {
             blocks.add(
                 mapOf(
-                    "type" to "section",
-                    "text" to mapOf(
-                        "type" to "mrkdwn",
-                        "text" to text
+                    KEY_TYPE to BLOCK_TYPE_SECTION,
+                    KEY_TEXT to mapOf(
+                        KEY_TYPE to TEXT_TYPE_MRKDWN,
+                        KEY_TEXT to text
                     )
                 )
             )
         }
 
-        fun button(text: String, url: String, style: String = "primary") {
+        fun button(text: String, url: String, style: String = STYLE_PRIMARY) {
             blocks.add(
                 mapOf(
-                    "type" to "actions",
-                    "elements" to listOf(
+                    KEY_TYPE to BLOCK_TYPE_ACTIONS,
+                    KEY_ELEMENTS to listOf(
                         mapOf(
-                            "type" to "button",
-                            "text" to mapOf(
-                                "type" to "plain_text",
-                                "text" to text,
-                                "emoji" to true
+                            KEY_TYPE to BLOCK_TYPE_BUTTON,
+                            KEY_TEXT to mapOf(
+                                KEY_TYPE to TEXT_TYPE_PLAIN,
+                                KEY_TEXT to text,
+                                KEY_EMOJI to true
                             ),
-                            "url" to url,
-                            "style" to style
+                            KEY_URL to url,
+                            KEY_STYLE to style
                         )
                     )
                 )
