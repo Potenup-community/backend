@@ -14,9 +14,11 @@ import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
 import kr.co.wground.track.infra.TrackRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import kr.co.wground.study.application.event.StudyScheduleChangedEvent
 
 @Service
 @Transactional
@@ -24,7 +26,8 @@ class StudyScheduleService(
     private val studyScheduleRepository: StudyScheduleRepository,
     private val trackRepository: TrackRepository,
     private val studyRepository: StudyRepository,
-    private val scheduleValidator: StudyScheduleValidator
+    private val scheduleValidator: StudyScheduleValidator,
+    private val eventPublisher: ApplicationEventPublisher
 ) {
     fun createSchedule(command: ScheduleCreateCommand): ScheduleCreateResponse {
         val track = trackRepository.findByIdOrNull(command.trackId)
@@ -43,6 +46,13 @@ class StudyScheduleService(
         )
 
         val savedSchedule = studyScheduleRepository.save(command.toEntity())
+
+        eventPublisher.publishEvent(
+            StudyScheduleChangedEvent.of(
+                schedule = savedSchedule,
+                studyScheduleEventType = StudyScheduleChangedEvent.EventType.CREATED
+            )
+        )
 
         return ScheduleCreateResponse.of(savedSchedule.id, savedSchedule.trackId, savedSchedule.months)
     }
@@ -98,6 +108,13 @@ class StudyScheduleService(
             study.refreshStatus(schedule.isRecruitmentClosed())
         }
 
+        eventPublisher.publishEvent(
+            StudyScheduleChangedEvent.of(
+                schedule = schedule,
+                studyScheduleEventType = StudyScheduleChangedEvent.EventType.UPDATED
+            )
+        )
+
         return ScheduleUpdateResponse.of(schedule.id, schedule.trackId, schedule.months)
     }
 
@@ -105,7 +122,15 @@ class StudyScheduleService(
         if (studyRepository.existsByScheduleId(scheduleId)) {
             throw BusinessException(StudyServiceErrorCode.CANNOT_DELETE_SCHEDULE_WITH_STUDIES)
         }
+        val schedule = getScheduleEntity(scheduleId)
         studyScheduleRepository.deleteById(scheduleId)
+
+        eventPublisher.publishEvent(
+            StudyScheduleChangedEvent.of(
+                schedule = schedule,
+                studyScheduleEventType = StudyScheduleChangedEvent.EventType.DELETED
+            )
+        )
     }
 
     fun getScheduleEntity(id: Long): StudySchedule {
