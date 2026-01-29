@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
@@ -68,7 +69,8 @@ class StudyServiceTest {
      * - 테스트에서 별도로 참여시키는 게 아니라, 스터디 생성 후 자동으로 참여된 상태임을 확인하는 테스트 임
      */
     @Test
-    fun `스터디를 생성한 뒤, 반드시 해당 스터디에 참여된 상태여야 한다`() {
+    @DisplayName("스터디를 생성한 뒤, 반드시 해당 스터디에 참여된 상태여야 한다")
+    fun create_study_auto_enrolls_leader() {
 
         /*
          * given
@@ -135,7 +137,8 @@ class StudyServiceTest {
      * - 지금부터 "졸업생"이란 종료된 트랙에 속한 사용자를 가리킨다.
      */
     @Test
-    fun `졸업생이 스터디 생성을 시도한 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("졸업생이 스터디 생성을 시도한 경우, 예외 발생 - BusinessException(TRACK_IS_NOT_ENROLLED)")
+    fun graduated_cannot_create_study() {
 
         /*
          * given
@@ -183,7 +186,8 @@ class StudyServiceTest {
     // ----- 태그 관련
 
     @Test
-    fun `스터디 생성 시, 태그 개수가 MAX_TAG_COUNT 개를 초과한 경우 예외 발생 - BusinessException`() {
+    @DisplayName("스터디 생성 시, 태그 개수가 MAX TAG COUNT 개를 초과한 경우 예외 발생 - BusinessException(STUDY_TAG_COUNT_EXCEEDED)")
+    fun create_study_tags_over_limit_throws() {
 
         /*
          * given
@@ -241,7 +245,8 @@ class StudyServiceTest {
     }
 
     @Test
-    fun `스터디 수정 시, 태그 개수가 MAX_TAG_COUNT 개를 초과한 경우 예외 발생 - BusinessException`() {
+    @DisplayName("스터디 수정 시, 태그 개수가 MAX TAG COUNT 개를 초과한 경우 예외 발생 - BusinessException(STUDY_TAG_COUNT_EXCEEDED)")
+    fun update_study_tags_over_limit_throws() {
 
         /*
          * given
@@ -321,7 +326,8 @@ class StudyServiceTest {
      *   스터디 참여 개수를 점유하기 때문임
      */
     @Test
-    fun `스터디가 거부된 경우, CANCELLED 상태가 아닌 모든 신청 건이 반려(REJECTED)된다`() {
+    @DisplayName("스터디가 거부된 경우, CANCELLED 상태가 아닌 모든 신청 건이 반려(REJECTED)된다")
+    fun rejecting_study_rejects_non_cancelled_recruitments() {
         /*
          * given
          * 1. 스터디가 존재한다.
@@ -455,7 +461,8 @@ class StudyServiceTest {
     // ----- 결재 테스트
 
     @Test
-    fun `스터디가 결재된 경우, 관련된 모든 신청 건 중 PENDING 상태인 신청만 REJECTED 상태로 변경되어야 한다`() {
+    @DisplayName("스터디가 결재된 경우, 관련된 모든 신청 건 중 PENDING 상태인 신청만 REJECTED 상태로 변경되어야 한다")
+    fun approving_study_rejects_pending_recruitments() {
 
         /*
          * given
@@ -563,7 +570,8 @@ class StudyServiceTest {
     // ----- 삭제 테스트
 
     @Test
-    fun `PENDING 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다`() {
+    @DisplayName("PENDING 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다")
+    fun delete_pending_study_deletes_recruitments() {
 
         /*
          * given
@@ -640,7 +648,8 @@ class StudyServiceTest {
     }
 
     @Test
-    fun `CLOSED 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다`() {
+    @DisplayName("CLOSED 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다")
+    fun delete_closed_study_deletes_recruitments() {
 
         /*
          * given
@@ -728,7 +737,8 @@ class StudyServiceTest {
     }
 
     @Test
-    fun `거부(REJECTED) 상태의 스터디를 삭제하려 한 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("거부(REJECTED) 상태의 스터디를 삭제하려 한 경우, 예외 발생 - BusinessException(STUDY_CANT_DELETE_STATUS_DETERMINE)")
+    fun delete_rejected_study_throws() {
 
         /*
          * given
@@ -789,7 +799,8 @@ class StudyServiceTest {
     }
 
     @Test
-    fun `결재(APPROVED) 상태의 스터디를 삭제하려 한 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("결재(APPROVED) 상태의 스터디를 삭제하려 한 경우, 예외 발생 - BusinessException(STUDY_CANT_DELETE_STATUS_DETERMINE)")
+    fun delete_approved_study_throws() {
 
         /*
          * given
@@ -864,7 +875,8 @@ class StudyServiceTest {
     // To Do: 현재 차수 스터디에 2개 생성한 상태에서, 한 번 더 생성 시 예외 발생 - BusinessException
 
     @Test
-    fun `과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 PENDING 상태일 때, 신규 스터디 생성 시 예외 발생 - BusinessException`() {
+    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 PENDING 상태일 때, 신규 스터디 생성 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
+    fun create_study_blocked_by_two_pending_applications() {
 
         /*
          * given
@@ -1019,7 +1031,8 @@ class StudyServiceTest {
     }
 
     @Test
-    fun `과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 APPROVED 상태일 때, 신규 스터디 생성 시 예외 발생 - BusinessException`() {
+    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 APPROVED 상태일 때, 신규 스터디 생성 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
+    fun create_study_blocked_by_two_approved_applications() {
 
         /*
          * given
@@ -1176,7 +1189,8 @@ class StudyServiceTest {
     }
 
     @Test
-    fun `과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 REJECTED 상태 인 경우, 신규 스터디 생성이 가능하다`() {
+    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 REJECTED 상태 인 경우, 신규 스터디 생성이 가능하다")
+    fun create_study_allowed_with_pending_and_rejected() {
 
         /*
          * given
@@ -1336,7 +1350,8 @@ class StudyServiceTest {
     }
 
     @Test
-    fun `과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 CANCELLED 상태 인 경우, 신규 스터디 생성이 가능하다`() {
+    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 CANCELLED 상태 인 경우, 신규 스터디 생성이 가능하다")
+    fun create_study_allowed_with_pending_and_cancelled() {
 
         /*
          * given

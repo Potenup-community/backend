@@ -20,7 +20,8 @@ class StudyTest {
     // ----- 정원 수
 
     @Test
-    fun `스터디 생성 시, 정원 수가 MIN_CAPACITY 미만이면, 예외 발생 - BusinessException(SD-0005)`() {
+    @DisplayName("스터디 생성 시, 정원 수가 MIN CAPACITY 미만이면, 예외 발생 - BusinessException(STUDY_CAPACITY_TOO_SMALL)")
+    fun create_study_capacity_below_min_throws() {
 
         // 주어진 사용자가 해당 트랙에 참가 중이라고 가정
         val thrown = assertThrows<BusinessException> {
@@ -31,7 +32,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 정원 수가 MIN_CAPACITY 미만이면, 예외 발생 - BusinessException(SD-0005)`() {
+    @DisplayName("스터디 수정 시, 정원 수가 MIN CAPACITY 미만이면, 예외 발생 - BusinessException(STUDY_CAPACITY_TOO_SMALL)")
+    fun update_study_capacity_below_min_throws() {
         // 주어진 사용자가 해당 트랙에 참가 중이라고 가정
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
@@ -44,7 +46,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 생성 시, 정원 수가 ABSOLUTE_MAX_CAPACITY 초과이면, 예외 발생 - BusinessException(SD-0010)`() {
+    @DisplayName("스터디 생성 시, 정원 수가 ABSOLUTE MAX CAPACITY 초과이면, 예외 발생 - BusinessException(STUDY_CAPACITY_TOO_BIG)")
+    fun create_study_capacity_over_absolute_max_throws() {
 
         // 주어진 사용자가 해당 트랙에 참가 중이라고 가정
         val thrown = assertThrows<BusinessException> {
@@ -55,7 +58,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 정원 수가 ABSOLUTE_MAX_CAPACITY 초과이면, 예외 발생 - BusinessException(SD-0010)`() {
+    @DisplayName("스터디 수정 시, 정원 수가 ABSOLUTE MAX CAPACITY 초과이면, 예외 발생 - BusinessException(STUDY_CAPACITY_TOO_BIG)")
+    fun update_study_capacity_over_absolute_max_throws() {
 
         // 주어진 사용자가 해당 트랙에 참가 중이라고 가정
         val thrown = assertThrows<BusinessException> {
@@ -70,7 +74,8 @@ class StudyTest {
     }
 
     @Test
-    fun `모집 기간이 마감되지 않은, 참여 인원 수가 정원 수와 같고 상태가 CLOSED 인 스터디에서, 참여 인원 수가 감소한 경우, 해당 스터디의 상태는 PENDING 으로 변경된다`() {
+    @DisplayName("모집 기간이 마감되지 않은, 참여 인원 수가 정원 수와 같고 상태가 CLOSED 인 스터디에서, 참여 인원 수가 감소한 경우, 해당 스터디의 상태는 PENDING 으로 변경된다")
+    fun decrease_member_count_reopens_closed_before_recruit_end() {
         val schedule = createRecruitingStudySchedule()
         val created = createStudyWithCapacity(schedule, 2)
         created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
@@ -81,7 +86,8 @@ class StudyTest {
     }
 
     @Test
-    fun `모집 기간이 마감되지 않은, 참여 인원 수가 정원 수와 같고 상태가 CLOSED 인 스터디에서, 정원 수가 증가한 경우, 해당 스터디의 상태를 PENDING 으로 변경한다`() {
+    @DisplayName("모집 기간이 마감되지 않은, 참여 인원 수가 정원 수와 같고 상태가 CLOSED 인 스터디에서, 정원 수가 증가한 경우, 해당 스터디의 상태를 PENDING 으로 변경한다")
+    fun increase_capacity_reopens_closed_before_recruit_end() {
         val schedule = createRecruitingStudySchedule()
         val created = createStudyWithCapacity(schedule, 2)
         created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
@@ -94,7 +100,8 @@ class StudyTest {
     // ----- 제목
 
     @Test
-    fun `스터디 생성 시, 앞뒤 공백 제거 기준, 제목이 blank 인 경우, 예외 발생 - BusinessException(SD-0003)`() {
+    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 제목이 blank 인 경우, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
+    fun create_study_title_blank_throws() {
 
         val thrown = assertThrows<BusinessException> {
             createStudyWithName(createRecruitingStudySchedule(), "  \t  \n  ")
@@ -104,7 +111,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 생성 시, 앞뒤 공백 제거 기준, 제목의 길이가 2자 미만이면, 예외 발생 - BusinessException(SD-0003)`() {
+    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 제목의 길이가 2자 미만이면, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
+    fun create_study_title_too_short_throws() {
         val thrown = assertThrows<BusinessException> {
             createStudyWithName(createRecruitingStudySchedule(),"  \t 1 \n  ")
         }
@@ -113,7 +121,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 생성 시, 앞뒤 공백 제거 기준, 제목의 길이가 MAX_NAME_LENGTH 자를 초과하면, 예외 발생 - BusinessException(SD-0003)`() {
+    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 제목의 길이가 MAX NAME LENGTH 자를 초과하면, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
+    fun create_study_title_too_long_throws() {
         val thrown = assertThrows<BusinessException> {
             createStudyWithName(
                 createRecruitingStudySchedule(),
@@ -125,7 +134,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 앞뒤 공백 제거 기준, 제목이 blank 인 경우, 예외 발생 - BusinessException(SD-0003)`() {
+    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 제목이 blank 인 경우, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
+    fun update_study_title_blank_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithName(schedule, "  \t 유효한 제목 \n  ")
@@ -137,7 +147,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 앞뒤 공백 제거 기준, 제목의 길이가 2자 미만이면 예외 발생 - BusinessException(SD-0003)`() {
+    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 제목의 길이가 2자 미만이면 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
+    fun update_study_title_too_short_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithName(schedule, "  \t 유효한 제목 \n  ")
@@ -149,7 +160,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 앞뒤 공백 제거 기준, 제목의 길이가 MAX_NAME_LENGTH 자를 초과하면, 예외 발생 - BusinessException(SD-0003)`() {
+    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 제목의 길이가 MAX NAME LENGTH 자를 초과하면, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
+    fun update_study_title_too_long_throws() {
         val schedule = createRecruitingStudySchedule()
         val thrown = assertThrows<BusinessException> {
             val created = createStudyWithName(schedule, "  \t 유효한 제목 \n  ")
@@ -167,7 +179,8 @@ class StudyTest {
     // ----- 소개 글
 
     @Test
-    fun `스터디 생성 시, 앞뒤 공백 제거 기준, 소개글이 blank 인 경우, 예외 발생 - BusinessException(SD-0004)`() {
+    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 소개글이 blank 인 경우, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
+    fun create_study_description_blank_throws() {
         val thrown = assertThrows<BusinessException> {
             createStudyWithDescription(createRecruitingStudySchedule(), " \t \n ")
         }
@@ -176,7 +189,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 생성 시, 앞뒤 공백 제거 기준 소개글의 길이자 2자 미만이면, 예외 발생 - BusinessException(SD-0004)`() {
+    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준 소개글의 길이자 2자 미만이면, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
+    fun create_study_description_too_short_throws() {
         val thrown = assertThrows<BusinessException> {
             createStudyWithDescription(createRecruitingStudySchedule(), "A")
         }
@@ -185,7 +199,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 생성 시, 앞뒤 공백 제거 기준, 소개글의 길이가 MAX_DESCRIPTION_LENGTH 를 초과하면, 예외 발생 - BusinessException(SD-0004)`() {
+    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 소개글의 길이가 MAX DESCRIPTION LENGTH 를 초과하면, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
+    fun create_study_description_too_long_throws() {
         val thrown = assertThrows<BusinessException> {
             createStudyWithDescription(
                 createRecruitingStudySchedule(),
@@ -197,7 +212,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 앞뒤 공백 제거 기준, 소개글이 blank 인 경우, 예외 발생 - BusinessException(SD-0004)`() {
+    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 소개글이 blank 인 경우, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
+    fun update_study_description_blank_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithDescription(schedule, "유효한 소개글")
@@ -210,7 +226,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 앞뒤 공백 제거 기준, 소개글의 길이가 2자 미만이면, 예외 발생 - BusinessException(SD-0004)`() {
+    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 소개글의 길이가 2자 미만이면, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
+    fun update_study_description_too_short_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithDescription(schedule, "유효한 소개글")
@@ -223,7 +240,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 앞뒤 공백 제거 기준, 소개글의 길이가 MAX_DESCRIPTION_LENGTH 자를 초과하면, 예외 발생 - BusinessException(SD-0004)`() {
+    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 소개글의 길이가 MAX DESCRIPTION LENGTH 자를 초과하면, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
+    fun update_study_description_too_long_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithDescription(
@@ -242,7 +260,8 @@ class StudyTest {
     // ----- 채팅 방 링크
 
     @Test
-    fun `스터디 생성 시, 채팅 방 링크가 null 이 아닐 때 해당 링크의 형식이 유효한 url 형식이 아닌 경우, 예외 발생 - BusinessException(SD-0006)`() {
+    @DisplayName("스터디 생성 시, 채팅 방 링크가 null 이 아닐 때 해당 링크의 형식이 유효한 url 형식이 아닌 경우, 예외 발생 - BusinessException(STUDY_URL_INVALID)")
+    fun create_study_invalid_chat_url_throws() {
         val thrown = assertThrows<BusinessException> {
             createStudyWithExternalChatUrl(
                 createRecruitingStudySchedule(), "유효하지 않은 형식의 링크")
@@ -252,7 +271,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 채팅 방 링크가 null 이 아닐 때 해당 링크의 형식이 유효한 url 형식이 아닌 경우, 예외 발생 - BusinessException(SD-0006)`() {
+    @DisplayName("스터디 수정 시, 채팅 방 링크가 null 이 아닐 때 해당 링크의 형식이 유효한 url 형식이 아닌 경우, 예외 발생 - BusinessException(STUDY_URL_INVALID)")
+    fun update_study_invalid_chat_url_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithExternalChatUrl(
@@ -271,7 +291,8 @@ class StudyTest {
     // ----- 참고 자료 링크
 
     @Test
-    fun `스터디 생성 시, 참고 자료 링크의 형식이 유효한 url 형식이 아닌 경우, 예외 발생 - BusinessException(SD-0006)`() {
+    @DisplayName("스터디 생성 시, 참고 자료 링크의 형식이 유효한 url 형식이 아닌 경우, 예외 발생 - BusinessException(STUDY_URL_INVALID)")
+    fun create_study_invalid_ref_url_throws() {
         val thrown = assertThrows<BusinessException> {
             createStudyWithReferenceUrl(
                 createRecruitingStudySchedule(), "유효하지 않은 형식의 링크")
@@ -281,7 +302,8 @@ class StudyTest {
     }
 
     @Test
-    fun `스터디 수정 시, 참고 자료 링크가 null 이 아닐 때 해당 링크의 형식이 유효한 url 형식이 아닌 경우, 예외 발생 - BusinessException(SD-0006)`() {
+    @DisplayName("스터디 수정 시, 참고 자료 링크가 null 이 아닐 때 해당 링크의 형식이 유효한 url 형식이 아닌 경우, 예외 발생 - BusinessException(STUDY_URL_INVALID)")
+    fun update_study_invalid_ref_url_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithReferenceUrl(
@@ -300,7 +322,8 @@ class StudyTest {
     // ----- 거부 테스트
 
     @Test
-    fun `대상 스터디가 APPROVED 상태일 때, 스터디 거부 시, 예외 발생 - BusinessException()`() {
+    @DisplayName("대상 스터디가 APPROVED 상태일 때, 스터디 거부 시, 예외 발생 - BusinessException(STUDY_CANT_REJECTED_IN_APPROVED_STATUS)")
+    fun reject_approved_study_throws() {
 
         val thrown = assertThrows<BusinessException> {
 
@@ -320,7 +343,8 @@ class StudyTest {
     // ----- 결재 테스트
 
     @Test
-    fun `대상 스터디가 PENDING 상태일 때, 스터디 결재 시, 예외 발생 - BusinessException()`() {
+    @DisplayName("대상 스터디가 PENDING 상태일 때, 스터디 결재 시, 예외 발생 - BusinessException(STUDY_MUST_BE_CLOSED_TO_APPROVE)")
+    fun approve_pending_study_throws() {
 
         val thrown = assertThrows<BusinessException> {
             val pending = createStudyWithCapacity(createRecruitingStudySchedule(),2)
@@ -331,7 +355,8 @@ class StudyTest {
     }
 
     @Test
-    fun `대상 스터디가 REJECTED 상태일 때, 스터디 결재 시, 예외 발생 - BusinessException()`() {
+    @DisplayName("대상 스터디가 REJECTED 상태일 때, 스터디 결재 시, 예외 발생 - BusinessException(STUDY_MUST_BE_CLOSED_TO_APPROVE)")
+    fun approve_rejected_study_throws() {
 
         val thrown = assertThrows<BusinessException> {
             val rejected = createStudyWithCapacity(createRecruitingStudySchedule(), 2)
@@ -345,7 +370,8 @@ class StudyTest {
     // ----- 참여 인원 수 테스트 (스터디 신청과의 정합성 고려 x)
 
     @Test
-    fun `참여 인원 수가 (정원 - 1)인 경우, 참여 인원 수 1 증가 시, CLOSED 상태로 성공적으로 변경된다`() {
+    @DisplayName("참여 인원 수가 (정원 - 1)인 경우, 참여 인원 수 1 증가 시, CLOSED 상태로 성공적으로 변경된다")
+    fun increase_member_to_capacity_closes_study() {
         val schedule = createRecruitingStudySchedule()
         val created = createStudyWithCapacity(schedule, 2)
         created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
@@ -353,7 +379,8 @@ class StudyTest {
     }
 
     @Test
-    fun `REJECTED 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(SD-0001)`() {
+    @DisplayName("REJECTED 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
+    fun increase_member_on_rejected_study_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, 2)
@@ -365,7 +392,8 @@ class StudyTest {
     }
 
     @Test
-    fun `APPROVED 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(SD-0001)`() {
+    @DisplayName("APPROVED 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
+    fun increase_member_on_approved_study_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, 2)
@@ -379,7 +407,8 @@ class StudyTest {
     }
 
     @Test
-    fun `이미 정원이 가득 찬 경우, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(SD-0002)`() {
+    @DisplayName("이미 정원이 가득 찬 경우, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_CAPACITY_FULL)")
+    fun increase_member_when_full_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule,2)
@@ -391,7 +420,8 @@ class StudyTest {
     }
 
     @Test
-    fun `이미 모집 기간이 마감된 경우, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(SD-0013)`() {
+    @DisplayName("이미 모집 기간이 마감된 경우, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    fun increase_member_after_recruit_end_throws() {
         val thrown = assertThrows<BusinessException> {
             val alreadyStartedSchedule = createAlreadyStartedStudySchedule()
             val created = createStudyWithName(alreadyStartedSchedule, "유효한 이름")
@@ -408,7 +438,8 @@ class StudyTest {
     // ----- 수정 테스트
 
     @Test
-    fun `REJECTED 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(SD-0009)`() {
+    @DisplayName("REJECTED 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(STUDY_CANNOT_MODIFY_AFTER_DETERMINED)")
+    fun update_rejected_study_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule,2)
@@ -420,7 +451,8 @@ class StudyTest {
     }
 
     @Test
-    fun `APPROVED 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(SD-0009)`() {
+    @DisplayName("APPROVED 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(STUDY_CANNOT_MODIFY_AFTER_DETERMINED)")
+    fun update_approved_study_throws() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, 2)
@@ -434,7 +466,8 @@ class StudyTest {
     }
 
     @Test
-    fun `PENDING 상태일 때, 생성 시점에 설정 가능한 임의의 항목을 수정할 시, 성공한다`() {
+    @DisplayName("PENDING 상태일 때, 생성 시점에 설정 가능한 임의의 항목을 수정할 시, 성공한다")
+    fun update_editable_fields_when_pending_succeeds() {
         val schedule = createRecruitingStudySchedule()
         val created = createStudyWithCapacity(schedule, 2)
 
@@ -481,7 +514,8 @@ class StudyTest {
     }
 
     @Test
-    fun `CLOSED 상태이고 모집 기간 마감 전일 때, 생성 시점에만 설정 가능한 임의 항목을 수정할 시, 성공한다`() {
+    @DisplayName("CLOSED 상태이고 모집 기간 마감 전일 때, 생성 시점에만 설정 가능한 임의 항목을 수정할 시, 성공한다")
+    fun update_editable_fields_when_closed_before_recruit_end_succeeds() {
         val schedule = createRecruitingStudySchedule()
         val created = createStudyWithCapacity(schedule, 2)
         created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
