@@ -7,6 +7,7 @@ data class ScheduleQueryResponse(
     val id: Long,
     val trackId: Long,
     val months: Months,
+    val monthName: String,
     val recruitStartDate: LocalDateTime,
     val recruitEndDate: LocalDateTime,
     val studyEndDate: LocalDateTime,
