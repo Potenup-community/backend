@@ -26,6 +26,7 @@ import kr.co.wground.user.infra.UserRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.DisplayName
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -63,7 +64,8 @@ class StudyRecruitmentServiceTest {
 
     // To Do: 조기 수료 가능한 지 아름님한테 물어볼 것
     @Test
-    fun `수료생이 스터디에 신청한 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("수료생이 스터디에 신청한 경우, 예외 발생 - BusinessException(GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY)")
+    fun graduate_cannot_apply_study() {
 
         /*
          * given
@@ -125,7 +127,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `교육생이 모집 기간이 마감되기 전의 모집 중(PENDING)인 스터디에, 신청 후 승인되었을 때, 이로 인해 해당 스터디가 정원에 도달하면, 그 스터디는 CLOSED 상태로 변경되어야 한다`() {
+    @DisplayName("교육생이 모집 기간이 마감되기 전의 모집 중(PENDING)인 스터디에, 신청 후 승인되었을 때, 이로 인해 해당 스터디가 정원에 도달하면, 그 스터디는 CLOSED 상태로 변경되어야 한다")
+    fun approved_application_closes_study_on_capacity() {
         
         /*
          * given
@@ -209,7 +212,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `교육생이 자신의 트랙이 아닌 스터디에 신청한 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("교육생이 자신의 트랙이 아닌 스터디에 신청한 경우, 예외 발생 - BusinessException(TRACK_MISMATCH)")
+    fun track_mismatch_application_throws() {
 
         /*
          * given
@@ -293,7 +297,8 @@ class StudyRecruitmentServiceTest {
 
     // To Do: 나중에 모집 기간이 마감된 경우와, 모집 기간이 마감되지 않았지만 정원이 가득찬 경우를 나누어서 예외 처리 하는 것도 고려해보자.
     @Test
-    fun `교육생이 CLOSED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("교육생이 CLOSED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
+    fun apply_to_closed_study_throws() {
 
         /*
          * given
@@ -359,7 +364,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `교육생이 REJECTED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("교육생이 REJECTED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
+    fun apply_to_rejected_study_throws() {
 
         /*
          * given
@@ -425,7 +431,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `교육생이 APPROVED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("교육생이 APPROVED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
+    fun apply_to_approved_study_throws() {
 
         /*
          * given
@@ -491,7 +498,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `특정 교육생의 PENDING 상태의 신청 건이 존재할 때, 해당 교육생이 같은 스터디에 다시 신청하면, 예외 발생 - BusinessException`() {
+    @DisplayName("특정 교육생의 PENDING 상태의 신청 건이 존재할 때, 해당 교육생이 같은 스터디에 다시 신청하면, 예외 발생 - BusinessException(ALREADY_APPLIED)")
+    fun duplicate_pending_application_throws() {
 
         /*
          * given
@@ -573,7 +581,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `특정 교육생의 APPROVED 상태의 신청 건이 존재할 때, 해당 교육생이 같은 스터디에 다시 신청하면, 예외 발생 - BusinessException`() {
+    @DisplayName("특정 교육생의 APPROVED 상태의 신청 건이 존재할 때, 해당 교육생이 같은 스터디에 다시 신청하면, 예외 발생 - BusinessException(ALREADY_APPLIED)")
+    fun duplicate_approved_application_throws() {
 
         /*
          * given
@@ -660,7 +669,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `특정 교육생의 CANCELLED 상태의 신청 건이 존재해도, 해당 교육생은 같은 스터디에 다시 신청 가능하다`() {
+    @DisplayName("특정 교육생의 CANCELLED 상태의 신청 건이 존재해도, 해당 교육생은 같은 스터디에 다시 신청 가능하다")
+    fun reapply_after_cancelled_application_allowed() {
 
         /*
          * given
@@ -742,7 +752,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `특정 교육생의 REJECTED 상태의 신청 건이 존재해도, 해당 교육생은 같은 스터디에 다시 신청 가능하다`() {
+    @DisplayName("특정 교육생의 REJECTED 상태의 신청 건이 존재해도, 해당 교육생은 같은 스터디에 다시 신청 가능하다")
+    fun reapply_after_rejected_application_allowed() {
 
         /*
          * given
@@ -830,7 +841,8 @@ class StudyRecruitmentServiceTest {
     // ----- 참여 스터디 수 제한 테스트
 
     @Test
-    fun `과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 PENDING 상태일 때, 다른 스터디에 추가적인 신청 시 예외 발생 - BusinessException`() {
+    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 PENDING 상태일 때, 다른 스터디에 추가적인 신청 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
+    fun pending_two_applications_same_track_blocks_third() {
 
         /*
          * given
@@ -999,7 +1011,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `과거 차수에 대한 스터디 참여 이력이 있는 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 APPROVED 상태일 때, 다른 스터디에 추가적인 신청 시 예외 발생 - BusinessException`() {
+    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 APPROVED 상태일 때, 다른 스터디에 추가적인 신청 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
+    fun approved_two_applications_same_track_blocks_third() {
 
         /*
          * given
@@ -1179,7 +1192,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `과거 차수에 대한 스터디 참여 이력이 있는 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 REJECTED 상태 인 경우, 다른 현재 차수 스터디에 추가 신청 가능하다`() {
+    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 REJECTED 상태 인 경우, 다른 현재 차수 스터디에 추가 신청 가능하다")
+    fun pending_and_rejected_allows_additional_application() {
 
         /*
          * given
@@ -1353,7 +1367,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `과거 차수에 대한 스터디 참여 이력이 있는 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 CANCELLED 상태 인 경우, 다른 현재 차수 스터디에 추가 신청 가능하다`() {
+    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 CANCELLED 상태 인 경우, 다른 현재 차수 스터디에 추가 신청 가능하다")
+    fun pending_and_cancelled_allows_additional_application() {
 
         /*
          * given
@@ -1525,7 +1540,8 @@ class StudyRecruitmentServiceTest {
     // ----- 신청 취소 테스트
 
     @Test
-    fun `스터디장이 아닐 때, 결재되지 않은 스터디에서 신청 취소가능하다`() {
+    @DisplayName("스터디장이 아닐 때, 결재되지 않은 스터디에서 신청 취소가능하다")
+    fun non_leader_can_cancel_before_approval() {
 
         /*
          * given
@@ -1635,7 +1651,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `결재된 스터디에서 신청 취소하려는 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("결재된 스터디에서 신청 취소하려는 경우, 예외 발생 - BusinessException(RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE)")
+    fun cancel_after_study_approved_throws() {
 
         /*
          * given
@@ -1725,7 +1742,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `스터디장이 아직 결재되지 않은 자신의 스터디에서 신청 취소하려는 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("스터디장이 아직 결재되지 않은 자신의 스터디에서 신청 취소하려는 경우, 예외 발생 - BusinessException(LEADER_CANNOT_LEAVE)")
+    fun leader_cannot_cancel_own_unapproved_study() {
 
         /*
          * given
@@ -1813,7 +1831,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `REJECTED 상태인 신청 건에 대해, 취소하려 한 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("REJECTED 상태인 신청 건에 대해, 취소하려 한 경우, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
+    fun cancel_rejected_application_throws() {
 
         /*
          * given
@@ -1899,7 +1918,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `모집 기간이 마감되지 않았고, 정원에 도달한, 상태가 CLOSED 인 스터디에 대해, 승인된 인원이 신청을 취소하면 스터디 상태는 PENDING 상태로 변경되어야 한다`() {
+    @DisplayName("모집 기간이 마감되지 않았고, 정원에 도달한, 상태가 CLOSED 인 스터디에 대해, 승인된 인원이 신청을 취소하면 스터디 상태는 PENDING 상태로 변경되어야 한다")
+    fun approved_cancellation_reopens_closed_study() {
 
         /*
          * given
@@ -1990,7 +2010,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `모집 기간이 마감되지 않았고, 정원에 도달한, 상태가 CLOSED 인 스터디에 대해, PENDING 상태의 신청이 취소되어도 스터디 상태는 CLOSED 상태로 유지되어야 한다`() {
+    @DisplayName("모집 기간이 마감되지 않았고, 정원에 도달한, 상태가 CLOSED 인 스터디에 대해, PENDING 상태의 신청이 취소되어도 스터디 상태는 CLOSED 상태로 유지되어야 한다")
+    fun pending_cancellation_keeps_closed_study() {
 
         /*
          * given
@@ -2098,7 +2119,8 @@ class StudyRecruitmentServiceTest {
     // ----- 신청 승인 테스트
 
     @Test
-    fun `승인된 신청 건과, 스터디의 현재 참여 인원 수는 같아야 한다`() {
+    @DisplayName("승인된 신청 건과, 스터디의 현재 참여 인원 수는 같아야 한다")
+    fun approved_count_matches_member_count() {
 
         /*
          * given
@@ -2221,7 +2243,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `정원이 가득 찬 스터디에 대해, 기존의 신청 건을 승인하면, 예외 발생 - BusinessException`() {
+    @DisplayName("정원이 가득 찬 스터디에 대해, 기존의 신청 건을 승인하면, 예외 발생 - BusinessException(STUDY_CAPACITY_FULL)")
+    fun approve_when_full_throws() {
 
         /*
          * given
@@ -2327,7 +2350,8 @@ class StudyRecruitmentServiceTest {
     // ----- 신청 반려 테스트
 
     @Test
-    fun `승인된 신청 건에 대해, 스터디장이 반려하는 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("승인된 신청 건에 대해, 스터디장이 반려하는 경우, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
+    fun reject_after_approved_throws() {
 
         /*
          * given
@@ -2414,7 +2438,8 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    fun `취소된 신청 건에 대해, 스터디장이 반려하는 경우, 예외 발생 - BusinessException`() {
+    @DisplayName("취소된 신청 건에 대해, 스터디장이 반려하는 경우, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
+    fun reject_after_cancelled_throws() {
 
         /*
          * given

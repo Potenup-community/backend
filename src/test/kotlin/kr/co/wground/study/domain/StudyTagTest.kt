@@ -12,14 +12,16 @@ import kotlin.test.assertEquals
 class StudyTagTest {
 
     @Test
-    fun `태그 생성 시, 공백 문자와 허용되지 않은 특수 문자가 제외되고, 대문자가 소문자로 변환된다`() {
+    @DisplayName("태그 생성 시, 공백 문자와 허용되지 않은 특수 문자가 제외되고, 대문자가 소문자로 변환된다")
+    fun create_tag_sanitizes_and_lowercases() {
         val created = Tag.create(rawName = "  \t  +#._-*****ABC******가나다 \n   ")
 
         assertEquals("+#._-abc가나다", created.name)
     }
 
     @Test
-    fun `태그 생성 시, 태그 이름이 공백 문자를 제외하고 비어있는 경우, 예외 발생 - BusinessException(TG-0001)`() {
+    @DisplayName("태그 생성 시, 태그 이름이 공백 문자를 제외하고 비어있는 경우, 예외 발생 - BusinessException(TAG_FORMAT_INVALID)")
+    fun create_tag_blank_throws() {
         val thrown = assertThrows<BusinessException> {
             Tag.create(rawName = "\n  \t")
         }
@@ -28,7 +30,8 @@ class StudyTagTest {
     }
 
     @Test
-    fun `태그 생성 시, 공백 문자를 제외한 태그 이름의 길이가 MIN_LENGTH 보다 작은 경우, 예외 발생 - BusinessException(TG-0002)`() {
+    @DisplayName("태그 생성 시, 공백 문자를 제외한 태그 이름의 길이가 MIN LENGTH 보다 작은 경우, 예외 발생 - BusinessException(TAG_LENGTH_INVALID_RANGE)")
+    fun create_tag_too_short_throws() {
 
         val MIN_LENGTH = extractMinLengthFromTagClass()
 
@@ -40,7 +43,8 @@ class StudyTagTest {
     }
 
     @Test
-    fun `태그 생성 시, 공백 문자를 제외한 태그 이름의 길이가 MAX_LENGTH 보다 큰 경우, 예외 발생 - BusinessException(TG-0002)`() {
+    @DisplayName("태그 생성 시, 공백 문자를 제외한 태그 이름의 길이가 MAX LENGTH 보다 큰 경우, 예외 발생 - BusinessException(TAG_LENGTH_INVALID_RANGE)")
+    fun create_tag_too_long_throws() {
 
         val MAX_LENGTH = extractMaxLengthFromTagClass()
 
