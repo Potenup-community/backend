@@ -7,6 +7,7 @@ import kr.co.wground.study.application.dto.LeaderDto
 import kr.co.wground.study.application.dto.ScheduleDto
 import kr.co.wground.study.application.dto.StudyCreateCommand
 import kr.co.wground.study.application.dto.StudySearchCondition
+import kr.co.wground.study.application.dto.StudySearchDto
 import kr.co.wground.study.application.dto.StudyUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
@@ -158,11 +159,10 @@ class StudyService(
 
     @Transactional(readOnly = true)
     fun searchStudies(
-        condition: StudySearchCondition,
-        pageable: Pageable,
-        userId: UserId
+        condition: StudySearchDto
     ): Slice<StudyQueryResponse> {
-        val result = studyRepository.searchStudies(condition, pageable)
+        val userId =condition.userId
+        val result = studyRepository.searchStudies(condition.condition, condition.pageable, condition.sortType)
 
         val joinedStudyIds = if (userId != null) {
             val studyIds = result.content.map { it.study.id }

@@ -1,26 +1,25 @@
 package kr.co.wground.study.presentation
 
 import jakarta.validation.Valid
+import kr.co.wground.common.SortType
+import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.global.jwt.UserPrincipal
 import kr.co.wground.study.application.StudyService
-import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.application.dto.StudySearchCondition
+import kr.co.wground.study.application.dto.StudySearchDto
 import kr.co.wground.study.presentation.request.study.StudyCreateRequest
 import kr.co.wground.study.presentation.request.study.StudyUpdateRequest
 import kr.co.wground.study.presentation.response.CustomSliceResponse
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
 import kr.co.wground.study.presentation.response.study.StudyIdResponse
 import kr.co.wground.study.presentation.response.study.StudyQueryResponse
-import kr.co.wground.study.presentation.response.study.StudySearchResponse
 import kr.co.wground.user.domain.constant.UserRole
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Slice
-import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
@@ -29,13 +28,14 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/v1/studies")
 class StudyController(
     private val studyService: StudyService
-): StudyApi {
+) : StudyApi {
 
     @PostMapping
     override fun createStudy(
@@ -101,10 +101,11 @@ class StudyController(
     @GetMapping
     override fun searchStudies(
         @ModelAttribute condition: StudySearchCondition,
-        @PageableDefault(size = 10, sort = ["createdAt"], direction = Sort.Direction.DESC) pageable: Pageable,
+        @RequestParam(defaultValue = "DESC") sortType: SortType,
+        @PageableDefault(size = 10) pageable: Pageable,
         userId: CurrentUserId
     ): ResponseEntity<CustomSliceResponse<StudyQueryResponse>> {
-        val response = studyService.searchStudies(condition, pageable, userId.value)
+        val response = studyService.searchStudies(StudySearchDto.of(userId.value, condition, sortType, pageable))
         return ResponseEntity.ok(CustomSliceResponse.from(response))
     }
 }

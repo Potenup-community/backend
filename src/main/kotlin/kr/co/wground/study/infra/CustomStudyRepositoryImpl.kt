@@ -4,6 +4,7 @@ import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
+import kr.co.wground.common.SortType
 import kr.co.wground.study.application.dto.QStudyQueryDto
 import kr.co.wground.study.application.dto.StudyQueryDto
 import kr.co.wground.study.application.dto.StudySearchCondition
@@ -16,7 +17,6 @@ import kr.co.wground.user.domain.QUser.user
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -24,7 +24,7 @@ class CustomStudyRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : CustomStudyRepository {
 
-    override fun searchStudies(condition: StudySearchCondition, pageable: Pageable): Slice<StudyQueryDto> {
+    override fun searchStudies(condition: StudySearchCondition, pageable: Pageable, sortType: SortType): Slice<StudyQueryDto> {
         val pageSize = pageable.pageSize
 
         val content = queryFactory
@@ -39,7 +39,7 @@ class CustomStudyRepositoryImpl(
             )
             .offset(pageable.offset)
             .limit(pageSize.toLong() + 1)
-            .orderBy(*getOrderSpecifiers(pageable.sort))
+            .orderBy(sortType.getOrderSpecifier())
             .fetch()
 
         var hasNext = false
@@ -49,30 +49,6 @@ class CustomStudyRepositoryImpl(
         }
 
         return SliceImpl(content, pageable, hasNext)
-    }
-
-    private fun getOrderSpecifiers(sort: Sort): Array<OrderSpecifier<*>> {
-        val orders = mutableListOf<OrderSpecifier<*>>()
-
-        if (sort.isEmpty) {
-            orders.add(OrderSpecifier(Order.DESC, study.createdAt))
-            return orders.toTypedArray()
-        }
-
-        sort.forEach { order ->
-            val direction = if (order.isAscending) Order.ASC else Order.DESC
-
-            val specifier = when (order.property) {
-                "createdAt" -> OrderSpecifier(direction, study.createdAt)
-                "name" -> OrderSpecifier(direction, study.name)
-                "capacity" -> OrderSpecifier(direction, study.capacity)
-                "budget" -> OrderSpecifier(direction, study.budget)
-                else -> OrderSpecifier(Order.DESC, study.createdAt) // 매핑되지 않은 필드는 최신순 기본
-            }
-            orders.add(specifier)
-        }
-
-        return orders.toTypedArray()
     }
 
     private fun trackIdEq(trackId: Long?): BooleanExpression? {
