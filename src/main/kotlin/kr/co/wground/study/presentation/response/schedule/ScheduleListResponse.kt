@@ -1,7 +1,7 @@
 package kr.co.wground.study.presentation.response.schedule
 
-import kr.co.wground.study.application.dto.StudyCreateScheduleDto
+import kr.co.wground.study.application.dto.QueryStudyScheduleDto
 
 data class ScheduleListResponse(
-    val content : List<StudyCreateScheduleDto>,
+    val content : List<QueryStudyScheduleDto>,
 )

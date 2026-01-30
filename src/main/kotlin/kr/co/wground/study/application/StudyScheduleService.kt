@@ -3,11 +3,12 @@ package kr.co.wground.study.application
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.ScheduleCreateCommand
 import kr.co.wground.study.application.dto.ScheduleInfo
 import kr.co.wground.study.application.dto.ScheduleUpdateCommand
-import kr.co.wground.study.application.dto.StudyCreateScheduleDto
+import kr.co.wground.study.application.dto.QueryStudyScheduleDto
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.StudySchedule
 import kr.co.wground.study.infra.StudyRepository
@@ -54,9 +55,8 @@ class StudyScheduleService(
 
     @Transactional(readOnly = true)
     fun getCurrentScheduleByUserId(userId: UserId): ScheduleQueryResponse? {
-        val now = LocalDateTime.now()
-        val user = userRepository.findByIdOrNull(userId) ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
-        return getCurrentSchedule(user.trackId)
+        val trackId = getUserTrackId(userId)
+        return getCurrentSchedule(trackId)
     }
 
     @Transactional(readOnly = true)
@@ -126,10 +126,15 @@ class StudyScheduleService(
             ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
     }
 
-    fun getSchedules(userId: UserId): List<StudyCreateScheduleDto> {
+    fun getSchedules(userId: UserId): List<QueryStudyScheduleDto> {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-        return studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId).map { StudyCreateScheduleDto.from(it) }
+        return studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId).map { QueryStudyScheduleDto.from(it) }
+    }
+
+    fun getUserTrackId(userId: UserId): TrackId{
+        val user = userRepository.findByIdOrNull(userId) ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+        return user.trackId
     }
 }

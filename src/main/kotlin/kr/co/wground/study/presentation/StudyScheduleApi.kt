@@ -17,6 +17,7 @@ import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleListResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
+import kr.co.wground.user.docs.UserSwaggerErrorExample
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -198,6 +199,10 @@ interface StudyScheduleApi {
                         ExampleObject(
                             name = "SCHEDULE_NOT_FOUND",
                             value = StudySwaggerErrorExample.Schedule.SCHEDULE_NOT_FOUND
+                        ),
+                        ExampleObject(
+                            name = "USER_NOT_FOUND",
+                            value = UserSwaggerErrorExample.NotFound.USER_NOT_FOUND
                         ),
                     ]
                 )]

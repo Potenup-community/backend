@@ -75,7 +75,7 @@ object StudySwaggerResponseExample {
          }
          """
 
-         const val RECRUITMENT_LIST_RESPONSE = """
+    const val RECRUITMENT_LIST_RESPONSE = """
          [
            {
              "id": 5,
@@ -112,7 +112,7 @@ object StudySwaggerResponseExample {
         }
         """
 
-         const val SCHEDULE_UPDATE_RESPONSE = """
+    const val SCHEDULE_UPDATE_RESPONSE = """
         {
           "id": 15,
           "trackId": 3,
@@ -120,7 +120,7 @@ object StudySwaggerResponseExample {
         }
         """
 
-         const val SCHEDULE_LIST_QUERY_RESPONSE = """
+    const val SCHEDULE_LIST_QUERY_RESPONSE = """
        {
        "content":[
             {
