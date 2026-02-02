@@ -76,34 +76,32 @@ object StudySwaggerResponseExample {
          """
 
     const val RECRUITMENT_LIST_RESPONSE = """
-         {
-             "content": [
-                {
-                    "id": 1,
-                    "studyId": 1,
-                    "studyName": "wqewqeqw",
-                    "trackName": "ewqe",
-                    "userId": 1,
-                    "userName": "안세준",
-                    "appeal": "I am interested in participating in this study and would like to be recruited.",
-                    "status": "PENDING",
-                    "createdAt": "2026-01-27T10:58:18.03575",
-                    "approvedAt": null
-                },
-                {
-                    "id": 2,
-                    "studyId": 2,
-                    "studyName": "mb,l",
-                    "trackName": "ewqe",
-                    "userId": 1,
-                    "userName": "안세준",
-                    "appeal": "I am interested in participating in this study and would like to be recruited.",
-                    "status": "PENDING",
-                    "createdAt": "2026-01-27T10:59:19.02089",
-                    "approvedAt": null
-                }
-             ]
-}
+         [
+           {
+             "id": 5,
+             "studyId": 1,
+             "studyName": "코틀린 정복 스터디",
+             "trackName": "백엔드 4기",
+             "userId": 101,
+             "userName": "이순신",
+             "appeal": "열심히 참여하겠습니다.",
+             "status": "PENDING",
+             "createdAt": "2026-01-26T09:00:00",
+             "approvedAt": null
+           },
+           {
+             "id": 6,
+             "studyId": 1,
+             "studyName": "코틀린 정복 스터디",
+             "trackName": "백엔드 4기",
+             "userId": 102,
+             "userName": "장보고",
+             "appeal": "코틀린 마스터가 되고 싶어요.",
+             "status": "APPROVED",
+             "createdAt": "2026-01-26T10:00:00",
+             "approvedAt": "2026-01-27T10:00:00"
+          }
+        ]
         """
 
     const val SCHEDULE_CREATE_RESPONSE = """
@@ -121,4 +119,42 @@ object StudySwaggerResponseExample {
           "months": "SECOND"
         }
         """
+
+    const val SCHEDULE_LIST_QUERY_RESPONSE = """
+       {
+       "content":[
+            {
+            "scheduleId": 15,
+            "months": "1"
+            },
+            {
+            "scheduleId": 16,
+            "months": "2"
+            },
+            {
+            "scheduleId": 17,
+            "months": "3"
+            },
+            {
+            "scheduleId": 18,
+            "months": "4"
+            },
+            {
+            "scheduleId": 19,
+            "months": "5"
+            }
+       ]
+       }
+    """
+    const val STUDY_SCHEDULE_RESPONSE = """
+        {
+        "id": 12,
+        "trackId": 2,
+        "months": "FIRST",
+        "monthName": "1",
+        "recruitStartDate": "2025-01-29T10:14:48",
+        "recruitEndDate": "2027-01-27T10:14:45",
+        "studyEndDate": "2028-01-27T10:14:56"
+    }
+    """
 }

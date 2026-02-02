@@ -3,9 +3,12 @@ package kr.co.wground.study.application
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.TrackId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.ScheduleCreateCommand
 import kr.co.wground.study.application.dto.ScheduleInfo
 import kr.co.wground.study.application.dto.ScheduleUpdateCommand
+import kr.co.wground.study.application.dto.QueryStudyScheduleDto
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.StudySchedule
 import kr.co.wground.study.infra.StudyRepository
@@ -14,6 +17,8 @@ import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
 import kr.co.wground.track.infra.TrackRepository
+import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.infra.UserRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class StudyScheduleService(
     private val studyScheduleRepository: StudyScheduleRepository,
+    private val userRepository: UserRepository,
     private val trackRepository: TrackRepository,
     private val studyRepository: StudyRepository,
     private val scheduleValidator: StudyScheduleValidator
@@ -48,6 +54,12 @@ class StudyScheduleService(
     }
 
     @Transactional(readOnly = true)
+    fun getCurrentScheduleByUserId(userId: UserId): ScheduleQueryResponse? {
+        val trackId = getUserTrackId(userId)
+        return getCurrentSchedule(trackId)
+    }
+
+    @Transactional(readOnly = true)
     fun getCurrentSchedule(trackId: Long): ScheduleQueryResponse? {
         val now = LocalDateTime.now()
         return studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(trackId)
@@ -57,6 +69,7 @@ class StudyScheduleService(
                     id = it.id,
                     trackId = it.trackId,
                     months = it.months,
+                    monthName = it.months.month,
                     recruitStartDate = it.recruitStartDate,
                     recruitEndDate = it.recruitEndDate,
                     studyEndDate = it.studyEndDate
@@ -111,5 +124,17 @@ class StudyScheduleService(
     fun getScheduleEntity(id: Long): StudySchedule {
         return studyScheduleRepository.findByIdOrNull(id)
             ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
+    }
+
+    fun getSchedules(userId: UserId): List<QueryStudyScheduleDto> {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+
+        return studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId).map { QueryStudyScheduleDto.from(it) }
+    }
+
+    fun getUserTrackId(userId: UserId): TrackId{
+        val user = userRepository.findByIdOrNull(userId) ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+        return user.trackId
     }
 }
