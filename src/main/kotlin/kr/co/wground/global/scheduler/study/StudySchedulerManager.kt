@@ -14,6 +14,9 @@ class StudySchedulerManager(
 ) {
     private val tasks = ConcurrentHashMap<Long, MutableList<ScheduledFuture<*>>>()
 
+    companion object {
+        const val STUDY_ALERT_PREVIOUS_DAYS = 3L
+    }
     fun registerSchedule(
         scheduleId: Long,
         recruitStart: LocalDateTime,
@@ -33,7 +36,7 @@ class StudySchedulerManager(
             newTasks.add(future)
         }
 
-        val recruitEndNotifyTime = recruitEnd.minusDays(3)// 3일 전 알림
+        val recruitEndNotifyTime = recruitEnd.minusDays(STUDY_ALERT_PREVIOUS_DAYS)// 3일 전 알림
         if (recruitEndNotifyTime.isAfter(now)) {
             val future = taskScheduler.schedule(
                 { studyTaskExecutor.executeRecruitEnd(scheduleId) },
@@ -42,7 +45,7 @@ class StudySchedulerManager(
             newTasks.add(future)
         }
 
-        val studyEndNotifyTime = studyEnd.minusDays(3) // 3일 전 알림
+        val studyEndNotifyTime = studyEnd.minusDays(STUDY_ALERT_PREVIOUS_DAYS) // 3일 전 알림
         if (studyEndNotifyTime.isAfter(now)) {
             val future = taskScheduler.schedule(
                 { studyTaskExecutor.executeStudyEnd(scheduleId) },

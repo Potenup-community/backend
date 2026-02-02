@@ -26,7 +26,7 @@ data class StudyScheduleChangedEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
                 months = schedule.months,
-                recruitStartDate = schedule.recruitEndDate,
+                recruitStartDate = schedule.recruitStartDate,
                 recruitEndDate = schedule.recruitEndDate,
                 studyEndDate = schedule.studyEndDate,
                 type = studyScheduleEventType

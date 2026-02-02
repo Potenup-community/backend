@@ -24,7 +24,6 @@ class StudyScheduleStartupLoader(
         
         while (true) {
             val pageRequest = PageRequest.of(pageNumber, batchSize)
-            //
             val schedules = studyScheduleRepository.findAllByStudyEndDateAfter(now, pageRequest)
 
             if (schedules.isEmpty()) break

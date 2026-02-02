@@ -1,11 +1,11 @@
 package kr.co.wground.study.application
 
-import java.time.LocalDateTime
-import java.time.LocalTime
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.global.common.TrackId
 import kr.co.wground.study.application.dto.ScheduleCreateCommand
 import kr.co.wground.study.application.dto.ScheduleInfo
 import kr.co.wground.study.application.dto.ScheduleUpdateCommand
+import kr.co.wground.study.application.event.StudyScheduleChangedEvent
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.StudySchedule
 import kr.co.wground.study.infra.StudyRepository
@@ -13,12 +13,14 @@ import kr.co.wground.study.infra.StudyScheduleRepository
 import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
+import kr.co.wground.track.domain.Track
 import kr.co.wground.track.infra.TrackRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kr.co.wground.study.application.event.StudyScheduleChangedEvent
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @Service
 @Transactional
@@ -76,25 +78,10 @@ class StudyScheduleService(
 
     fun updateSchedule(command: ScheduleUpdateCommand): ScheduleUpdateResponse {
         val schedule = getScheduleEntity(command.id)
+        val track = getTrackOrThrow(schedule.trackId)
+        val existSchedules = getOtherSchedules(schedule)
 
-        val track = trackRepository.findByIdOrNull(schedule.trackId)
-            ?: throw BusinessException(StudyServiceErrorCode.TRACK_NOT_FOUND)
-        val existSchedules = studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(schedule.trackId)
-            .filter { it.id != schedule.id }
-
-        val newRecruitStart = command.recruitStartDate?.atStartOfDay() ?: schedule.recruitStartDate
-        val newStudyEnd = command.studyEndDate?.atTime(LocalTime.MAX) ?: schedule.studyEndDate
-        val newMonth = command.months ?: schedule.months
-
-        scheduleValidator.validate(
-            newInfo = ScheduleInfo(
-                month = newMonth,
-                recruitStart = newRecruitStart,
-                studyEnd = newStudyEnd
-            ),
-            track = track,
-            existSchedules = existSchedules
-        )
+        validateNewSchedule(command, schedule, track, existSchedules)
 
         schedule.updateSchedule(
             newMonths = command.months,
@@ -103,17 +90,8 @@ class StudyScheduleService(
             newStudyEnd = command.studyEndDate
         )
 
-        val affectedStudies = studyRepository.findAllByScheduleId(schedule.id)
-        affectedStudies.forEach { study ->
-            study.refreshStatus(schedule.isRecruitmentClosed())
-        }
-
-        eventPublisher.publishEvent(
-            StudyScheduleChangedEvent.of(
-                schedule = schedule,
-                studyScheduleEventType = StudyScheduleChangedEvent.EventType.UPDATED
-            )
-        )
+        refreshAffectedStudies(schedule)
+        publishUpdateEvent(schedule)
 
         return ScheduleUpdateResponse.of(schedule.id, schedule.trackId, schedule.months)
     }
@@ -133,8 +111,46 @@ class StudyScheduleService(
         )
     }
 
+    private fun validateNewSchedule(
+        command: ScheduleUpdateCommand,
+        schedule: StudySchedule,
+        track: Track,
+        existSchedules: List<StudySchedule>
+    ) {
+        val newInfo = ScheduleInfo(
+            month = command.months ?: schedule.months,
+            recruitStart = command.recruitStartDate?.atStartOfDay() ?: schedule.recruitStartDate,
+            studyEnd = command.studyEndDate?.atTime(LocalTime.MAX) ?: schedule.studyEndDate
+        )
+        scheduleValidator.validate(newInfo, track, existSchedules)
+    }
+
+    private fun refreshAffectedStudies(schedule: StudySchedule) {
+        val affectedStudies = studyRepository.findAllByScheduleId(schedule.id)
+        affectedStudies.forEach { it.refreshStatus(schedule.isRecruitmentClosed()) }
+    }
+
     fun getScheduleEntity(id: Long): StudySchedule {
         return studyScheduleRepository.findByIdOrNull(id)
             ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
+    }
+
+    fun getTrackOrThrow(trackId: TrackId): Track{
+        return trackRepository.findByIdOrNull(trackId)
+            ?: throw BusinessException(StudyServiceErrorCode.TRACK_NOT_FOUND)
+    }
+
+    fun getOtherSchedules(schedule: StudySchedule): List<StudySchedule>{
+        return studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(schedule.trackId)
+            .filter { it.id != schedule.id }
+    }
+
+    fun publishUpdateEvent(schedule: StudySchedule){
+        eventPublisher.publishEvent(
+            StudyScheduleChangedEvent.of(
+                schedule = schedule,
+                studyScheduleEventType = StudyScheduleChangedEvent.EventType.UPDATED
+            )
+        )
     }
 }
