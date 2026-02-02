@@ -45,7 +45,7 @@ class StudyScheduleController(
 
     @GetMapping
     override fun getSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>{
-        val result = studyScheduleService.getSchedules(userId.value)
+        val result = studyScheduleService.getSchedulesByUserId(userId.value)
         return ResponseEntity.ok().body(ScheduleListResponse(result))
     }
 

@@ -15,6 +15,7 @@ enum class StudyServiceErrorCode(
     CANNOT_DELETE_SCHEDULE_WITH_STUDIES(HttpStatus.CONFLICT,"SS-0008","해당 일정을 참조하는 스터디가 있어 삭제할 수 없습니다."),
     SCHEDULE_OVERLAP_WITH_PREVIOUS(HttpStatus.BAD_REQUEST,"SS-0009","이전 차수의 스터디 종료일은 현재 차수의 스터디 모집 시작일 보다 늦을 수 없습니다."),
     NO_CURRENT_SCHEDULE(HttpStatus.BAD_REQUEST,"SS-0010","현재 스터디 신청 과정이 아닙니다."),
+    INVALID_SCHEDULE_PARAMETER(HttpStatus.BAD_REQUEST,"SS-0011","스케줄 입력 값이 유효하지 않습니다."),
 
     //Study-Track
     TRACK_IS_NOT_ENROLLED(HttpStatus.BAD_REQUEST,"SDT-0001","해당 과정을 수강중인 상태가 아닙니다."),

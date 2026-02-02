@@ -2,11 +2,9 @@ package kr.co.wground.study.application
 
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.LeaderDto
 import kr.co.wground.study.application.dto.ScheduleDto
 import kr.co.wground.study.application.dto.StudyCreateCommand
-import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.application.dto.StudySearchDto
 import kr.co.wground.study.application.dto.StudyUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
@@ -27,7 +25,6 @@ import kr.co.wground.user.infra.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -136,7 +133,7 @@ class StudyService(
             StudyDeletedEvent(
                 studyId = studyId,
                 studyTitle = studyName,
-                recruitUserIds = recruitIds
+                userIds = recruitIds
             )
         )
     }
