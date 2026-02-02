@@ -207,7 +207,7 @@ class CustomUserRepositoryImpl(
                     UserDisplayInfoDto::class.java,
                     user.userId,
                     user.name,
-                    user.userProfile.imageUrl,
+                    user.userProfile,
                     trackNameExpr,
                 )
             )
@@ -231,7 +231,7 @@ class CustomUserRepositoryImpl(
                     UserDisplayInfoDto::class.java,
                     user.userId,
                     user.name,
-                    user.userProfile.imageUrl,
+                    user.userProfile,
                     trackNameExpr,
                 )
             )

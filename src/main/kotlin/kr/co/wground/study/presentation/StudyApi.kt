@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
+import kr.co.wground.common.SortType
 import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.global.jwt.UserPrincipal
@@ -372,7 +373,8 @@ interface StudyApi {
     )
     fun searchStudies(
         @ParameterObject @ModelAttribute condition: StudySearchCondition,
-        @ParameterObject @PageableDefault(size = 10, sort = ["createdAt"]) pageable: Pageable,
+        @Parameter(description = "DefaultValue = DESC") sortType: SortType,
+        @ParameterObject @PageableDefault(size = 10) pageable: Pageable,
         @Parameter(
             `in` = ParameterIn.COOKIE,
             name = "accessToken",

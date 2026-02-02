@@ -8,12 +8,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import kr.co.wground.global.common.response.ErrorResponse
+import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.docs.StudySwaggerErrorExample
 import kr.co.wground.study.docs.StudySwaggerResponseExample
 import kr.co.wground.study.presentation.request.schedule.ScheduleCreateRequest
 import kr.co.wground.study.presentation.request.schedule.ScheduleUpdateRequest
 import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleListResponse
+import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
 import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
+import kr.co.wground.user.docs.UserSwaggerErrorExample
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -175,4 +179,62 @@ interface StudyScheduleApi {
         ]
     )
     fun deleteSchedule(@PathVariable id: Long): ResponseEntity<Unit>
+
+    @Operation(summary = "스터디 일정 조회", description = "해당 유저가 속한 트랙의 스터디 일정(차수)을 조회")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "조회 성공",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ScheduleListResponse::class),
+                    examples = [ExampleObject(value = StudySwaggerResponseExample.SCHEDULE_LIST_QUERY_RESPONSE)]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404", description = "자원 찾을 수 없음",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "SCHEDULE_NOT_FOUND",
+                            value = StudySwaggerErrorExample.Schedule.SCHEDULE_NOT_FOUND
+                        ),
+                        ExampleObject(
+                            name = "USER_NOT_FOUND",
+                            value = UserSwaggerErrorExample.NotFound.USER_NOT_FOUND
+                        ),
+                    ]
+                )]
+            ),
+        ]
+    )
+    fun getSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>
+
+    @Operation(summary = "내 과정에서 현재 진행중인 스터디 일정 조회", description = "해당 유저가 속한 트랙의 스터디 일정(차수)을 조회")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "조회 성공",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ScheduleListResponse::class),
+                    examples = [ExampleObject(value = StudySwaggerResponseExample.STUDY_SCHEDULE_RESPONSE)]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404", description = "자원 찾을 수 없음",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "SCHEDULE_NOT_FOUND",
+                            value = StudySwaggerErrorExample.Schedule.SCHEDULE_NOT_FOUND
+                        ),
+                    ]
+                )]
+            ),
+        ]
+    )
+    fun getCurrentSchedule(userId: CurrentUserId): ResponseEntity<ScheduleQueryResponse>
 }
