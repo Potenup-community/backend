@@ -155,7 +155,7 @@ class StudyScheduleService(
         affectedStudies.forEach { it.refreshStatus(schedule.isRecruitmentClosed()) }
     }
 
-    private fun getScheduleEntity(id: Long): StudySchedule {
+    fun getScheduleEntity(id: Long): StudySchedule {
         return studyScheduleRepository.findByIdOrNull(id)
             ?: throw BusinessException(StudyServiceErrorCode.SCHEDULE_NOT_FOUND)
     }
