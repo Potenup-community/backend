@@ -5,6 +5,10 @@ import kr.co.wground.common.event.CommentCreatedEvent
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
+import kr.co.wground.common.event.StudyDeletedEvent
+import kr.co.wground.common.event.StudyDetermineEvent
+import kr.co.wground.common.event.StudyRecruitEvent
+import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.application.port.NotificationMessage
@@ -21,6 +25,8 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
+private const val NOTIFICATION_EXECUTOR = "notificationExecutor"
+
 @Component
 class NotificationEventListener(
     private val notificationCommandService: NotificationCommandService,
@@ -28,7 +34,7 @@ class NotificationEventListener(
     @Value("\${app.frontend-url}") private val frontendUrl: String,
 ) {
 
-    @Async("notificationExecutor")
+    @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleCommentCreated(event: CommentCreatedEvent) {
         val isSelfComment = event.postWriterId == event.commentWriterId
@@ -76,7 +82,7 @@ class NotificationEventListener(
         }
     }
 
-    @Async("notificationExecutor")
+    @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handlePostReactionCreated(event: PostReactionCreatedEvent) {
         if (event.postWriterId == event.reactorId) return
@@ -98,7 +104,7 @@ class NotificationEventListener(
         }
     }
 
-    @Async("notificationExecutor")
+    @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleCommentReactionCreated(event: CommentReactionCreatedEvent) {
         if (event.commentWriterId == event.reactorId) return
@@ -121,7 +127,7 @@ class NotificationEventListener(
         }
     }
 
-    @Async("notificationExecutor")
+    @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleMentionCreated(event: MentionCreatedEvent) {
         event.mentionUserIds
@@ -148,7 +154,7 @@ class NotificationEventListener(
 
     // 현재 공지사항은 슬랙 알림으로만 전송
     // TODO : 나중에 앱 푸시 알림 추가 예정
-    @Async("notificationExecutor")
+    @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleAnnouncementCreated(event: AnnouncementCreatedEvent) {
         val postLink = "$frontendUrl/post/${event.postId}"
@@ -161,6 +167,70 @@ class NotificationEventListener(
                 )
             )
         )
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyRecruit(event: StudyRecruitEvent) {
+        createNotificationSafely {
+            notificationCommandService.create(
+                recipientId = event.leaderId,
+                actorId = null,
+                type = NotificationType.STUDY_APPLICATION,
+                content = NotificationContent(
+                    title = "스터디 지원",
+                    content = "스터디에 새로운 지원자가 있습니다.",
+                ),
+                reference = NotificationReference(
+                    referenceType = ReferenceType.STUDY,
+                    referenceId = event.studyId,
+                ),
+            )
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyDetermine(event: StudyDetermineEvent) {
+        if (event.recruitStatus != RecruitStatus.APPROVED) return
+
+        createNotificationSafely {
+            notificationCommandService.create(
+                recipientId = event.userId,
+                actorId = null,
+                type = NotificationType.STUDY_APPROVED,
+                content = NotificationContent(
+                    title = "스터디 알림",
+                    content = "스터디 신청이 승인되었어요! 🎉",
+                ),
+                reference = NotificationReference(
+                    referenceType = ReferenceType.STUDY,
+                    referenceId = event.studyId,
+                ),
+            )
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyDeleted(event: StudyDeletedEvent) {
+        event.userIds.forEach { userId ->
+            createNotificationSafely {
+                notificationCommandService.create(
+                    recipientId = userId,
+                    actorId = null,
+                    type = NotificationType.STUDY_DELETED,
+                    content = NotificationContent(
+                        title = "스터디 삭제",
+                        content = "신청하신 '${event.studyTitle}' 스터디가 삭제되었습니다.",
+                    ),
+                    reference = NotificationReference(
+                        referenceType = ReferenceType.STUDY,
+                        referenceId = event.studyId,
+                    ),
+                )
+            }
+        }
     }
 
     private fun createNotificationSafely(action: () -> Unit) {
