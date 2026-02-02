@@ -59,7 +59,7 @@ class StudyRecruitmentService(
         eventPublisher.publishEvent(
             StudyRecruitEvent(
                 studyId = study.id,
-                studyLeaderId = study.leaderId
+                leaderId = study.leaderId
             )
         )
         return savedRecruitment.id
@@ -93,7 +93,7 @@ class StudyRecruitmentService(
         eventPublisher.publishEvent(
             StudyDetermineEvent(
                 studyId = recruitment.study.id,
-                recruitmentId = recruitment.userId,
+                userId = recruitment.userId,
                 recruitStatus = recruitment.recruitStatus
             )
         )

@@ -4,5 +4,5 @@ import kr.co.wground.global.common.WriterId
 
 data class StudyRecruitEvent(
     val studyId: Long,
-    val studyLeaderId: WriterId,
+    val leaderId: WriterId,
 )
