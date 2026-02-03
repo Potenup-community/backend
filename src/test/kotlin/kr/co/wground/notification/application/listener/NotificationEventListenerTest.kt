@@ -4,6 +4,10 @@ import kr.co.wground.common.event.CommentCreatedEvent
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
+import kr.co.wground.common.event.StudyDeletedEvent
+import kr.co.wground.common.event.StudyDetermineEvent
+import kr.co.wground.common.event.StudyRecruitEvent
+import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.vo.NotificationContent
@@ -20,6 +24,7 @@ import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import java.time.LocalDateTime
 import kr.co.wground.notification.application.port.NotificationSender
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
 
@@ -267,6 +272,90 @@ class NotificationEventListenerTest {
 
             // then
             verifyNoInteractions(notificationCommandService)
+        }
+    }
+
+    @Nested
+    @DisplayName("스터디 이벤트 처리")
+    inner class HandleStudyEvents {
+
+        @DisplayName("스터디 지원 시 리더에게 알림이 생성된다")
+        @Test
+        fun shouldCreateNotification_whenStudyRecruit() {
+            // given
+            val event = StudyRecruitEvent(
+                studyId = 1L,
+                leaderId = 100L
+            )
+
+            // when
+            listener.handleStudyRecruit(event)
+
+            // then
+            verify(notificationCommandService).create(
+                capture(recipientCaptor),
+                capture(actorCaptor),
+                capture(typeCaptor),
+                capture(contentCaptor),
+                capture(referenceCaptor),
+                capture(expiresAtCaptor)
+            )
+
+            assertThat(recipientCaptor.value).isEqualTo(100L)
+            assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_APPLICATION)
+        }
+
+        @DisplayName("스터디 승인 시 지원자에게 알림이 생성된다")
+        @Test
+        fun shouldCreateNotification_whenStudyApproved() {
+            // given
+            val event = StudyDetermineEvent(
+                studyId = 1L,
+                userId = 200L,
+                recruitStatus = RecruitStatus.APPROVED
+            )
+
+            // when
+            listener.handleStudyDetermine(event)
+
+            // then
+            verify(notificationCommandService).create(
+                capture(recipientCaptor),
+                capture(actorCaptor),
+                capture(typeCaptor),
+                capture(contentCaptor),
+                capture(referenceCaptor),
+                capture(expiresAtCaptor)
+            )
+
+            assertThat(recipientCaptor.value).isEqualTo(200L)
+            assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_APPROVED)
+        }
+
+        @DisplayName("스터디 삭제 시 지원자들에게 알림이 생성된다")
+        @Test
+        fun shouldCreateNotificationForEachRecruit_whenStudyDeleted() {
+            // given
+            val event = StudyDeletedEvent(
+                studyId = 1L,
+                studyTitle = "테스트 스터디",
+                userIds = listOf(200L, 300L)
+            )
+
+            // when
+            listener.handleStudyDeleted(event)
+
+            // then
+            verify(notificationCommandService, times(2)).create(
+                capture(recipientCaptor),
+                capture(actorCaptor),
+                capture(typeCaptor),
+                capture(contentCaptor),
+                capture(referenceCaptor),
+                capture(expiresAtCaptor)
+            )
+
+            assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_DELETED)
         }
     }
 
