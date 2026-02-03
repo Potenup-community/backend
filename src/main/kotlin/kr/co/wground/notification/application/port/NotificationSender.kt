@@ -19,6 +19,7 @@ enum class NotificationMessageType {
     NEW_POSTS_SUMMARY,
 
     // 스터디 채널 (STUDY)
+    STUDY_RECRUIT_START_REMINDER,
     STUDY_RECRUIT_END_REMINDER,
 }
 
@@ -27,5 +28,6 @@ val NotificationMessageType.defaultChannel: SlackChannel
         NotificationMessageType.ANNOUNCEMENT,
         NotificationMessageType.NEW_POSTS_SUMMARY -> SlackChannel.GENERAL
 
+        NotificationMessageType.STUDY_RECRUIT_START_REMINDER,
         NotificationMessageType.STUDY_RECRUIT_END_REMINDER -> SlackChannel.STUDY
     }

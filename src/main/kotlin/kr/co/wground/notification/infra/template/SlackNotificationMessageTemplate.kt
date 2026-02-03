@@ -40,6 +40,14 @@ class SlackNotificationMessageTemplate : NotificationMessageTemplate<SlackTempla
         ),
 
         // 스터디 채널 (STUDY)
+        NotificationMessageType.STUDY_RECRUIT_START_REMINDER to SlackTemplate(
+            header = "🎉 스터디 모집이 시작되었습니다!",
+            body = "📌 *{trackName} {months}* 스터디\n\n" +
+                    "지금부터 스터디 신청이 가능합니다!\n" +
+                    "💪 함께 성장할 동료들을 기다리고 있어요!",
+            buttonText = "스터디 신청하기"
+        ),
+
         NotificationMessageType.STUDY_RECRUIT_END_REMINDER to SlackTemplate(
             header = "📢 스터디 모집 마감 임박",
             body = "📌 *{trackName} {months}* 스터디\n\n" +

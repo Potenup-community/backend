@@ -9,6 +9,7 @@ import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.common.event.StudyDetermineEvent
 import kr.co.wground.common.event.StudyRecruitEndedEvent
 import kr.co.wground.common.event.StudyRecruitEvent
+import kr.co.wground.common.event.StudyRecruitStartedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.application.port.NotificationMessage
@@ -234,6 +235,24 @@ class NotificationEventListener(
                 )
             }
         }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyRecruitStarted(event: StudyRecruitStartedEvent) {
+        val track = trackRepository.findByIdOrNull(event.trackId) ?: return
+        val studyLink = "$frontendUrl/study"
+
+        notificationSender.send(
+            NotificationMessage(
+                type = NotificationMessageType.STUDY_RECRUIT_START_REMINDER,
+                link = studyLink,
+                metadata = mapOf(
+                    "trackName" to track.trackName,
+                    "months" to "${event.months.month}월차",
+                )
+            )
+        )
     }
 
     @Async(NOTIFICATION_EXECUTOR)
