@@ -7,8 +7,9 @@ import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.common.event.StudyDetermineEvent
+import kr.co.wground.common.event.StudyRecruitEndedEvent
 import kr.co.wground.common.event.StudyRecruitEvent
-import kr.co.wground.study.domain.constant.RecruitStatus
+import kr.co.wground.common.event.StudyRecruitStartedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.application.port.NotificationMessage
@@ -19,7 +20,10 @@ import kr.co.wground.notification.domain.enums.ReferenceType
 import kr.co.wground.notification.domain.vo.NotificationContent
 import kr.co.wground.notification.domain.vo.NotificationReference
 import kr.co.wground.notification.exception.NotificationErrorCode
+import kr.co.wground.study.domain.constant.RecruitStatus
+import kr.co.wground.track.infra.TrackRepository
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
@@ -31,6 +35,7 @@ private const val NOTIFICATION_EXECUTOR = "notificationExecutor"
 class NotificationEventListener(
     private val notificationCommandService: NotificationCommandService,
     private val notificationSender: NotificationSender,
+    private val trackRepository: TrackRepository,
     @Value("\${app.frontend-url}") private val frontendUrl: String,
 ) {
 
@@ -152,7 +157,6 @@ class NotificationEventListener(
             }
     }
 
-    // 현재 공지사항은 슬랙 알림으로만 전송
     // TODO : 나중에 앱 푸시 알림 추가 예정
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -222,7 +226,7 @@ class NotificationEventListener(
                     type = NotificationType.STUDY_DELETED,
                     content = NotificationContent(
                         title = "스터디 삭제",
-                        content = "신청하신 '${event.studyTitle}' 스터디가 삭제되었습니다.",
+                        content = "신청하신 '${event.studyTitle}' 스터디가 삭제되었습니다. 다른 스터디를 찾아주세요 😊",
                     ),
                     reference = NotificationReference(
                         referenceType = ReferenceType.STUDY,
@@ -231,6 +235,42 @@ class NotificationEventListener(
                 )
             }
         }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyRecruitStarted(event: StudyRecruitStartedEvent) {
+        val track = trackRepository.findByIdOrNull(event.trackId) ?: return
+        val studyLink = "$frontendUrl/study"
+
+        notificationSender.send(
+            NotificationMessage(
+                type = NotificationMessageType.STUDY_RECRUIT_START_REMINDER,
+                link = studyLink,
+                metadata = mapOf(
+                    "trackName" to track.trackName,
+                    "months" to "${event.months.month}월차",
+                )
+            )
+        )
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyRecruitEnded(event: StudyRecruitEndedEvent) {
+        val track = trackRepository.findByIdOrNull(event.trackId) ?: return
+        val studyLink = "$frontendUrl/study"
+
+        notificationSender.send(
+            NotificationMessage(
+                type = NotificationMessageType.STUDY_RECRUIT_END_REMINDER,
+                link = studyLink,
+                metadata = mapOf(
+                    "trackName" to track.trackName,
+                    "months" to "${event.months.month}월차",
+                )
+            )
+        )
     }
 
     private fun createNotificationSafely(action: () -> Unit) {
