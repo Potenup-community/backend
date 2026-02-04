@@ -10,8 +10,8 @@ import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.domain.enums.NotificationType
-import kr.co.wground.notification.domain.vo.NotificationContent
 import kr.co.wground.notification.domain.vo.NotificationReference
+import kr.co.wground.user.infra.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -39,6 +39,9 @@ class NotificationEventListenerTest {
     @Mock
     private lateinit var trackRepository: TrackRepository
 
+    @Mock
+    private lateinit var userRepository: UserRepository
+
     @Captor
     private lateinit var recipientCaptor: ArgumentCaptor<Long>
 
@@ -49,10 +52,13 @@ class NotificationEventListenerTest {
     private lateinit var typeCaptor: ArgumentCaptor<NotificationType>
 
     @Captor
-    private lateinit var contentCaptor: ArgumentCaptor<NotificationContent>
+    private lateinit var titleCaptor: ArgumentCaptor<String>
 
     @Captor
     private lateinit var referenceCaptor: ArgumentCaptor<NotificationReference?>
+
+    @Captor
+    private lateinit var placeholdersCaptor: ArgumentCaptor<Map<String, String>>
 
     @Captor
     private lateinit var expiresAtCaptor: ArgumentCaptor<LocalDateTime?>
@@ -66,6 +72,7 @@ class NotificationEventListenerTest {
             notificationCommandService,
             notificationSender,
             trackRepository,
+            userRepository,
             "http://frontend-url"
         )
     }
@@ -95,8 +102,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -146,8 +154,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -178,8 +187,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -227,8 +237,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -259,8 +270,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
         }
@@ -305,8 +317,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -332,8 +345,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -359,8 +373,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
