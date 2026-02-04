@@ -124,31 +124,34 @@ class NotificationEventListener(
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleMentionCreated(event: MentionCreatedEvent) {
-        event.mentionUserIds
-            .filter { it != event.mentionerId }
-            .forEach { mentionedUserId ->
-                createNotificationSafely {
-                    val mentionedUser = userRepository.findByIdOrNull(mentionedUserId)
-                    val placeholders = if (mentionedUser != null) {
-                        mapOf("name" to mentionedUser.name)
-                    } else {
-                        emptyMap()
-                    }
+        val targetUserIds = event.mentionUserIds.filter { it != event.mentionerId }
+        if (targetUserIds.isEmpty()) return
 
-                    notificationCommandService.create(
-                        recipientId = mentionedUserId,
-                        actorId = event.mentionerId,
-                        type = NotificationType.COMMENT_MENTION,
-                        title = "멘션",
-                        reference = NotificationReference(
-                            referenceType = ReferenceType.POST,
-                            referenceId = event.postId,
-                            subReferenceId = event.commentId,
-                        ),
-                        placeholders = placeholders,
-                    )
+        val usersById = userRepository.findAllById(targetUserIds).associateBy { it.userId }
+
+        targetUserIds.forEach { mentionedUserId ->
+            createNotificationSafely {
+                val mentionedUser = usersById[mentionedUserId]
+                val placeholders = if (mentionedUser != null) {
+                    mapOf("name" to mentionedUser.name)
+                } else {
+                    emptyMap()
                 }
+
+                notificationCommandService.create(
+                    recipientId = mentionedUserId,
+                    actorId = event.mentionerId,
+                    type = NotificationType.COMMENT_MENTION,
+                    title = "멘션",
+                    reference = NotificationReference(
+                        referenceType = ReferenceType.POST,
+                        referenceId = event.postId,
+                        subReferenceId = event.commentId,
+                    ),
+                    placeholders = placeholders,
+                )
             }
+        }
     }
 
     @Async(NOTIFICATION_EXECUTOR)
