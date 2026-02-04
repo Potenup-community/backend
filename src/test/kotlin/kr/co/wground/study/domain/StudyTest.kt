@@ -9,7 +9,12 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
+import java.util.stream.Stream
+import kotlin.repeat
 
 @DisplayName("스터디(Study) 테스트")
 class StudyTest {
@@ -17,60 +22,70 @@ class StudyTest {
     // To Do: 특정 값을 변경하고 싶지 않은 경우, null 을 명시적으로 전달하는 방식이 괜찮을 지 모르겠음
     val NOT_GONNA_CHANGE = null;
 
+    companion object {
+
+        @JvmStatic
+        fun invalidCapacities(): Stream<Arguments> = Stream.of(
+            Arguments.of("too small(${Study.MIN_CAPACITY} 미만)", Study.MIN_CAPACITY - 1, StudyDomainErrorCode.STUDY_CAPACITY_TOO_SMALL.code),
+            Arguments.of("too big(${Study.ABSOLUTE_MAX_CAPACITY} 초과)", Study.ABSOLUTE_MAX_CAPACITY + 1, StudyDomainErrorCode.STUDY_CAPACITY_TOO_BIG.code)
+        )
+
+        @JvmStatic
+        fun invalidNames(): Stream<Arguments> = Stream.of(
+            Arguments.of("empty", ""),
+            Arguments.of("blank(space)", " "),
+            Arguments.of("blank(tab)", "\t"),
+            Arguments.of("blank(newline)", "\n"),
+            Arguments.of("blank(mixed)", " \t \n "),
+            Arguments.of("too short(${Study.MIN_NAME_LENGTH}자 미만)", "*".repeat(Study.MIN_NAME_LENGTH - 1)),
+            Arguments.of("too short(${Study.MIN_NAME_LENGTH}자 미만; trimmed)", " 1 "),
+            Arguments.of("too short(${Study.MIN_NAME_LENGTH}자 미만; mixed)", " \t1\n "),
+            Arguments.of("too long(${Study.MAX_NAME_LENGTH}자 초과)", " \t" + "*".repeat(Study.MAX_NAME_LENGTH + 1) + "\n ")
+        )
+
+        @JvmStatic
+        fun invalidDescriptions(): Stream<Arguments> = Stream.of(
+            Arguments.of("empty", ""),
+            Arguments.of("blank(space)", " "),
+            Arguments.of("blank(tab)", "\t"),
+            Arguments.of("blank(newline)", "\n"),
+            Arguments.of("blank(mixed)", " \t \n "),
+            Arguments.of("too short(${Study.MIN_DESCRIPTION_LENGTH}자 미만)", "*".repeat(Study.MIN_DESCRIPTION_LENGTH - 1)),
+            Arguments.of("too short(${Study.MIN_DESCRIPTION_LENGTH}자 미만; trimmed)", " 1 "),
+            Arguments.of("too short(${Study.MIN_DESCRIPTION_LENGTH}자 미만; mixed)", " \t1\n "),
+            Arguments.of("too long(${Study.MAX_DESCRIPTION_LENGTH}자 초과)", " \t" + "*".repeat(Study.MAX_DESCRIPTION_LENGTH + 1) + "\n ")
+        )
+    }
+
     // ----- 정원 수
 
-    @Test
-    @DisplayName("스터디 생성 시, 정원 수가 MIN CAPACITY 미만이면, 예외 발생 - BusinessException(STUDY_CAPACITY_TOO_SMALL)")
-    fun shouldThrowStudyCapacityTooSmall_whenCreateStudyWithCapacityBelowMin() {
+    @ParameterizedTest(name = "정원 수: {0}")
+    @MethodSource("invalidCapacities")
+    @DisplayName("스터디 생성 시, 정원 수가 MIN_CAPACITY 미만이거나 ABSOLUTE_MAX_CAPACITY 초과이면, 예외 발생")
+    fun shouldThrowBusinessException_whenCreateStudyWithInvalidCapacity(caseName: String, givenCapacity: Int, expectedErrorCode: String) {
 
         // 주어진 사용자가 해당 트랙에 참가 중이라고 가정
         val thrown = assertThrows<BusinessException> {
-            createStudyWithCapacity(createRecruitingStudySchedule(), Study.MIN_CAPACITY - 1)
+            createStudyWithCapacity(createRecruitingStudySchedule(), givenCapacity)
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_CAPACITY_TOO_SMALL.code, thrown.code)
+        assertEquals(expectedErrorCode, thrown.code)
     }
 
-    @Test
-    @DisplayName("스터디 수정 시, 정원 수가 MIN CAPACITY 미만이면, 예외 발생 - BusinessException(STUDY_CAPACITY_TOO_SMALL)")
-    fun shouldThrowStudyCapacityTooSmall_whenUpdateStudyWithCapacityBelowMin() {
+    @ParameterizedTest(name = "정원 수: {0}")
+    @MethodSource("invalidCapacities")
+    @DisplayName("스터디 수정 시, 정원 수가 MIN_CAPACITY 미만이거나 ABSOLUTE_MAX_CAPACITY 초과이면, 예외 발생")
+    fun shouldThrowStudyCapacityTooSmall_whenUpdateStudyWithInvalidCapacity(caseName: String, givenCapacity: Int, expectedErrorCode: String) {
         // 주어진 사용자가 해당 트랙에 참가 중이라고 가정
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
+            val validCapacity = Study.MIN_CAPACITY
+            val created = createStudyWithCapacity(schedule, validCapacity)
             updateStudyCapacity(
-                created, Study.MIN_CAPACITY - 1, schedule.isRecruitmentClosed())
+                created, givenCapacity, schedule.isRecruitmentClosed())
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_CAPACITY_TOO_SMALL.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 생성 시, 정원 수가 ABSOLUTE MAX CAPACITY 초과이면, 예외 발생 - BusinessException(STUDY_CAPACITY_TOO_BIG)")
-    fun shouldThrowStudyCapacityTooBig_whenCreateStudyWithCapacityOverAbsoluteMax() {
-
-        // 주어진 사용자가 해당 트랙에 참가 중이라고 가정
-        val thrown = assertThrows<BusinessException> {
-            createStudyWithCapacity(createRecruitingStudySchedule(), Study.ABSOLUTE_MAX_CAPACITY + 1)
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_CAPACITY_TOO_BIG.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 수정 시, 정원 수가 ABSOLUTE MAX CAPACITY 초과이면, 예외 발생 - BusinessException(STUDY_CAPACITY_TOO_BIG)")
-    fun shouldThrowStudyCapacityTooBig_whenUpdateStudyWithCapacityOverAbsoluteMax() {
-
-        // 주어진 사용자가 해당 트랙에 참가 중이라고 가정
-        val thrown = assertThrows<BusinessException> {
-            val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule, Study.ABSOLUTE_MAX_CAPACITY)
-
-            updateStudyCapacity(
-                created, Study.ABSOLUTE_MAX_CAPACITY + 1, schedule.isRecruitmentClosed())
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_CAPACITY_TOO_BIG.code, thrown.code)
+        assertEquals(expectedErrorCode, thrown.code)
     }
 
     @Test
@@ -99,78 +114,28 @@ class StudyTest {
 
     // ----- 제목
 
-    @Test
-    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 제목이 blank 인 경우, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
-    fun shouldThrowStudyNameInvalid_whenCreateStudyWithBlankTitle() {
+    @ParameterizedTest(name = "스터디 제목: {0}")
+    @MethodSource("invalidNames")
+    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 제목이 유효하지 않은 경우, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
+    fun shouldThrowStudyNameInvalid_whenCreateStudyWithInvalidTitle(caseName: String, givenTitle: String) {
 
         val thrown = assertThrows<BusinessException> {
-            createStudyWithName(createRecruitingStudySchedule(), "  \t  \n  ")
+            createStudyWithName(createRecruitingStudySchedule(), givenTitle)
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_NAME_INVALID.code, thrown.code)
     }
 
-    @Test
-    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 제목의 길이가 2자 미만이면, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
-    fun shouldThrowStudyNameInvalid_whenCreateStudyWithTooShortTitle() {
-        val thrown = assertThrows<BusinessException> {
-            createStudyWithName(createRecruitingStudySchedule(),"  \t 1 \n  ")
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_NAME_INVALID.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 제목의 길이가 MAX NAME LENGTH 자를 초과하면, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
-    fun shouldThrowStudyNameInvalid_whenCreateStudyWithTooLongTitle() {
-        val thrown = assertThrows<BusinessException> {
-            createStudyWithName(
-                createRecruitingStudySchedule(),
-                "  \t " + "*".repeat(Study.MAX_NAME_LENGTH + 1) + " \n  "
-            )
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_NAME_INVALID.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 제목이 blank 인 경우, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
-    fun shouldThrowStudyNameInvalid_whenUpdateStudyWithBlankTitle() {
+    @ParameterizedTest(name = "스터디 제목: {0}")
+    @MethodSource("invalidNames")
+    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 제목이 유효하지 않은 경우, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
+    fun shouldThrowStudyNameInvalid_whenUpdateStudyWithInvalidTitle(caseName: String, givenTitle: String) {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithName(schedule, "  \t 유효한 제목 \n  ")
+            val validTitle: String = "유효한 제목"
+            val created = createStudyWithName(schedule, validTitle)
 
-            updateStudyName(created, " \t \n ", schedule.isRecruitmentClosed())
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_NAME_INVALID.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 제목의 길이가 2자 미만이면 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
-    fun shouldThrowStudyNameInvalid_whenUpdateStudyWithTooShortTitle() {
-        val thrown = assertThrows<BusinessException> {
-            val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithName(schedule, "  \t 유효한 제목 \n  ")
-
-            updateStudyName(created, "1", schedule.isRecruitmentClosed())
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_NAME_INVALID.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 제목의 길이가 MAX NAME LENGTH 자를 초과하면, 예외 발생 - BusinessException(STUDY_NAME_INVALID)")
-    fun shouldThrowStudyNameInvalid_whenUpdateStudyWithTooLongTitle() {
-        val schedule = createRecruitingStudySchedule()
-        val thrown = assertThrows<BusinessException> {
-            val created = createStudyWithName(schedule, "  \t 유효한 제목 \n  ")
-
-            updateStudyName(
-                created,
-                "*".repeat(Study.MAX_NAME_LENGTH + 1),
-                schedule.isRecruitmentClosed()
-            )
+            updateStudyName(created, givenTitle, schedule.isRecruitmentClosed())
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_NAME_INVALID.code, thrown.code)
@@ -178,80 +143,28 @@ class StudyTest {
 
     // ----- 소개 글
 
-    @Test
-    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 소개글이 blank 인 경우, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
-    fun shouldThrowStudyDescriptionInvalid_whenCreateStudyWithBlankDescription() {
+    @ParameterizedTest(name = "스터디 소개글: {0}")
+    @MethodSource("invalidDescriptions")
+    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 소개글이 유효하지 않은 경우, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
+    fun shouldThrowStudyDescriptionInvalid_whenCreateStudyWithInvalidDescription(caseName: String, givenDescription: String) {
         val thrown = assertThrows<BusinessException> {
-            createStudyWithDescription(createRecruitingStudySchedule(), " \t \n ")
+            createStudyWithDescription(createRecruitingStudySchedule(), givenDescription)
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID.code, thrown.code)
     }
 
-    @Test
-    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준 소개글의 길이자 2자 미만이면, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
-    fun shouldThrowStudyDescriptionInvalid_whenCreateStudyWithTooShortDescription() {
-        val thrown = assertThrows<BusinessException> {
-            createStudyWithDescription(createRecruitingStudySchedule(), "A")
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 소개글의 길이가 MAX DESCRIPTION LENGTH 를 초과하면, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
-    fun shouldThrowStudyDescriptionInvalid_whenCreateStudyWithTooLongDescription() {
-        val thrown = assertThrows<BusinessException> {
-            createStudyWithDescription(
-                createRecruitingStudySchedule(),
-                "*".repeat(Study.MAX_DESCRIPTION_LENGTH + 1)
-            )
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 소개글이 blank 인 경우, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
-    fun shouldThrowStudyDescriptionInvalid_whenUpdateStudyWithBlankDescription() {
+    @ParameterizedTest(name = "스터디 소개글: {0}")
+    @MethodSource("invalidDescriptions")
+    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 소개글이 유효하지 않은 경우, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
+    fun shouldThrowStudyDescriptionInvalid_whenUpdateStudyWithInvalidDescription(caseName: String, givenDescription: String) {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithDescription(schedule, "유효한 소개글")
+            val validDescription = "유효한 소개글"
+            val created = createStudyWithDescription(schedule, validDescription)
 
             updateStudyDescription(
-                created, " \t \n ", schedule.isRecruitmentClosed())
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 소개글의 길이가 2자 미만이면, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
-    fun shouldThrowStudyDescriptionInvalid_whenUpdateStudyWithTooShortDescription() {
-        val thrown = assertThrows<BusinessException> {
-            val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithDescription(schedule, "유효한 소개글")
-
-            updateStudyDescription(
-                created, "A", schedule.isRecruitmentClosed())
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 소개글의 길이가 MAX DESCRIPTION LENGTH 자를 초과하면, 예외 발생 - BusinessException(STUDY_DESCRIPTION_INVALID)")
-    fun shouldThrowStudyDescriptionInvalid_whenUpdateStudyWithTooLongDescription() {
-        val thrown = assertThrows<BusinessException> {
-            val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithDescription(
-                schedule, " \t \n " + "*".repeat(Study.MAX_DESCRIPTION_LENGTH))
-
-            updateStudyDescription(
-                created,
-                "*".repeat(Study.MAX_DESCRIPTION_LENGTH + 1),
-                schedule.isRecruitmentClosed()
-            )
+                created, givenDescription, schedule.isRecruitmentClosed())
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID.code, thrown.code)
@@ -370,11 +283,13 @@ class StudyTest {
     // ----- 참여 인원 수 테스트 (스터디 신청과의 정합성 고려 x)
 
     @Test
-    @DisplayName("참여 인원 수가 (정원 - 1)인 경우, 참여 인원 수 1 증가 시, CLOSED 상태로 성공적으로 변경된다")
+    @DisplayName("참여 인원 수가 증가하여 정원 수에 도달한 경우, CLOSED 상태로 성공적으로 변경된다")
     fun shouldCloseStudy_whenIncreaseMemberToCapacity() {
         val schedule = createRecruitingStudySchedule()
-        val created = createStudyWithCapacity(schedule, 2)
-        created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+        val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
+        repeat(Study.MIN_CAPACITY - 1) {
+            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+        }
         assertEquals(StudyStatus.CLOSED, created.status)
     }
 
@@ -383,7 +298,7 @@ class StudyTest {
     fun shouldThrowStudyNotRecruiting_whenIncreaseMemberOnRejectedStudy() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule, 2)
+            val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
             created.reject()
             created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
         }
@@ -396,8 +311,10 @@ class StudyTest {
     fun shouldThrowStudyNotRecruiting_whenIncreaseMemberOnApprovedStudy() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule, 2)
-            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+            val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
+            repeat(Study.MIN_CAPACITY - 1) {
+                created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+            }
             created.approve()
 
             created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
@@ -411,8 +328,10 @@ class StudyTest {
     fun shouldThrowStudyCapacityFull_whenIncreaseMemberAtCapacity() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule,2)
-            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+            val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
+            repeat(Study.MIN_CAPACITY - 1) {
+                created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+            }
             created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
         }
 
@@ -442,7 +361,7 @@ class StudyTest {
     fun shouldThrowStudyCannotModifyAfterDetermined_whenUpdateRejectedStudy() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule,2)
+            val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
             created.reject()
             updateStudyName(created, "제목제목", schedule.isRecruitmentClosed())
         }
@@ -455,7 +374,7 @@ class StudyTest {
     fun shouldThrowStudyCannotModifyAfterDetermined_whenUpdateApprovedStudy() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule, 2)
+            val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
             created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
             created.approve()
 
@@ -469,7 +388,7 @@ class StudyTest {
     @DisplayName("PENDING 상태일 때, 생성 시점에 설정 가능한 임의의 항목을 수정할 시, 성공한다")
     fun shouldUpdateEditableFields_whenStudyPending() {
         val schedule = createRecruitingStudySchedule()
-        val created = createStudyWithCapacity(schedule, 2)
+        val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
 
         val newCapacity = created.capacity + 1
         val newName = created.name + "a"
@@ -517,7 +436,7 @@ class StudyTest {
     @DisplayName("CLOSED 상태이고 모집 기간 마감 전일 때, 생성 시점에만 설정 가능한 임의 항목을 수정할 시, 성공한다")
     fun shouldUpdateEditableFields_whenStudyClosedBeforeRecruitEnd() {
         val schedule = createRecruitingStudySchedule()
-        val created = createStudyWithCapacity(schedule, 2)
+        val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
         created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
 
         assertEquals(StudyStatus.CLOSED, created.status)

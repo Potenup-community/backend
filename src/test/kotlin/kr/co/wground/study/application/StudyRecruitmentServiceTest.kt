@@ -27,10 +27,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
+import java.util.stream.Stream
 
 @SpringBootTest
 @ActiveProfiles("integration")
@@ -60,6 +64,15 @@ class StudyRecruitmentServiceTest {
 
     @Autowired
     private lateinit var entityManager: EntityManager
+
+    companion object {
+        @JvmStatic
+        fun StudyStatusCannotBeApplied(): Stream<Arguments> = Stream.of(
+            Arguments.of("CLOSED", StudyStatus.CLOSED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
+            Arguments.of("REJECTED", StudyStatus.REJECTED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
+            Arguments.of("APPROVED", StudyStatus.APPROVED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
+        )
+    }
 
     // ----- 신청 테스트
 
@@ -297,15 +310,16 @@ class StudyRecruitmentServiceTest {
     }
 
     // To Do: 나중에 모집 기간이 마감된 경우와, 모집 기간이 마감되지 않았지만 정원이 가득찬 경우를 나누어서 예외 처리 하는 것도 고려해보자.
-    @Test
-    @DisplayName("교육생이 CLOSED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
-    fun shouldThrowStudyNotRecruiting_whenApplyToClosedStudy() {
+    @ParameterizedTest(name = "신청 상태: {0}")
+    @MethodSource("StudyStatusCannotBeApplied")
+    @DisplayName("교육생이 신청 불가능한 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
+    fun shouldThrowStudyNotRecruiting_whenApplyToStudyCannotBeApplied(caseName: String, givenStudyStatus: StudyStatus, expectedErrorCode: String) {
 
         /*
          * given
          * 1. ENROLLED 트랙
          * 2. 모집 기간이 마감되기 전의 일정
-         * 3. CLOSED 상태 스터디
+         * 3. givenStudyStatus 상태 스터디
          * 4. 교육생
          */
         val today = LocalDate.now()
@@ -328,12 +342,12 @@ class StudyRecruitmentServiceTest {
 
         val study = studyRepository.save(
             Study(
-                name = "CLOSED 스터디",
+                name = "스터디 이름",
                 leaderId = 10L,
                 trackId = track.trackId,
                 scheduleId = schedule.id,
-                description = "CLOSED 상태",
-                status = StudyStatus.CLOSED,
+                description = "스터디 설명",
+                status = givenStudyStatus,
                 capacity = 5,
                 budget = BudgetType.MEAL
             )
@@ -351,7 +365,7 @@ class StudyRecruitmentServiceTest {
             )
         )
 
-        // when: CLOSED 스터디 신청
+        // when: 스터디 신청
         val thrown = assertThrows<BusinessException> {
             studyRecruitmentService.requestRecruit(
                 userId = user.userId,
@@ -361,141 +375,7 @@ class StudyRecruitmentServiceTest {
         }
 
         // then: 예외 발생(STUDY_NOT_RECRUITING)
-        assertEquals(StudyServiceErrorCode.STUDY_NOT_RECRUITING.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("교육생이 REJECTED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
-    fun shouldThrowStudyNotRecruiting_whenApplyToRejectedStudy() {
-
-        /*
-         * given
-         * 1. ENROLLED 트랙
-         * 2. 모집 기간이 마감되기 전의 일정
-         * 3. REJECTED 상태 스터디
-         * 4. 교육생
-         */
-        val today = LocalDate.now()
-        val track = trackRepository.save(
-            Track(
-                trackName = "테스트 트랙",
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(30)
-            )
-        )
-        val schedule = studyScheduleRepository.save(
-            StudySchedule(
-                trackId = track.trackId,
-                months = Months.FIRST,
-                recruitStartDate = today.minusDays(1),
-                recruitEndDate = today.plusDays(1),
-                studyEndDate = today.plusDays(10)
-            )
-        )
-
-        val study = studyRepository.save(
-            Study(
-                name = "REJECTED 스터디",
-                leaderId = 10L,
-                trackId = track.trackId,
-                scheduleId = schedule.id,
-                description = "REJECTED 상태",
-                status = StudyStatus.REJECTED,
-                capacity = 5,
-                budget = BudgetType.MEAL
-            )
-        )
-
-        val user = userRepository.save(
-            User(
-                trackId = track.trackId,
-                email = "student@gmail.com",
-                name = "교육생",
-                phoneNumber = "010-5555-5555",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-
-        // when: REJECTED 스터디 신청
-        val thrown = assertThrows<BusinessException> {
-            studyRecruitmentService.requestRecruit(
-                userId = user.userId,
-                studyId = study.id,
-                appeal = "신청합니다."
-            )
-        }
-
-        // then: 예외 발생(STUDY_NOT_RECRUITING)
-        assertEquals(StudyServiceErrorCode.STUDY_NOT_RECRUITING.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("교육생이 APPROVED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
-    fun shouldThrowStudyNotRecruiting_whenApplyToApprovedStudy() {
-
-        /*
-         * given
-         * 1. ENROLLED 트랙
-         * 2. 모집 기간이 마감되기 전의 일정
-         * 3. APPROVED 상태 스터디
-         * 4. 교육생
-         */
-        val today = LocalDate.now()
-        val track = trackRepository.save(
-            Track(
-                trackName = "테스트 트랙",
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(30)
-            )
-        )
-        val schedule = studyScheduleRepository.save(
-            StudySchedule(
-                trackId = track.trackId,
-                months = Months.FIRST,
-                recruitStartDate = today.minusDays(1),
-                recruitEndDate = today.plusDays(1),
-                studyEndDate = today.plusDays(10)
-            )
-        )
-
-        val study = studyRepository.save(
-            Study(
-                name = "APPROVED 스터디",
-                leaderId = 10L,
-                trackId = track.trackId,
-                scheduleId = schedule.id,
-                description = "APPROVED 상태",
-                status = StudyStatus.APPROVED,
-                capacity = 5,
-                budget = BudgetType.MEAL
-            )
-        )
-
-        val user = userRepository.save(
-            User(
-                trackId = track.trackId,
-                email = "student@gmail.com",
-                name = "교육생",
-                phoneNumber = "010-6666-6666",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-
-        // when: APPROVED 스터디 신청
-        val thrown = assertThrows<BusinessException> {
-            studyRecruitmentService.requestRecruit(
-                userId = user.userId,
-                studyId = study.id,
-                appeal = "신청합니다."
-            )
-        }
-
-        // then: 예외 발생(STUDY_NOT_RECRUITING)
-        assertEquals(StudyServiceErrorCode.STUDY_NOT_RECRUITING.code, thrown.code)
+        assertEquals(expectedErrorCode, thrown.code)
     }
 
     @Test
