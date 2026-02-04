@@ -12,6 +12,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.DisplayName
 import java.time.LocalDate
 
+@DisplayName("스터디 신청(StudyRecruitment) 테스트")
 class StudyRecruitmentTest {
 
     // ----- 자기 소개, ⚠️ SR-0001 에 해당하는 에러 코드가 RECRUITMENT_APPEAL_INVALID 와 같이 변경됨을 가정함️
