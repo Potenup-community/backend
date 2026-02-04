@@ -17,7 +17,7 @@ class StudyScheduleTest {
 
     @Test
     @DisplayName("일정 생성 시, 모집 시작 시점이 모집 종료 시점 이후인 경우, 예외 발생 - BusinessException(STUDY_CANT_START_AFTER_END_DATE)")
-    fun create_schedule_start_after_end_throws() {
+    fun shouldThrowStudyCantStartAfterEndDate_whenCreateScheduleStartAfterEnd() {
         val thrown = assertThrows<BusinessException> {
             StudySchedule(
                 trackId = 3L,
@@ -33,7 +33,7 @@ class StudyScheduleTest {
 
     @Test
     @DisplayName("일정 수정 시, 모집 시작 시점이 모집 종료 시점 이후인 경우, 예외 발생 - BusinessException(STUDY_CANT_START_AFTER_END_DATE)")
-    fun update_schedule_start_after_end_throws() {
+    fun shouldThrowStudyCantStartAfterEndDate_whenUpdateScheduleStartAfterEnd() {
         val thrown = assertThrows<BusinessException> {
             val created = StudySchedule(
                 trackId = 3L,
@@ -56,7 +56,7 @@ class StudyScheduleTest {
 
     @Test
     @DisplayName("일정 생성 시, 모집 종료 시점이 스터디 종료 시점 이후인 경우, 예외 발생 - BusinessException(STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE)")
-    fun create_schedule_recruit_end_after_study_end_throws() {
+    fun shouldThrowStudyRecruitCompleteBeforeEndDate_whenCreateScheduleRecruitEndAfterStudyEnd() {
         val thrown = assertThrows<BusinessException> {
             StudySchedule(
                 trackId = 3L,
@@ -72,7 +72,7 @@ class StudyScheduleTest {
 
     @Test
     @DisplayName("일정 수정 시, 모집 종료 시점이 스터디 종료 시점 이후인 경우, 예외 발생 - BusinessException(STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE)")
-    fun update_schedule_recruit_end_after_study_end_throws() {
+    fun shouldThrowStudyRecruitCompleteBeforeEndDate_whenUpdateScheduleRecruitEndAfterStudyEnd() {
         val thrown = assertThrows<BusinessException> {
             val created = StudySchedule(
                 trackId = 3L,
