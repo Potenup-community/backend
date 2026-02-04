@@ -39,7 +39,7 @@ google:
     client-id: test-client
 
 app:
-  frontend-url: ${FRONTEND_URL}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
   upload:
     local-dir: build/tmp/uploads
     public-base-path: /uploads
@@ -58,7 +58,7 @@ app:
 # 슬랙 알림 웹 훅 설정
 slack:
   webhook:
-    url: ${SLACK_WEBHOOK_URL}
+    url: ${SLACK_WEBHOOK_URL:}
 
 management:
   endpoints:
