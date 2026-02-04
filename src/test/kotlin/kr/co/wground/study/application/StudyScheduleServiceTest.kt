@@ -44,7 +44,7 @@ class StudyScheduleServiceTest {
 
     @Test
     @DisplayName("일정 생성 테스트")
-    fun create_schedule() {
+    fun shouldCreateSchedule_whenValidRequest() {
 
         // given
         val today = LocalDate.now()
@@ -122,7 +122,7 @@ class StudyScheduleServiceTest {
 
     @Test
     @DisplayName("중복 트랙 및 차수 조합이 존재하는 경우 실패한다")
-    fun duplicate_track_months_fails() {
+    fun shouldThrowDuplicateScheduleMonth_whenTrackMonthExists() {
 
         // given: 트랙 저장
         val today = LocalDate.now()
@@ -158,7 +158,7 @@ class StudyScheduleServiceTest {
 
     @Test
     @DisplayName("같은 트랙의 더 작은 차수 일정의 종료 시점이, 더 큰 차수 일정의 시작 시점보다 과거 시점이 아닌 경우 예외 발생 - BusinessException(SCHEDULE_OVERLAP_WITH_PREVIOUS)")
-    fun schedule_end_not_before_next_start_throws() {
+    fun shouldThrowScheduleOverlapWithPrevious_whenPreviousScheduleEndsAfterNextStarts() {
 
         // given: 트랙 저장 및 더 작은 차수 일정 저장
         val today = LocalDate.now()
@@ -197,7 +197,7 @@ class StudyScheduleServiceTest {
 
     @Test
     @DisplayName("같은 트랙의 서로 다른 임의의 두 차수의 일정이 서로 겹쳐지는 경우, 예외 발생 - BusinessException(SCHEDULE_OVERLAP_WITH_NEXT)")
-    fun overlapping_schedules_same_track_throws() {
+    fun shouldThrowScheduleOverlapWithNext_whenSchedulesOverlapInSameTrack() {
 
         // given: 트랙 저장 및 더 큰 차수 일정 저장
         val today = LocalDate.now()
@@ -236,7 +236,7 @@ class StudyScheduleServiceTest {
 
     @Test
     @DisplayName("존재하지 않는 trackId 를 이용한 일정 생성 시, 예외 발생 - BusinessException(TRACK_NOT_FOUND)")
-    fun create_with_missing_track_throws() {
+    fun shouldThrowTrackNotFound_whenCreateScheduleWithMissingTrack() {
 
         // given: 존재하지 않는 trackId
         val today = LocalDate.now()
@@ -260,7 +260,7 @@ class StudyScheduleServiceTest {
 
     @Test
     @DisplayName("졸업 트랙에 대해 종료되지 않은 일정 생성 시도 시, 예외 발생 - BusinessException(TRACK_IS_NOT_ENROLLED)")
-    fun create_schedule_for_graduated_track_throws() {
+    fun shouldThrowTrackIsNotEnrolled_whenCreateScheduleForGraduatedTrack() {
         
         // given: 이미 종료된(졸업) 트랙 저장
         val today = LocalDate.now()
@@ -291,7 +291,7 @@ class StudyScheduleServiceTest {
 
     @Test
     @DisplayName("일정을 따르는 스터디가 존재할 때, 해당 일정을 삭제 시도하면, 예외 발생 - BusinessException(CANNOT_DELETE_SCHEDULE_WITH_STUDIES)")
-    fun delete_schedule_with_studies_throws() {
+    fun shouldThrowCannotDeleteScheduleWithStudies_whenDeletingScheduleWithStudies() {
 
         // given: 트랙/일정 저장 및 해당 일정을 따르는 스터디 저장
         val today = LocalDate.now()

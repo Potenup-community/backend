@@ -19,7 +19,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("자기소개 생성 시, 앞뒤 공백 제거 기준, 자기소개가 blank 인 경우 예외 발생 - BusinessException(RECRUITMENT_APPEAL_EMPTY)")
-    fun create_appeal_blank_throws() {
+    fun shouldThrowRecruitmentAppealEmpty_whenCreateAppealBlank() {
         val thrown = assertThrows<BusinessException> {
             createStudyRecruitmentWithAppeal(
                 createRecruitingStudySchedule(), "  \t  \n  ")
@@ -30,7 +30,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("자기소개 생성 시, 앞뒤 공백 제거 기준, 자기소개 길이가 2 미만인 경우, 예외 발생 - BusinessException(RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE)")
-    fun create_appeal_too_short_throws() {
+    fun shouldThrowRecruitmentAppealInvalidLengthRange_whenCreateAppealTooShort() {
         val thrown = assertThrows<BusinessException> {
             createStudyRecruitmentWithAppeal(
                 createRecruitingStudySchedule(), "  \t A \n  ")
@@ -41,7 +41,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("자기소개 생성 시, 앞뒤 공백 제거 기준, 자기소개 길이가 MAX APPEAL LENGTH 초과인 경우, 예외 발생 - BusinessException(RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE)")
-    fun create_appeal_too_long_throws() {
+    fun shouldThrowRecruitmentAppealInvalidLengthRange_whenCreateAppealTooLong() {
         val thrown = assertThrows<BusinessException> {
             createStudyRecruitmentWithAppeal(
                 createRecruitingStudySchedule(),
@@ -54,7 +54,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("자기소개 수정 시, 앞뒤 공백 제거 기준, 자기소개가 blank 인 경우 예외 발생 - BusinessException(RECRUITMENT_APPEAL_EMPTY)")
-    fun update_appeal_blank_throws() {
+    fun shouldThrowRecruitmentAppealEmpty_whenUpdateAppealBlank() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(
                 createRecruitingStudySchedule(), "유효한 자기 소개")
@@ -67,7 +67,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("자기소개 수정 시, 앞뒤 공백 제거 기준, 자기소개 길이가 2 미만인 경우, 예외 발생 - BusinessException(RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE)")
-    fun update_appeal_too_short_throws() {
+    fun shouldThrowRecruitmentAppealInvalidLengthRange_whenUpdateAppealTooShort() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(
                 createRecruitingStudySchedule(), "유효한 자기소개")
@@ -80,7 +80,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("자기소개 수정 시, 앞뒤 공백 제거 기준, 자기소개 길이가 MAX APPEAL LENGTH 초과인 경우, 예외 발생 - BusinessException(RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE)")
-    fun update_appeal_too_long_throws() {
+    fun shouldThrowRecruitmentAppealInvalidLengthRange_whenUpdateAppealTooLong() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(
                 createRecruitingStudySchedule(), "유효한 자기소개")
@@ -95,7 +95,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("신청이 승인된 경우, 승인 일시가 null 이거나 신청 일시 이전이면 안 된다")
-    fun approved_at_must_be_after_requested_at() {
+    fun shouldSetApprovedAtAfterRequestedAt_whenApproveRecruitment() {
         val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "예시 자기 소개")
         Thread.sleep(10)
         created.updateRecruitStatus(RecruitStatus.APPROVED)
@@ -109,7 +109,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("신청이 CANCELLED 상태일 때, 승인을 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun approve_cancelled_throws() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenApproveCancelledRecruitment() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
             created.updateRecruitStatus(RecruitStatus.CANCELLED)
@@ -122,7 +122,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("신청이 APPROVED 상태일 때, 승인을 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun approve_already_approved_throws() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenApproveApprovedRecruitment() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
             created.updateRecruitStatus(RecruitStatus.APPROVED)
@@ -135,7 +135,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("신청이 REJECTED 상태일 때, 승인을 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun approve_rejected_throws() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenApproveRejectedRecruitment() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
             created.updateRecruitStatus(RecruitStatus.REJECTED)
@@ -150,7 +150,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("신청이 CANCELLED 상태일 때, 취소를 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun cancel_cancelled_throws() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenCancelCancelledRecruitment() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
             created.updateRecruitStatus(RecruitStatus.CANCELLED)
@@ -163,7 +163,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("신청이 REJECTED 상태일 때, 취소를 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun cancel_rejected_throws() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenCancelRejectedRecruitment() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
             created.updateRecruitStatus(RecruitStatus.REJECTED)
@@ -178,7 +178,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("신청이 CANCELLED 상태일 때, 반려를 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun reject_cancelled_throws() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenRejectCancelledRecruitment() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
             created.updateRecruitStatus(RecruitStatus.CANCELLED)
@@ -191,7 +191,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("신청이 APPROVED 상태일 때, 반려를 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun reject_approved_throws() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenRejectApprovedRecruitment() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
             created.updateRecruitStatus(RecruitStatus.APPROVED)
@@ -204,7 +204,7 @@ class StudyRecruitmentTest {
 
     @Test
     @DisplayName("신청이 REJECTED 상태일 때, 반려를 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun reject_already_rejected_throws() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenRejectAlreadyRejectedRecruitment() {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
             created.updateRecruitStatus(RecruitStatus.REJECTED)

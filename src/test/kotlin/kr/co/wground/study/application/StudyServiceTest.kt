@@ -71,7 +71,7 @@ class StudyServiceTest {
      */
     @Test
     @DisplayName("스터디를 생성한 뒤, 반드시 해당 스터디에 참여된 상태여야 한다")
-    fun create_study_auto_enrolls_leader() {
+    fun shouldAutoEnrollLeader_whenCreateStudy() {
 
         /*
          * given
@@ -139,7 +139,7 @@ class StudyServiceTest {
      */
     @Test
     @DisplayName("졸업생이 스터디 생성을 시도한 경우, 예외 발생 - BusinessException(TRACK_IS_NOT_ENROLLED)")
-    fun graduated_cannot_create_study() {
+    fun shouldThrowTrackIsNotEnrolled_whenGraduatedStudentCreatesStudy() {
 
         /*
          * given
@@ -188,7 +188,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("스터디 생성 시, 태그 개수가 MAX TAG COUNT 개를 초과한 경우 예외 발생 - BusinessException(STUDY_TAG_COUNT_EXCEEDED)")
-    fun create_study_tags_over_limit_throws() {
+    fun shouldThrowStudyTagCountExceeded_whenCreateStudyWithTooManyTags() {
 
         /*
          * given
@@ -247,7 +247,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("스터디 수정 시, 태그 개수가 MAX TAG COUNT 개를 초과한 경우 예외 발생 - BusinessException(STUDY_TAG_COUNT_EXCEEDED)")
-    fun update_study_tags_over_limit_throws() {
+    fun shouldThrowStudyTagCountExceeded_whenUpdateStudyWithTooManyTags() {
 
         /*
          * given
@@ -328,7 +328,7 @@ class StudyServiceTest {
      */
     @Test
     @DisplayName("스터디가 거부된 경우, CANCELLED 상태가 아닌 모든 신청 건이 반려(REJECTED)된다")
-    fun rejecting_study_rejects_non_cancelled_recruitments() {
+    fun shouldRejectNonCancelledRecruitments_whenStudyRejected() {
         /*
          * given
          * 1. 스터디가 존재한다.
@@ -463,7 +463,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("스터디가 결재된 경우, 관련된 모든 신청 건 중 PENDING 상태인 신청만 REJECTED 상태로 변경되어야 한다")
-    fun approving_study_rejects_pending_recruitments() {
+    fun shouldRejectPendingRecruitments_whenStudyApproved() {
 
         /*
          * given
@@ -572,7 +572,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("PENDING 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다")
-    fun delete_pending_study_deletes_recruitments() {
+    fun shouldDeleteRecruitments_whenDeletePendingStudy() {
 
         /*
          * given
@@ -650,7 +650,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("CLOSED 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다")
-    fun delete_closed_study_deletes_recruitments() {
+    fun shouldDeleteRecruitments_whenDeleteClosedStudy() {
 
         /*
          * given
@@ -739,7 +739,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("거부(REJECTED) 상태의 스터디를 삭제하려 한 경우, 예외 발생 - BusinessException(STUDY_CANT_DELETE_STATUS_DETERMINE)")
-    fun delete_rejected_study_throws() {
+    fun shouldThrowStudyCantDeleteStatusDetermine_whenDeleteRejectedStudy() {
 
         /*
          * given
@@ -801,7 +801,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("결재(APPROVED) 상태의 스터디를 삭제하려 한 경우, 예외 발생 - BusinessException(STUDY_CANT_DELETE_STATUS_DETERMINE)")
-    fun delete_approved_study_throws() {
+    fun shouldThrowStudyCantDeleteStatusDetermine_whenDeleteApprovedStudy() {
 
         /*
          * given
@@ -877,7 +877,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 PENDING 상태일 때, 신규 스터디 생성 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
-    fun create_study_blocked_by_two_pending_applications() {
+    fun shouldThrowMaxStudyExceeded_whenTwoPendingApplicationsExist() {
 
         /*
          * given
@@ -1033,7 +1033,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 APPROVED 상태일 때, 신규 스터디 생성 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
-    fun create_study_blocked_by_two_approved_applications() {
+    fun shouldThrowMaxStudyExceeded_whenTwoApprovedApplicationsExist() {
 
         /*
          * given
@@ -1191,7 +1191,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 REJECTED 상태 인 경우, 신규 스터디 생성이 가능하다")
-    fun create_study_allowed_with_pending_and_rejected() {
+    fun shouldAllowStudyCreation_whenPendingAndRejectedApplicationsExist() {
 
         /*
          * given
@@ -1352,7 +1352,7 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 CANCELLED 상태 인 경우, 신규 스터디 생성이 가능하다")
-    fun create_study_allowed_with_pending_and_cancelled() {
+    fun shouldAllowStudyCreation_whenPendingAndCancelledApplicationsExist() {
 
         /*
          * given
