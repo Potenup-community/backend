@@ -6,7 +6,7 @@ import kr.co.wground.study.domain.constant.Months
 import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.DisplayName
