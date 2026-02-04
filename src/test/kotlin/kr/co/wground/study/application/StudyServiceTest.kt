@@ -80,21 +80,9 @@ class StudyServiceTest {
          * 3. ENROLLED 상태인 트랙에 참여 중인 사용자
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(10)
-        )
-        studyScheduleRepository.save(schedule)
+        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
 
         val user = User(
             trackId = savedTrack.trackId,
@@ -147,12 +135,7 @@ class StudyServiceTest {
          * 2. 종료된 트랙에 속한 사용자
          */
         val today = LocalDate.now()
-        val graduatedTrack = Track(
-            trackName = "졸업 트랙",
-            startDate = today.minusDays(60),
-            endDate = today.minusDays(1)
-        )
-        val savedTrack = trackRepository.save(graduatedTrack)
+        val savedTrack = createAndSaveGraduatedTrack(today)
 
         val user = User(
             trackId = savedTrack.trackId,
@@ -197,21 +180,9 @@ class StudyServiceTest {
          * 3. ENROLLED 상태인 트랙에 참여 중인 사용자
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(10)
-        )
-        studyScheduleRepository.save(schedule)
+        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
 
         val user = User(
             trackId = savedTrack.trackId,
@@ -256,21 +227,9 @@ class StudyServiceTest {
          * 3. 스터디 생성 완료 상태
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(10)
-        )
-        studyScheduleRepository.save(schedule)
+        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
 
         val user = User(
             trackId = savedTrack.trackId,
@@ -335,21 +294,9 @@ class StudyServiceTest {
          * 2. PENDING/APPROVED/CANCELLED/REJECTED 신청이 함께 존재한다.
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(10)
-        )
-        studyScheduleRepository.save(schedule)
+        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
 
         val leader = User(
             trackId = savedTrack.trackId,
@@ -471,21 +418,9 @@ class StudyServiceTest {
          * 2. PENDING/APPROVED/CANCELLED/REJECTED 신청이 함께 존재한다.
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(10)
-        )
-        studyScheduleRepository.save(schedule)
+        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
 
         val leader = User(
             trackId = savedTrack.trackId,
@@ -567,7 +502,7 @@ class StudyServiceTest {
         assertEquals(RecruitStatus.CANCELLED, updated[4L]?.recruitStatus)
         assertEquals(RecruitStatus.REJECTED, updated[5L]?.recruitStatus)
     }
-    
+
     // ----- 삭제 테스트
 
     @Test
@@ -580,21 +515,9 @@ class StudyServiceTest {
          * 2. 스터디장 + 추가 신청 건 존재
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(10)
-        )
-        studyScheduleRepository.save(schedule)
+        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
 
         val leader = User(
             trackId = savedTrack.trackId,
@@ -658,21 +581,9 @@ class StudyServiceTest {
          * 2. 스터디장 + 추가 신청 건 존재
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(10)
-        )
-        studyScheduleRepository.save(schedule)
+        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
 
         val leader = User(
             trackId = savedTrack.trackId,
@@ -746,21 +657,9 @@ class StudyServiceTest {
          * 1. REJECTED 상태의 스터디
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(10)
-        )
-        studyScheduleRepository.save(schedule)
+        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
 
         val leader = User(
             trackId = savedTrack.trackId,
@@ -808,21 +707,9 @@ class StudyServiceTest {
          * 1. APPROVED 상태의 스터디
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(10)
-        )
-        studyScheduleRepository.save(schedule)
+        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
 
         val leader = User(
             trackId = savedTrack.trackId,
@@ -886,12 +773,7 @@ class StudyServiceTest {
          * 3. 현재 차수 스터디 2개에 PENDING 신청
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
         val pastSchedule = StudySchedule(
             trackId = savedTrack.trackId,
@@ -1042,12 +924,7 @@ class StudyServiceTest {
          * 3. 현재 차수 스터디 2개에 APPROVED 신청
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
         val pastSchedule = StudySchedule(
             trackId = savedTrack.trackId,
@@ -1200,12 +1077,7 @@ class StudyServiceTest {
          * 3. 현재 차수 스터디 2개에 PENDING/REJECTED 신청
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
         val pastSchedule = StudySchedule(
             trackId = savedTrack.trackId,
@@ -1361,12 +1233,7 @@ class StudyServiceTest {
          * 3. 현재 차수 스터디 2개에 PENDING/CANCELLED 신청
          */
         val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(30),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
+        val savedTrack = createAndSaveEnrolledTrack(today)
 
         val pastSchedule = StudySchedule(
             trackId = savedTrack.trackId,
@@ -1509,5 +1376,36 @@ class StudyServiceTest {
         assertEquals(1, recruitments.size)
         assertEquals(savedStudent.userId, recruitments.first().userId)
         assertEquals(RecruitStatus.APPROVED, recruitments.first().recruitStatus)
+    }
+
+    // ----- helpers
+
+    private fun createAndSaveEnrolledTrack(today: LocalDate): Track {
+        val track = Track(
+            trackName = "테스트 트랙",
+            startDate = today.minusDays(30),
+            endDate = today.plusDays(30)
+        )
+        return trackRepository.save(track)
+    }
+
+    private fun createAndSaveGraduatedTrack(today: LocalDate): Track {
+        val track = Track(
+            trackName = "졸업 트랙",
+            startDate = today.minusDays(60),
+            endDate = today.minusDays(1)
+        )
+        return trackRepository.save(track)
+    }
+
+    private fun createAndSaveCurrentSchedule(today: LocalDate, savedTrack: Track): StudySchedule {
+        val schedule = StudySchedule(
+            trackId = savedTrack.trackId,
+            months = Months.FIRST,
+            recruitStartDate = today.minusDays(1),
+            recruitEndDate = today.plusDays(1),
+            studyEndDate = today.plusDays(10)
+        )
+        return studyScheduleRepository.save(schedule)
     }
 }
