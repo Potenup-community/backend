@@ -55,10 +55,11 @@ app:
     allowedExts: [jpg, jpeg, png, gif]
     base-url: http://localhost
 
-# 슬랙 알림 웹 훅 설정
+# 슬랙 알림 웹 훅 설정 (채널별)
 slack:
   webhook:
-    url: ${SLACK_WEBHOOK_URL:}
+    general-url: ${SLACK_WEBHOOK_GENERAL_URL_TEST:}
+    study-url: ${SLACK_WEBHOOK_STUDY_URL_TEST:}
 
 management:
   endpoints:
