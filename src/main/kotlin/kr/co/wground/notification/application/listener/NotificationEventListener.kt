@@ -17,11 +17,11 @@ import kr.co.wground.notification.application.port.NotificationMessageType
 import kr.co.wground.notification.application.port.NotificationSender
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.enums.ReferenceType
-import kr.co.wground.notification.domain.vo.NotificationContent
 import kr.co.wground.notification.domain.vo.NotificationReference
 import kr.co.wground.notification.exception.NotificationErrorCode
 import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.track.infra.TrackRepository
+import kr.co.wground.user.infra.UserRepository
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
@@ -36,6 +36,7 @@ class NotificationEventListener(
     private val notificationCommandService: NotificationCommandService,
     private val notificationSender: NotificationSender,
     private val trackRepository: TrackRepository,
+    private val userRepository: UserRepository,
     @Value("\${app.frontend-url}") private val frontendUrl: String,
 ) {
 
@@ -56,10 +57,7 @@ class NotificationEventListener(
                         recipientId = parentWriterId,
                         actorId = event.commentWriterId,
                         type = NotificationType.COMMENT_REPLY,
-                        content = NotificationContent(
-                            title = "새 답글",
-                            content = "회원님의 댓글에 답글이 달렸습니다.",
-                        ),
+                        title = "새 답글",
                         reference = NotificationReference(
                             referenceType = ReferenceType.POST,
                             referenceId = event.postId,
@@ -75,10 +73,7 @@ class NotificationEventListener(
                 recipientId = event.postWriterId,
                 actorId = event.commentWriterId,
                 type = NotificationType.POST_COMMENT,
-                content = NotificationContent(
-                    title = "새 댓글",
-                    content = "회원님의 게시글에 댓글이 달렸습니다.",
-                ),
+                title = "새 댓글",
                 reference = NotificationReference(
                     referenceType = ReferenceType.POST,
                     referenceId = event.postId,
@@ -97,10 +92,7 @@ class NotificationEventListener(
                 recipientId = event.postWriterId,
                 actorId = event.reactorId,
                 type = NotificationType.POST_REACTION,
-                content = NotificationContent(
-                    title = "게시글 좋아요",
-                    content = "회원님의 게시글에 좋아요가 눌렸습니다.",
-                ),
+                title = "게시글 좋아요",
                 reference = NotificationReference(
                     referenceType = ReferenceType.POST,
                     referenceId = event.postId,
@@ -119,10 +111,7 @@ class NotificationEventListener(
                 recipientId = event.commentWriterId,
                 actorId = event.reactorId,
                 type = NotificationType.COMMENT_REACTION,
-                content = NotificationContent(
-                    title = "댓글 좋아요",
-                    content = "회원님의 댓글에 좋아요가 눌렸습니다.",
-                ),
+                title = "댓글 좋아요",
                 reference = NotificationReference(
                     referenceType = ReferenceType.POST,
                     referenceId = event.postId,
@@ -135,29 +124,36 @@ class NotificationEventListener(
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleMentionCreated(event: MentionCreatedEvent) {
-        event.mentionUserIds
-            .filter { it != event.mentionerId }
-            .forEach { mentionedUserId ->
-                createNotificationSafely {
-                    notificationCommandService.create(
-                        recipientId = mentionedUserId,
-                        actorId = event.mentionerId,
-                        type = NotificationType.COMMENT_MENTION,
-                        content = NotificationContent(
-                            title = "멘션",
-                            content = "회원님이 멘션되었습니다.",
-                        ),
-                        reference = NotificationReference(
-                            referenceType = ReferenceType.POST,
-                            referenceId = event.postId,
-                            subReferenceId = event.commentId,
-                        ),
-                    )
+        val targetUserIds = event.mentionUserIds.filter { it != event.mentionerId }
+        if (targetUserIds.isEmpty()) return
+
+        val usersById = userRepository.findAllById(targetUserIds).associateBy { it.userId }
+
+        targetUserIds.forEach { mentionedUserId ->
+            createNotificationSafely {
+                val mentionedUser = usersById[mentionedUserId]
+                val placeholders = if (mentionedUser != null) {
+                    mapOf("name" to mentionedUser.name)
+                } else {
+                    emptyMap()
                 }
+
+                notificationCommandService.create(
+                    recipientId = mentionedUserId,
+                    actorId = event.mentionerId,
+                    type = NotificationType.COMMENT_MENTION,
+                    title = "멘션",
+                    reference = NotificationReference(
+                        referenceType = ReferenceType.POST,
+                        referenceId = event.postId,
+                        subReferenceId = event.commentId,
+                    ),
+                    placeholders = placeholders,
+                )
             }
+        }
     }
 
-    // TODO : 나중에 앱 푸시 알림 추가 예정
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleAnnouncementCreated(event: AnnouncementCreatedEvent) {
@@ -181,10 +177,7 @@ class NotificationEventListener(
                 recipientId = event.leaderId,
                 actorId = null,
                 type = NotificationType.STUDY_APPLICATION,
-                content = NotificationContent(
-                    title = "스터디 지원",
-                    content = "스터디에 새로운 지원자가 있습니다.",
-                ),
+                title = "스터디 지원",
                 reference = NotificationReference(
                     referenceType = ReferenceType.STUDY,
                     referenceId = event.studyId,
@@ -203,10 +196,7 @@ class NotificationEventListener(
                 recipientId = event.userId,
                 actorId = null,
                 type = NotificationType.STUDY_APPROVED,
-                content = NotificationContent(
-                    title = "스터디 알림",
-                    content = "스터디 신청이 승인되었어요! 🎉",
-                ),
+                title = "스터디 알림",
                 reference = NotificationReference(
                     referenceType = ReferenceType.STUDY,
                     referenceId = event.studyId,
@@ -224,10 +214,7 @@ class NotificationEventListener(
                     recipientId = userId,
                     actorId = null,
                     type = NotificationType.STUDY_DELETED,
-                    content = NotificationContent(
-                        title = "스터디 삭제",
-                        content = "신청하신 '${event.studyTitle}' 스터디가 삭제되었습니다. 다른 스터디를 찾아주세요 😊",
-                    ),
+                    title = "스터디 모집글 삭제",
                     reference = NotificationReference(
                         referenceType = ReferenceType.STUDY,
                         referenceId = event.studyId,
@@ -249,7 +236,7 @@ class NotificationEventListener(
                 link = studyLink,
                 metadata = mapOf(
                     "trackName" to track.trackName,
-                    "months" to "${event.months.month}월차",
+                    "months" to "${event.months.month}차",
                 )
             )
         )
@@ -267,7 +254,7 @@ class NotificationEventListener(
                 link = studyLink,
                 metadata = mapOf(
                     "trackName" to track.trackName,
-                    "months" to "${event.months.month}월차",
+                    "months" to "${event.months.month}차",
                 )
             )
         )
