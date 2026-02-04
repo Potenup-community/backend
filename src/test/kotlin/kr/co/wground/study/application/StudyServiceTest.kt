@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional
 @SpringBootTest
 @ActiveProfiles("integration")
 @Transactional
+@DisplayName("스터디 서비스 테스트")
 class StudyServiceTest {
     @Autowired
     private lateinit var studyService: StudyService
