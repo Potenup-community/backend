@@ -11,7 +11,6 @@ import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.StudyRecruitment
 import kr.co.wground.study.domain.Tag
-import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
@@ -60,7 +59,7 @@ class StudyService(
         val schedule = studyScheduleService.getCurrentSchedule(track.trackId)
             ?: throw BusinessException(StudyServiceErrorCode.NO_CURRENT_SCHEDULE)
 
-        val enrolledStudyCount = studyRecruitmentRepository.countActiveEnrolledStudy(user.userId, schedule.id)
+        val enrolledStudyCount = studyRecruitmentRepository.countStudyRecruitment(user.userId, schedule.id)
         if (enrolledStudyCount >= MAX_ENROLLED_STUDY) {
             throw BusinessException(StudyServiceErrorCode.MAX_STUDY_EXCEEDED)
         }
@@ -119,10 +118,11 @@ class StudyService(
     fun deleteStudy(studyId: Long, userId: Long, isAdmin: Boolean) {
         val study = getStudyEntity(studyId)
 
-        if (!isAdmin) {
-            study.isLeader(userId)
-            study.validateHardDeletable()
+        if (!isAdmin && !study.isLeader(userId)) {
+            throw BusinessException(StudyServiceErrorCode.ONLY_ADMIN_AND_LEADER_COULD_DELETE_STUDY)
         }
+        study.validateHardDeletable()
+
         val studyId = study.id
         val recruitIds = study.recruitments.map { recruitment -> recruitment.userId }
         val studyName = study.name
@@ -140,22 +140,19 @@ class StudyService(
 
     fun approveStudy(studyId: Long) {
         val study = getStudyEntity(studyId)
-
         study.approve()
-
-        studyRecruitmentRepository.rejectAllByStudyIdWithStatus(studyId, RecruitStatus.PENDING)
     }
 
     @Transactional(readOnly = true)
     fun searchStudies(
         condition: StudySearchDto
     ): Slice<StudyQueryResponse> {
-        val userId =condition.userId
+        val userId = condition.userId
         val result = studyRepository.searchStudies(condition.condition, condition.pageable, condition.sortType)
 
         val joinedStudyIds = if (userId != null) {
             val studyIds = result.content.map { it.study.id }
-            studyRecruitmentRepository.findApprovedStudyIdsByUserIdAndStudyIds(userId, studyIds).toSet()
+            studyRecruitmentRepository.findAllByUserIdAndStudyIds(userId, studyIds).toSet()
         } else emptySet()
 
         return result.map { dto ->
@@ -184,12 +181,8 @@ class StudyService(
 
         // 채팅 링크 마스킹 로직
         val canViewChatUrl = if (userId == null) false else {
-            study.leaderId == userId || // 스터디장이거나
-                    studyRecruitmentRepository.existsByStudyIdAndUserIdAndRecruitStatusIn(
-                        studyId,
-                        userId,
-                        listOf(RecruitStatus.APPROVED)
-                    ) // 참여자거나
+            study.leaderId == userId // 스터디장이거나
+            || studyRecruitmentRepository.existsByStudyIdAndUserId(studyId, userId) // 참여자거나
         }
 
         return StudyDetailResponse.of(study, canViewChatUrl, schedule, userId)

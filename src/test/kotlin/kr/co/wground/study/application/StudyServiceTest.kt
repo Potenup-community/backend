@@ -12,7 +12,6 @@ import kr.co.wground.study.domain.StudyRecruitment
 import kr.co.wground.study.domain.StudySchedule
 import kr.co.wground.study.domain.constant.BudgetType
 import kr.co.wground.study.domain.constant.Months
-import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import kr.co.wground.study.infra.StudyRecruitmentRepository
@@ -117,7 +116,6 @@ class StudyServiceTest {
 
         val leaderRecruitment = recruitments.first()
         assertEquals(savedUser.userId, leaderRecruitment.userId)
-        assertEquals(RecruitStatus.APPROVED, leaderRecruitment.recruitStatus)
         assertEquals(savedStudy?.id, leaderRecruitment.study.id)
     }
 
@@ -279,101 +277,6 @@ class StudyServiceTest {
 
     // ----- 결재 테스트
 
-    @Test
-    @DisplayName("스터디가 결재된 경우, 관련된 모든 신청 건 중 PENDING 상태인 신청만 REJECTED 상태로 변경되어야 한다")
-    fun shouldRejectPendingRecruitments_whenStudyApproved() {
-
-        /*
-         * given
-         * 1. 스터디 생성(스터디장은 자동 참여)
-         * 2. PENDING/APPROVED/CANCELLED/REJECTED 신청이 함께 존재한다.
-         */
-        val today = LocalDate.now()
-        val savedTrack = createAndSaveEnrolledTrack(today)
-
-        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
-
-        val leader = User(
-            trackId = savedTrack.trackId,
-            email = "test@gmail.com",
-            name = "스터디장",
-            phoneNumber = "010-4444-4444",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val savedLeader = userRepository.save(leader)
-
-        val studyId = studyService.createStudy(
-            StudyCreateCommand(
-                userId = savedLeader.userId,
-                name = "결재 테스트 스터디",
-                description = "결재 테스트",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-        val savedStudy = studyRepository.findByIdOrNull(studyId)
-        assertNotNull(savedStudy)
-
-        // 스터디 결재 조건 충족: 모집 마감 + 최소 인원 이상
-        savedStudy!!.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-        schedule.updateSchedule(
-            newMonths = null,
-            newRecruitStart = today.minusDays(10),
-            newRecruitEnd = today.minusDays(5),
-            newStudyEnd = today.plusDays(10)
-        )
-        savedStudy.close(schedule.recruitEndDate)
-
-        val pendingRecruitment = StudyRecruitment(
-            userId = 2L,
-            study = savedStudy,
-            appeal = "신청",
-            recruitStatus = RecruitStatus.PENDING
-        )
-        val approvedRecruitment = StudyRecruitment(
-            userId = 3L,
-            study = savedStudy,
-            appeal = "승인",
-            recruitStatus = RecruitStatus.APPROVED,
-            approvedAt = LocalDateTime.now()
-        )
-        val cancelledRecruitment = StudyRecruitment(
-            userId = 4L,
-            study = savedStudy,
-            appeal = "취소",
-            recruitStatus = RecruitStatus.CANCELLED
-        )
-        val rejectedRecruitment = StudyRecruitment(
-            userId = 5L,
-            study = savedStudy,
-            appeal = "반려",
-            recruitStatus = RecruitStatus.REJECTED
-        )
-        studyRecruitmentRepository.saveAll(
-            listOf(pendingRecruitment, approvedRecruitment, cancelledRecruitment, rejectedRecruitment)
-        )
-
-        // when: 스터디 결재 처리
-        studyService.approveStudy(savedStudy.id)
-
-        // then: PENDING 상태인 신청은 REJECTED로 변경
-        entityManager.flush()
-        entityManager.clear()
-        val updated = studyRecruitmentRepository.findAllByStudyId(savedStudy.id)
-            .associateBy { it.userId }
-
-        assertEquals(RecruitStatus.APPROVED, updated[savedLeader.userId]?.recruitStatus)
-        assertEquals(RecruitStatus.REJECTED, updated[2L]?.recruitStatus)
-        assertEquals(RecruitStatus.APPROVED, updated[3L]?.recruitStatus)
-        assertEquals(RecruitStatus.CANCELLED, updated[4L]?.recruitStatus)
-        assertEquals(RecruitStatus.REJECTED, updated[5L]?.recruitStatus)
-    }
-
     // ----- 삭제 테스트
 
     @Test
@@ -419,8 +322,6 @@ class StudyServiceTest {
         val extraRecruitment = StudyRecruitment(
             userId = 2L,
             study = savedStudy!!,
-            appeal = "추가 신청",
-            recruitStatus = RecruitStatus.PENDING
         )
         studyRecruitmentRepository.save(extraRecruitment)
 
@@ -485,8 +386,6 @@ class StudyServiceTest {
         val extraRecruitment = StudyRecruitment(
             userId = 2L,
             study = savedStudy!!,
-            appeal = "추가 신청",
-            recruitStatus = RecruitStatus.PENDING
         )
         studyRecruitmentRepository.save(extraRecruitment)
 
@@ -584,158 +483,7 @@ class StudyServiceTest {
     // To Do: 현재 차수 스터디에 2개 생성한 상태에서, 한 번 더 생성 시 예외 발생 - BusinessException
 
     @Test
-    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 PENDING 상태일 때, 신규 스터디 생성 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
-    fun shouldThrowMaxStudyExceeded_whenTwoPendingApplicationsExist() {
-
-        /*
-         * given
-         * 1. ENROLLED 상태의 트랙
-         * 2. 과거 차수 일정/스터디 참여 이력
-         * 3. 현재 차수 스터디 2개에 PENDING 신청
-         */
-        val today = LocalDate.now()
-        val savedTrack = createAndSaveEnrolledTrack(today)
-
-        val pastSchedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(40),
-            recruitEndDate = today.minusDays(35),
-            studyEndDate = today.minusDays(20)
-        )
-        val savedPastSchedule = studyScheduleRepository.save(pastSchedule)
-
-        val currentSchedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.SECOND,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(3),
-            studyEndDate = today.plusDays(15)
-        )
-        studyScheduleRepository.save(currentSchedule)
-
-        val student = User(
-            trackId = savedTrack.trackId,
-            email = "student@gmail.com",
-            name = "교육생",
-            phoneNumber = "010-9999-9999",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val savedStudent = userRepository.save(student)
-
-        // 과거 차수 참여 이력
-        val pastStudy = Study(
-            name = "과거 차수 스터디",
-            leaderId = 10L,
-            trackId = savedTrack.trackId,
-            scheduleId = savedPastSchedule.id,
-            description = "과거 차수 참여",
-            status = StudyStatus.PENDING,
-            capacity = 5,
-            budget = BudgetType.MEAL
-        )
-        val savedPastStudy = studyRepository.save(pastStudy)
-        val pastRecruitment = StudyRecruitment(
-            userId = savedStudent.userId,
-            study = savedPastStudy,
-            appeal = "과거 참여",
-            recruitStatus = RecruitStatus.APPROVED,
-            approvedAt = LocalDateTime.now().minusDays(30)
-        )
-        studyRecruitmentRepository.save(pastRecruitment)
-
-        // 현재 차수 스터디 2개 생성(서로 다른 스터디)
-        val leader1 = userRepository.save(
-            User(
-                trackId = savedTrack.trackId,
-                email = "leader1@gmail.com",
-                name = "리더1",
-                phoneNumber = "010-1010-1010",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-        val leader2 = userRepository.save(
-            User(
-                trackId = savedTrack.trackId,
-                email = "leader2@gmail.com",
-                name = "리더2",
-                phoneNumber = "010-2020-2020",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-
-        val studyId1 = studyService.createStudy(
-            StudyCreateCommand(
-                userId = leader1.userId,
-                name = "현재 차수 스터디1",
-                description = "현재 차수 스터디1",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-        val studyId2 = studyService.createStudy(
-            StudyCreateCommand(
-                userId = leader2.userId,
-                name = "현재 차수 스터디2",
-                description = "현재 차수 스터디2",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-
-        val currentStudy1 = studyRepository.findByIdOrNull(studyId1)!!
-        val currentStudy2 = studyRepository.findByIdOrNull(studyId2)!!
-
-        val pendingRecruitment1 = StudyRecruitment(
-            userId = savedStudent.userId,
-            study = currentStudy1,
-            appeal = "신청1",
-            recruitStatus = RecruitStatus.PENDING
-        )
-        val pendingRecruitment2 = StudyRecruitment(
-            userId = savedStudent.userId,
-            study = currentStudy2,
-            appeal = "신청2",
-            recruitStatus = RecruitStatus.PENDING
-        )
-        studyRecruitmentRepository.saveAll(listOf(pendingRecruitment1, pendingRecruitment2))
-
-        entityManager.flush()
-        entityManager.clear()
-
-        // when: 신규 스터디 생성 시도
-        val thrown = assertThrows<BusinessException> {
-            val command = StudyCreateCommand(
-                userId = savedStudent.userId,
-                name = "추가 스터디",
-                description = "추가 스터디",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-            studyService.createStudy(command)
-        }
-
-        // then: 예외 발생(MAX_STUDY_EXCEEDED)
-        assertEquals(StudyServiceErrorCode.MAX_STUDY_EXCEEDED.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 모두 APPROVED 상태일 때, 신규 스터디 생성 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
+    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 참여 중일 때, 신규 스터디 생성 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
     fun shouldThrowMaxStudyExceeded_whenTwoApprovedApplicationsExist() {
 
         /*
@@ -791,9 +539,6 @@ class StudyServiceTest {
         val pastRecruitment = StudyRecruitment(
             userId = savedStudent.userId,
             study = savedPastStudy,
-            appeal = "과거 참여",
-            recruitStatus = RecruitStatus.APPROVED,
-            approvedAt = LocalDateTime.now().minusDays(30)
         )
         studyRecruitmentRepository.save(pastRecruitment)
 
@@ -809,18 +554,6 @@ class StudyServiceTest {
                 status = UserStatus.ACTIVE
             )
         )
-        val leader2 = userRepository.save(
-            User(
-                trackId = savedTrack.trackId,
-                email = "leader2@gmail.com",
-                name = "리더2",
-                phoneNumber = "010-2020-2020",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-
         val studyId1 = studyService.createStudy(
             StudyCreateCommand(
                 userId = leader1.userId,
@@ -831,6 +564,18 @@ class StudyServiceTest {
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
+            )
+        )
+
+        val leader2 = userRepository.save(
+            User(
+                trackId = savedTrack.trackId,
+                email = "leader2@gmail.com",
+                name = "리더2",
+                phoneNumber = "010-2020-2020",
+                provider = "GOOGLE",
+                role = UserRole.MEMBER,
+                status = UserStatus.ACTIVE
             )
         )
         val studyId2 = studyService.createStudy(
@@ -852,16 +597,10 @@ class StudyServiceTest {
         val approvedRecruitment1 = StudyRecruitment(
             userId = savedStudent.userId,
             study = currentStudy1,
-            appeal = "승인1",
-            recruitStatus = RecruitStatus.APPROVED,
-            approvedAt = LocalDateTime.now()
         )
         val approvedRecruitment2 = StudyRecruitment(
             userId = savedStudent.userId,
             study = currentStudy2,
-            appeal = "승인2",
-            recruitStatus = RecruitStatus.APPROVED,
-            approvedAt = LocalDateTime.now()
         )
         studyRecruitmentRepository.saveAll(listOf(approvedRecruitment1, approvedRecruitment2))
 
@@ -885,318 +624,6 @@ class StudyServiceTest {
 
         // then: 예외 발생(MAX_STUDY_EXCEEDED)
         assertEquals(StudyServiceErrorCode.MAX_STUDY_EXCEEDED.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 REJECTED 상태 인 경우, 신규 스터디 생성이 가능하다")
-    fun shouldAllowStudyCreation_whenPendingAndRejectedApplicationsExist() {
-
-        /*
-         * given
-         * 1. ENROLLED 상태의 트랙
-         * 2. 과거 차수 일정/스터디 참여 이력
-         * 3. 현재 차수 스터디 2개에 PENDING/REJECTED 신청
-         */
-        val today = LocalDate.now()
-        val savedTrack = createAndSaveEnrolledTrack(today)
-
-        val pastSchedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(40),
-            recruitEndDate = today.minusDays(35),
-            studyEndDate = today.minusDays(20)
-        )
-        val savedPastSchedule = studyScheduleRepository.save(pastSchedule)
-
-        val currentSchedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.SECOND,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(3),
-            studyEndDate = today.plusDays(15)
-        )
-        studyScheduleRepository.save(currentSchedule)
-
-        val student = User(
-            trackId = savedTrack.trackId,
-            email = "student@gmail.com",
-            name = "교육생",
-            phoneNumber = "010-9999-9999",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val savedStudent = userRepository.save(student)
-
-        // 과거 차수 참여 이력
-        val pastStudy = Study(
-            name = "과거 차수 스터디",
-            leaderId = 10L,
-            trackId = savedTrack.trackId,
-            scheduleId = savedPastSchedule.id,
-            description = "과거 차수 참여",
-            status = StudyStatus.PENDING,
-            capacity = 5,
-            budget = BudgetType.MEAL
-        )
-        val savedPastStudy = studyRepository.save(pastStudy)
-        val pastRecruitment = StudyRecruitment(
-            userId = savedStudent.userId,
-            study = savedPastStudy,
-            appeal = "과거 참여",
-            recruitStatus = RecruitStatus.APPROVED,
-            approvedAt = LocalDateTime.now().minusDays(30)
-        )
-        studyRecruitmentRepository.save(pastRecruitment)
-
-        // 현재 차수 스터디 2개 생성(서로 다른 스터디)
-        val leader1 = userRepository.save(
-            User(
-                trackId = savedTrack.trackId,
-                email = "leader1@gmail.com",
-                name = "리더1",
-                phoneNumber = "010-1010-1010",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-        val leader2 = userRepository.save(
-            User(
-                trackId = savedTrack.trackId,
-                email = "leader2@gmail.com",
-                name = "리더2",
-                phoneNumber = "010-2020-2020",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-
-        val studyId1 = studyService.createStudy(
-            StudyCreateCommand(
-                userId = leader1.userId,
-                name = "현재 차수 스터디1",
-                description = "현재 차수 스터디1",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-        val studyId2 = studyService.createStudy(
-            StudyCreateCommand(
-                userId = leader2.userId,
-                name = "현재 차수 스터디2",
-                description = "현재 차수 스터디2",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-
-        val currentStudy1 = studyRepository.findByIdOrNull(studyId1)!!
-        val currentStudy2 = studyRepository.findByIdOrNull(studyId2)!!
-
-        val pendingRecruitment = StudyRecruitment(
-            userId = savedStudent.userId,
-            study = currentStudy1,
-            appeal = "신청",
-            recruitStatus = RecruitStatus.PENDING
-        )
-        val rejectedRecruitment = StudyRecruitment(
-            userId = savedStudent.userId,
-            study = currentStudy2,
-            appeal = "반려",
-            recruitStatus = RecruitStatus.REJECTED
-        )
-        studyRecruitmentRepository.saveAll(listOf(pendingRecruitment, rejectedRecruitment))
-
-        entityManager.flush()
-        entityManager.clear()
-
-        // when: 신규 스터디 생성
-        val studyId = studyService.createStudy(
-            StudyCreateCommand(
-                userId = savedStudent.userId,
-                name = "추가 스터디",
-                description = "추가 스터디",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-
-        // then: 신규 스터디 생성 성공
-        val savedStudy = studyRepository.findByIdOrNull(studyId)
-        assertNotNull(savedStudy)
-
-        val recruitments = studyRecruitmentRepository.findAllByStudyId(studyId)
-        assertEquals(1, recruitments.size)
-        assertEquals(savedStudent.userId, recruitments.first().userId)
-        assertEquals(RecruitStatus.APPROVED, recruitments.first().recruitStatus)
-    }
-
-    @Test
-    @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 신청했으며, 두 신청 건 중 하나는 PENDING 상태, 다른 하나는 CANCELLED 상태 인 경우, 신규 스터디 생성이 가능하다")
-    fun shouldAllowStudyCreation_whenPendingAndCancelledApplicationsExist() {
-
-        /*
-         * given
-         * 1. ENROLLED 상태의 트랙
-         * 2. 과거 차수 일정/스터디 참여 이력
-         * 3. 현재 차수 스터디 2개에 PENDING/CANCELLED 신청
-         */
-        val today = LocalDate.now()
-        val savedTrack = createAndSaveEnrolledTrack(today)
-
-        val pastSchedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(40),
-            recruitEndDate = today.minusDays(35),
-            studyEndDate = today.minusDays(20)
-        )
-        val savedPastSchedule = studyScheduleRepository.save(pastSchedule)
-
-        val currentSchedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.SECOND,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(3),
-            studyEndDate = today.plusDays(15)
-        )
-        studyScheduleRepository.save(currentSchedule)
-
-        val student = User(
-            trackId = savedTrack.trackId,
-            email = "student@gmail.com",
-            name = "교육생",
-            phoneNumber = "010-9999-9999",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val savedStudent = userRepository.save(student)
-
-        // 과거 차수 참여 이력
-        val pastStudy = Study(
-            name = "과거 차수 스터디",
-            leaderId = 10L,
-            trackId = savedTrack.trackId,
-            scheduleId = savedPastSchedule.id,
-            description = "과거 차수 참여",
-            status = StudyStatus.PENDING,
-            capacity = 5,
-            budget = BudgetType.MEAL
-        )
-        val savedPastStudy = studyRepository.save(pastStudy)
-        val pastRecruitment = StudyRecruitment(
-            userId = savedStudent.userId,
-            study = savedPastStudy,
-            appeal = "과거 참여",
-            recruitStatus = RecruitStatus.APPROVED,
-            approvedAt = LocalDateTime.now().minusDays(30)
-        )
-        studyRecruitmentRepository.save(pastRecruitment)
-
-        // 현재 차수 스터디 2개 생성(서로 다른 스터디)
-        val leader1 = userRepository.save(
-            User(
-                trackId = savedTrack.trackId,
-                email = "leader1@gmail.com",
-                name = "리더1",
-                phoneNumber = "010-1010-1010",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-        val leader2 = userRepository.save(
-            User(
-                trackId = savedTrack.trackId,
-                email = "leader2@gmail.com",
-                name = "리더2",
-                phoneNumber = "010-2020-2020",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-
-        val studyId1 = studyService.createStudy(
-            StudyCreateCommand(
-                userId = leader1.userId,
-                name = "현재 차수 스터디1",
-                description = "현재 차수 스터디1",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-        val studyId2 = studyService.createStudy(
-            StudyCreateCommand(
-                userId = leader2.userId,
-                name = "현재 차수 스터디2",
-                description = "현재 차수 스터디2",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-
-        val currentStudy1 = studyRepository.findByIdOrNull(studyId1)!!
-        val currentStudy2 = studyRepository.findByIdOrNull(studyId2)!!
-
-        val pendingRecruitment = StudyRecruitment(
-            userId = savedStudent.userId,
-            study = currentStudy1,
-            appeal = "신청",
-            recruitStatus = RecruitStatus.PENDING
-        )
-        val cancelledRecruitment = StudyRecruitment(
-            userId = savedStudent.userId,
-            study = currentStudy2,
-            appeal = "취소",
-            recruitStatus = RecruitStatus.CANCELLED
-        )
-        studyRecruitmentRepository.saveAll(listOf(pendingRecruitment, cancelledRecruitment))
-
-        entityManager.flush()
-        entityManager.clear()
-
-        // when: 신규 스터디 생성
-        val studyId = studyService.createStudy(
-            StudyCreateCommand(
-                userId = savedStudent.userId,
-                name = "추가 스터디",
-                description = "추가 스터디",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-
-        // then: 신규 스터디 생성 성공
-        val savedStudy = studyRepository.findByIdOrNull(studyId)
-        assertNotNull(savedStudy)
-
-        val recruitments = studyRecruitmentRepository.findAllByStudyId(studyId)
-        assertEquals(1, recruitments.size)
-        assertEquals(savedStudent.userId, recruitments.first().userId)
-        assertEquals(RecruitStatus.APPROVED, recruitments.first().recruitStatus)
     }
 
     // ----- helpers

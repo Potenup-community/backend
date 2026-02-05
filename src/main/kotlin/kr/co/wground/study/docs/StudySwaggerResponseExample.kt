@@ -11,8 +11,8 @@ object StudySwaggerResponseExample {
            "description": "코틀린 기초부터 심화까지 함께 공부합니다.",
            "capacity": 6,
            "currentMemberCount": 3,
-           "status": "RECRUITING",
-           "budget": "FREE",
+           "status": "PENDING",
+           "budget": "MEAL",
            "chatUrl": "https://open.kakao.com/...",
            "refUrl": "https://github.com/...",
            "tags": [
@@ -49,8 +49,8 @@ object StudySwaggerResponseExample {
                "description": "코틀린 기초부터 심화까지 함께 공부합니다.",
                "capacity": 6,
                "currentMemberCount": 3,
-               "status": "RECRUITING",
-               "budget": "FREE",
+               "status": "PENDING",
+               "budget": "BOOK",
                "chatUrl": null,
                "refUrl": "https://github.com/...",
                "tags": [
@@ -84,10 +84,8 @@ object StudySwaggerResponseExample {
              "trackName": "백엔드 4기",
              "userId": 101,
              "userName": "이순신",
-             "appeal": "열심히 참여하겠습니다.",
              "status": "PENDING",
              "createdAt": "2026-01-26T09:00:00",
-             "approvedAt": null
            },
            {
              "id": 6,
@@ -96,10 +94,8 @@ object StudySwaggerResponseExample {
              "trackName": "백엔드 4기",
              "userId": 102,
              "userName": "장보고",
-             "appeal": "코틀린 마스터가 되고 싶어요.",
              "status": "APPROVED",
              "createdAt": "2026-01-26T10:00:00",
-             "approvedAt": "2026-01-27T10:00:00"
           }
         ]
         """

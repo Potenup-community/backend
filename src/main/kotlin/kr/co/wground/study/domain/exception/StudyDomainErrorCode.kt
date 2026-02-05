@@ -36,10 +36,4 @@ enum class StudyDomainErrorCode(
     STUDY_CANNOT_MODIFY_AFTER_DEADLINE(HttpStatus.BAD_REQUEST,"SD-0015","모집 마감 상태에서 수정할 수 없는 항목입니다."),
     STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER(HttpStatus.CONFLICT, "SD-0016", "참여 인원 미달된 스터디는 승인할 수 없습니다."),
     RECRUITMENT_NOT_ENDED_YET(HttpStatus.CONFLICT, "SD-0017", "모집 기간이 끝나지 않은 스터디는 마감시킬 수 없습니다."),
-
-    //StudyRecruitment
-    RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE(HttpStatus.BAD_REQUEST,"SR-0001","자기 소개는 2자 이상 200자 이내로 작성해주세요."),
-    RECRUITMENT_INVALID_STATUS_CHANGE(HttpStatus.BAD_REQUEST,"SR-0002","유효하지 않은 상태 변경입니다."),
-    RECRUITMENT_APPEAL_EMPTY(HttpStatus.BAD_REQUEST,"SR-0003","자기소개가 입력되지 않았습니다."),
-    RECRUITMENT_CANCELL_NOT_ALLOWED_STUDY_NOT_PENDING(HttpStatus.CONFLICT,"SR-0004","스터디 상태가 PENDING 이 아닌 경우 신청을 취소할 수 없습니다.")
 }

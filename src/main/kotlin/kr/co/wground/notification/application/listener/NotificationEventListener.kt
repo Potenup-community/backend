@@ -6,7 +6,7 @@ import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
-import kr.co.wground.common.event.StudyDetermineEvent
+import kr.co.wground.common.event.StudyRecruitmentEvent
 import kr.co.wground.common.event.StudyRecruitEndedEvent
 import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.common.event.StudyRecruitStartedEvent
@@ -19,7 +19,6 @@ import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.enums.ReferenceType
 import kr.co.wground.notification.domain.vo.NotificationReference
 import kr.co.wground.notification.exception.NotificationErrorCode
-import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.beans.factory.annotation.Value
@@ -188,8 +187,7 @@ class NotificationEventListener(
 
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun handleStudyDetermine(event: StudyDetermineEvent) {
-        if (event.recruitStatus != RecruitStatus.APPROVED) return
+    fun handleStudyDetermine(event: StudyRecruitmentEvent) {
 
         createNotificationSafely {
             notificationCommandService.create(
