@@ -116,15 +116,15 @@ class StudyRecruitmentTest {
     @ParameterizedTest(name = "신청 상태: {0}")
     @MethodSource("recruitmentStatusesCannotBeCancelled")
     @DisplayName("취소 불가한 신청 상태에서, 취소를 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun shouldThrowRecruitmentInvalidStatusChange_whenCancelWithUncancellableStatus() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenCancelWithUncancellableStatus(caseName: String, givenRecruitmentStatus: RecruitStatus, expectedErrorCode: String) {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
-            created.updateRecruitStatus(RecruitStatus.CANCELLED)
+            created.updateRecruitStatus(givenRecruitmentStatus)
 
             created.updateRecruitStatus(RecruitStatus.CANCELLED)
         }
 
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE.code, thrown.code)
+        assertEquals(expectedErrorCode, thrown.code)
     }
 
     // ----- 반려
@@ -132,15 +132,15 @@ class StudyRecruitmentTest {
     @ParameterizedTest(name = "신청 상태: {0}")
     @MethodSource("recruitmentStatusesCannotBeRejected")
     @DisplayName("반려 불가한 신청 상태에서, 반려를 시도하면, 예외 발생 - BusinessException(RECRUITMENT_INVALID_STATUS_CHANGE)")
-    fun shouldThrowRecruitmentInvalidStatusChange_whenRejectWithUnrejectableStatus() {
+    fun shouldThrowRecruitmentInvalidStatusChange_whenRejectWithUnrejectableStatus(caseName: String, givenRecruitmentStatus: RecruitStatus, expectedErrorCode: String) {
         val thrown = assertThrows<BusinessException> {
             val created = createStudyRecruitmentWithAppeal(createRecruitingStudySchedule(), "자기소개")
-            created.updateRecruitStatus(RecruitStatus.CANCELLED)
+            created.updateRecruitStatus(givenRecruitmentStatus)
 
             created.updateRecruitStatus(RecruitStatus.REJECTED)
         }
 
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE.code, thrown.code)
+        assertEquals(expectedErrorCode, thrown.code)
     }
 
     // factories

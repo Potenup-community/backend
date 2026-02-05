@@ -67,9 +67,15 @@ class StudyRecruitmentServiceTest {
 
     companion object {
         @JvmStatic
-        fun StudyStatusCannotBeApplied(): Stream<Arguments> = Stream.of(
+        fun studyStatusCannotBeApplied(): Stream<Arguments> = Stream.of(
             Arguments.of("CLOSED", StudyStatus.CLOSED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
             Arguments.of("APPROVED", StudyStatus.APPROVED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
+        )
+
+        @JvmStatic
+        fun studyStatusCannotBeWithdrawn(): Stream<Arguments> = Stream.of(
+            Arguments.of("CLOSED", StudyStatus.CLOSED, StudyDomainErrorCode.RECRUITMENT_CANCELL_NOT_ALLOWED_STUDY_NOT_PENDING.code),
+            Arguments.of("APPROVED", StudyStatus.APPROVED, StudyDomainErrorCode.RECRUITMENT_CANCELL_NOT_ALLOWED_STUDY_NOT_PENDING.code),
         )
     }
 
@@ -224,7 +230,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @ParameterizedTest(name = "신청 상태: {0}")
-    @MethodSource("StudyStatusCannotBeApplied")
+    @MethodSource("studyStatusCannotBeApplied")
     @DisplayName("교육생이 신청 불가능한 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
     fun shouldThrowStudyNotRecruiting_whenApplyToStudyCannotBeApplied(caseName: String, givenStudyStatus: StudyStatus, expectedErrorCode: String) {
 
@@ -1534,7 +1540,7 @@ class StudyRecruitmentServiceTest {
         }
 
         // then: 예외 발생(RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE)
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_STATUS_CANNOT_CHANGE_CAUSE_STUDY_HAS_BEEN_APPROVED.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.RECRUITMENT_CANCELL_NOT_ALLOWED_STUDY_NOT_PENDING.code, thrown.code)
     }
 
     @Test
@@ -1714,6 +1720,78 @@ class StudyRecruitmentServiceTest {
     }
 
     // To Do: CLOSED 상태의 스터디에서 취소하려 한 경우, 예외 발생 - BusinessException(?)
+    @ParameterizedTest(name = "스터디 상태: {0}")
+    @MethodSource("studyStatusCannotBeWithdrawn")
+    @DisplayName("PENDING 상태가 아닌 스터디에 참여 중인 신청 건에 대해, 취소를 시도하면, 예외 발생 - BusinessException()")
+    fun shouldThrow_when(caseName: String, givenStudyStatus: StudyStatus, expectedErrorCode: String) {
+
+        /*
+         * given
+         * 1. ENROLLED 트랙
+         * 2. 모집 기간이 마감되기 전의 일정
+         * 3. givenStudyStatus 상태 스터디
+         * 4. 교육생이 스터디 신청
+         */
+        val today = LocalDate.now()
+        val track = trackRepository.save(
+            Track(
+                trackName = "테스트 트랙",
+                startDate = today.minusDays(10),
+                endDate = today.plusDays(30)
+            )
+        )
+        val schedule = studyScheduleRepository.save(
+            StudySchedule(
+                trackId = track.trackId,
+                months = Months.FIRST,
+                recruitStartDate = today.minusDays(1),
+                recruitEndDate = today.plusDays(1),
+                studyEndDate = today.plusDays(10)
+            )
+        )
+
+        val study = studyRepository.save(
+            Study(
+                name = "스터디 이름",
+                leaderId = 10L,
+                trackId = track.trackId,
+                scheduleId = schedule.id,
+                description = "스터디 설명",
+                status = StudyStatus.PENDING,
+                capacity = 5,
+                budget = BudgetType.MEAL
+            )
+        )
+
+        val user = userRepository.save(
+            User(
+                trackId = track.trackId,
+                email = "student@gmail.com",
+                name = "교육생",
+                phoneNumber = "010-4444-4444",
+                provider = "GOOGLE",
+                role = UserRole.MEMBER,
+                status = UserStatus.ACTIVE
+            )
+        )
+
+        val recruitmentId = studyRecruitmentService.requestRecruit(
+            userId = user.userId,
+            studyId = study.id,
+            appeal = "신청합니다."
+        )
+
+        // 모집 마감
+        study.close(LocalDateTime.now().minusDays(1))
+
+        // when: 스터디 취소
+        val thrown = assertThrows<BusinessException> {
+            studyRecruitmentService.cancelRecruit(user.userId, recruitmentId)
+        }
+
+        // then: 예외 발생
+        assertEquals(expectedErrorCode, thrown.code)
+    }
 
     // ----- 신청 승인 테스트
 

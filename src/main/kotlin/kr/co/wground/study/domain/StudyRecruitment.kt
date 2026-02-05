@@ -89,6 +89,10 @@ class StudyRecruitment(
             throw BusinessException(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE)
         }
 
+        if (this.study.status != StudyStatus.PENDING) {
+            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_CANCELL_NOT_ALLOWED_STUDY_NOT_PENDING)
+        }
+
         updateRecruitStatus(RecruitStatus.CANCELLED)
     }
 
@@ -100,7 +104,6 @@ class StudyRecruitment(
     }
 
     fun updateRecruitStatus(newRecruitStatus: RecruitStatus) {
-        validateStudyStatus(this.study.status)
         validateRecruitStatus(newRecruitStatus)
         this.recruitStatus = newRecruitStatus
         recentUpdateAt()
@@ -123,12 +126,6 @@ class StudyRecruitment(
 
         if (!isValid) {
             throw BusinessException(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE)
-        }
-    }
-
-    private fun validateStudyStatus(studyStatus: StudyStatus) {
-        if (studyStatus == StudyStatus.APPROVED) {
-            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_STATUS_CANNOT_CHANGE_CAUSE_STUDY_HAS_BEEN_APPROVED)
         }
     }
 }
