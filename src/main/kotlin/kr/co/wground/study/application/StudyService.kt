@@ -146,14 +146,6 @@ class StudyService(
         studyRecruitmentRepository.rejectAllByStudyIdWithStatus(studyId, RecruitStatus.PENDING)
     }
 
-    fun rejectStudy(studyId: Long) {
-        val study = getStudyEntity(studyId)
-
-        study.reject()
-
-        studyRecruitmentRepository.rejectAllByStudyIdWithExceptStatus(studyId, RecruitStatus.CANCELLED)
-    }
-
     @Transactional(readOnly = true)
     fun searchStudies(
         condition: StudySearchDto

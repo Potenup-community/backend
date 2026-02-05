@@ -277,135 +277,6 @@ class StudyServiceTest {
         assertEquals(StudyDomainErrorCode.STUDY_TAG_COUNT_EXCEEDED.code, thrown.code)
     }
 
-    // ----- 거부 테스트
-
-    /*
-     * [참고]
-     * - 테스트에서 별도로 반려시키는 게 아니라, 스터디 생성 후 자동으로 참여된 상태임을 확인해야 하는 테스트임
-     * - 스터디장의 신청 상태 역시 반려 상태로 바뀌었는 지 확인함. 왜냐하면, 반려된 테스트에 승인 상태로 남아있으면
-     *   스터디 참여 개수를 점유하기 때문임
-     */
-    @Test
-    @DisplayName("스터디가 거부된 경우, CANCELLED 상태가 아닌 모든 신청 건이 반려(REJECTED)된다")
-    fun shouldRejectNonCancelledRecruitments_whenStudyRejected() {
-        /*
-         * given
-         * 1. 스터디가 존재한다.
-         * 2. PENDING/APPROVED/CANCELLED/REJECTED 신청이 함께 존재한다.
-         */
-        val today = LocalDate.now()
-        val savedTrack = createAndSaveEnrolledTrack(today)
-
-        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
-
-        val leader = User(
-            trackId = savedTrack.trackId,
-            email = "test@gmail.com",
-            name = "스터디장",
-            phoneNumber = "010-3333-3333",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val savedLeader = userRepository.save(leader)
-
-        // 스터디를 생성할 때 서비스 메서드를 통해 생성하여, 스터디장의 자동으로 생성된 스터디에 참여되도록 함
-        val studyId = studyService.createStudy(
-            StudyCreateCommand(
-                userId = savedLeader.userId,
-                name = "거부 테스트 스터디",
-                description = "거부 테스트",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-        val savedStudy = studyRepository.findByIdOrNull(studyId)
-        assertNotNull(savedStudy)
-
-        val studentPending = User(
-            trackId = savedTrack.trackId,
-            email = "test@gmail.com",
-            name = "PENDING 상태 학생",
-            phoneNumber = "010-1111-1111",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val pendingRecruitment = StudyRecruitment(
-            userId = studentPending.userId,
-            study = savedStudy!!,
-            appeal = "신청",
-            recruitStatus = RecruitStatus.PENDING
-        )
-        val studentApproved = User(
-            trackId = savedTrack.trackId,
-            email = "test@gmail.com",
-            name = "APPROVED 상태 학생",
-            phoneNumber = "010-1111-1111",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val approvedRecruitment = StudyRecruitment(
-            userId = studentApproved.userId,
-            study = savedStudy,
-            appeal = "승인",
-            recruitStatus = RecruitStatus.APPROVED,
-            approvedAt = LocalDateTime.now()
-        )
-        val studentCancelled = User(
-            trackId = savedTrack.trackId,
-            email = "test@gmail.com",
-            name = "CANCELLED 상태 학생",
-            phoneNumber = "010-1111-1111",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val cancelledRecruitment = StudyRecruitment(
-            userId = studentCancelled.userId,
-            study = savedStudy,
-            appeal = "취소",
-            recruitStatus = RecruitStatus.CANCELLED
-        )
-        val studentRejected = User(
-            trackId = savedTrack.trackId,
-            email = "test@gmail.com",
-            name = "REJECTED 상태 학생",
-            phoneNumber = "010-1111-1111",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val rejectedRecruitment = StudyRecruitment(
-            userId = studentRejected.userId,
-            study = savedStudy,
-            appeal = "반려",
-            recruitStatus = RecruitStatus.REJECTED
-        )
-        studyRecruitmentRepository.saveAll(
-            listOf(pendingRecruitment, approvedRecruitment, cancelledRecruitment, rejectedRecruitment)
-        )
-
-        // when: 스터디 거부 처리
-        studyService.rejectStudy(savedStudy.id)
-
-        // then: CANCELLED를 제외한 모든 신청이 REJECTED로 변경
-        entityManager.flush()
-        entityManager.clear()
-        val updated = studyRecruitmentRepository.findAllByStudyId(savedStudy.id)
-            .associateBy { it.userId }
-
-        assertEquals(RecruitStatus.REJECTED, updated[savedLeader.userId]?.recruitStatus)
-        assertEquals(RecruitStatus.REJECTED, updated[studentPending.userId]?.recruitStatus)
-        assertEquals(RecruitStatus.REJECTED, updated[studentApproved.userId]?.recruitStatus)
-        assertEquals(RecruitStatus.CANCELLED, updated[studentCancelled.userId]?.recruitStatus)
-        assertEquals(RecruitStatus.REJECTED, updated[studentRejected.userId]?.recruitStatus)
-    }
-
     // ----- 결재 테스트
 
     @Test
@@ -502,6 +373,10 @@ class StudyServiceTest {
         assertEquals(RecruitStatus.CANCELLED, updated[4L]?.recruitStatus)
         assertEquals(RecruitStatus.REJECTED, updated[5L]?.recruitStatus)
     }
+
+    // To Do: 스터디가 PENDING 상태일 때, 승인 시도한 경우, 예외 발생 - BusinessException(STUDY_MUST_BE_CLOSED_TO_APPROVE)
+
+    // To Do: 스터디가 CLOSED 상태이나 최소 인원에 미달되었을 때, 승인 시도한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)
 
     // ----- 삭제 테스트
 
@@ -646,56 +521,6 @@ class StudyServiceTest {
 
         assertEquals(null, deletedStudy)
         assertEquals(0, recruitments.size)
-    }
-
-    @Test
-    @DisplayName("거부(REJECTED) 상태의 스터디를 삭제하려 한 경우, 예외 발생 - BusinessException(STUDY_CANT_DELETE_STATUS_DETERMINE)")
-    fun shouldThrowStudyCantDeleteStatusDetermine_whenDeleteRejectedStudy() {
-
-        /*
-         * given
-         * 1. REJECTED 상태의 스터디
-         */
-        val today = LocalDate.now()
-        val savedTrack = createAndSaveEnrolledTrack(today)
-
-        val schedule = createAndSaveCurrentSchedule(today, savedTrack)
-
-        val leader = User(
-            trackId = savedTrack.trackId,
-            email = "test@gmail.com",
-            name = "스터디장",
-            phoneNumber = "010-7777-7777",
-            provider = "GOOGLE",
-            role = UserRole.MEMBER,
-            status = UserStatus.ACTIVE
-        )
-        val savedLeader = userRepository.save(leader)
-
-        val studyId = studyService.createStudy(
-            StudyCreateCommand(
-                userId = savedLeader.userId,
-                name = "삭제 테스트 스터디(REJECTED)",
-                description = "삭제 테스트",
-                capacity = 5,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-        val savedStudy = studyRepository.findByIdOrNull(studyId)
-        assertNotNull(savedStudy)
-
-        savedStudy!!.reject()
-
-        // when: REJECTED 스터디 삭제 시도
-        val thrown = assertThrows<BusinessException> {
-            studyService.deleteStudy(savedStudy.id, savedLeader.userId, isAdmin = false)
-        }
-
-        // then: 예외 발생(STUDY_CANT_DELETE_STATUS_DETERMINE)
-        assertEquals(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_DETERMINE.code, thrown.code)
     }
 
     @Test

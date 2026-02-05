@@ -69,7 +69,6 @@ class StudyRecruitmentServiceTest {
         @JvmStatic
         fun StudyStatusCannotBeApplied(): Stream<Arguments> = Stream.of(
             Arguments.of("CLOSED", StudyStatus.CLOSED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
-            Arguments.of("REJECTED", StudyStatus.REJECTED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
             Arguments.of("APPROVED", StudyStatus.APPROVED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
         )
     }
@@ -1619,7 +1618,7 @@ class StudyRecruitmentServiceTest {
         }
 
         // then: 예외 발생(RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE)
-        assertEquals(StudyDomainErrorCode.RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.RECRUITMENT_STATUS_CANNOT_CHANGE_CAUSE_STUDY_HAS_BEEN_APPROVED.code, thrown.code)
     }
 
     @Test

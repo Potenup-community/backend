@@ -16,7 +16,6 @@ import kr.co.wground.study.domain.constant.BudgetType
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import java.time.LocalDateTime
-import kr.co.wground.study.application.exception.StudyServiceErrorCode
 
 @Entity
 class Study(
@@ -225,28 +224,25 @@ class Study(
         if (this.status != StudyStatus.CLOSED) {
             throw BusinessException(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE)
         }
+
+        if (currentMemberCount < MIN_CAPACITY) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)
+        }
+
         this.status = StudyStatus.APPROVED
     }
 
-    fun reject() {
-        validateRejectStatus()
-        this.status = StudyStatus.REJECTED
-    }
-
     fun validateHardDeletable() {
-        if (this.status == StudyStatus.APPROVED || this.status == StudyStatus.REJECTED) {
+        if (this.status == StudyStatus.APPROVED) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_DETERMINE)
         }
     }
 
     fun refreshStatus(isRecruitmentClosed: Boolean, now: LocalDateTime = LocalDateTime.now()) {
-        if (status == StudyStatus.APPROVED || status == StudyStatus.REJECTED) return
+        if (status == StudyStatus.APPROVED) return
 
         this.status = when {
-            isRecruitmentClosed && currentMemberCount < MIN_CAPACITY -> StudyStatus.REJECTED
-
             isRecruitmentClosed || currentMemberCount >= capacity -> StudyStatus.CLOSED
-
             else -> StudyStatus.PENDING
         }
     }
@@ -256,8 +252,8 @@ class Study(
     }
 
     private fun validateCanUpdate() {
-        if (this.status == StudyStatus.APPROVED || this.status == StudyStatus.REJECTED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DETERMINED)
+        if (this.status == StudyStatus.APPROVED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_APPROVED)
         }
     }
 
@@ -294,12 +290,6 @@ class Study(
     private fun validateCurrentMemberOverCapacity(newCapacity: Int) {
         if (newCapacity < this.currentMemberCount) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_CANNOT_LESS_THAN_CURRENT)
-        }
-    }
-
-    private fun validateRejectStatus() {
-        if (this.status == StudyStatus.APPROVED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_REJECTED_IN_APPROVED_STATUS)
         }
     }
 }

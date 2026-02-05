@@ -232,27 +232,6 @@ class StudyTest {
         assertEquals(StudyDomainErrorCode.STUDY_URL_INVALID.code, thrown.code)
     }
 
-    // ----- 거부 테스트
-
-    @Test
-    @DisplayName("대상 스터디가 APPROVED 상태일 때, 스터디 거부 시, 예외 발생 - BusinessException(STUDY_CANT_REJECTED_IN_APPROVED_STATUS)")
-    fun shouldThrowStudyCantRejectedInApprovedStatus_whenRejectApprovedStudy() {
-
-        val thrown = assertThrows<BusinessException> {
-
-            // given
-            val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule, 2)
-            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-            created.approve()
-
-            // when
-            created.reject()
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_CANT_REJECTED_IN_APPROVED_STATUS.code, thrown.code)
-    }
-
     // ----- 결재 테스트
 
     @Test
@@ -262,19 +241,6 @@ class StudyTest {
         val thrown = assertThrows<BusinessException> {
             val pending = createStudyWithCapacity(createRecruitingStudySchedule(),2)
             pending.approve()
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("대상 스터디가 REJECTED 상태일 때, 스터디 결재 시, 예외 발생 - BusinessException(STUDY_MUST_BE_CLOSED_TO_APPROVE)")
-    fun shouldThrowStudyMustBeClosedToApprove_whenApproveRejectedStudy() {
-
-        val thrown = assertThrows<BusinessException> {
-            val rejected = createStudyWithCapacity(createRecruitingStudySchedule(), 2)
-            rejected.reject()
-            rejected.approve()
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE.code, thrown.code)
@@ -291,19 +257,6 @@ class StudyTest {
             created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
         }
         assertEquals(StudyStatus.CLOSED, created.status)
-    }
-
-    @Test
-    @DisplayName("REJECTED 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
-    fun shouldThrowStudyNotRecruiting_whenIncreaseMemberOnRejectedStudy() {
-        val thrown = assertThrows<BusinessException> {
-            val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
-            created.reject()
-            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_NOT_RECRUITING.code, thrown.code)
     }
 
     @Test
@@ -357,19 +310,6 @@ class StudyTest {
     // ----- 수정 테스트
 
     @Test
-    @DisplayName("REJECTED 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(STUDY_CANNOT_MODIFY_AFTER_DETERMINED)")
-    fun shouldThrowStudyCannotModifyAfterDetermined_whenUpdateRejectedStudy() {
-        val thrown = assertThrows<BusinessException> {
-            val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
-            created.reject()
-            updateStudyName(created, "제목제목", schedule.isRecruitmentClosed())
-        }
-
-        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DETERMINED.code, thrown.code)
-    }
-
-    @Test
     @DisplayName("APPROVED 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(STUDY_CANNOT_MODIFY_AFTER_DETERMINED)")
     fun shouldThrowStudyCannotModifyAfterDetermined_whenUpdateApprovedStudy() {
         val thrown = assertThrows<BusinessException> {
@@ -381,7 +321,7 @@ class StudyTest {
             updateStudyName(created, "제목제목", schedule.isRecruitmentClosed())
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DETERMINED.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_APPROVED.code, thrown.code)
     }
 
     @Test

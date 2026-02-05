@@ -127,8 +127,8 @@ class StudyRecruitment(
     }
 
     private fun validateStudyStatus(studyStatus: StudyStatus) {
-        if (studyStatus == StudyStatus.APPROVED || studyStatus == StudyStatus.REJECTED) {
-            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE)
+        if (studyStatus == StudyStatus.APPROVED) {
+            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_STATUS_CANNOT_CHANGE_CAUSE_STUDY_HAS_BEEN_APPROVED)
         }
     }
 }
