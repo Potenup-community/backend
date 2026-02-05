@@ -19,4 +19,6 @@ enum class NotificationErrorCode(
     NOTIFICATION_NOT_FOUND(HttpStatus.NOT_FOUND, "N-0007", "알림을 찾을 수 없습니다."),
 
     TEMPLATE_NOT_FOUND(HttpStatus.BAD_REQUEST, "N-0008", "알림 메시지 템플릿을 찾을 수 없습니다."),
+
+    INVALID_BROADCAST_TARGET(HttpStatus.BAD_REQUEST, "N-0009", "브로드캐스트 대상 정보가 올바르지 않습니다."),
 }
