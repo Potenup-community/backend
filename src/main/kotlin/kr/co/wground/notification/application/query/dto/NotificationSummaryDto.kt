@@ -6,6 +6,7 @@ import kr.co.wground.notification.domain.Notification
 import kr.co.wground.notification.domain.enums.NotificationStatus
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.enums.ReferenceType
+import kr.co.wground.notification.domain.repository.BroadcastNotificationWithReadStatus
 import java.time.LocalDateTime
 
 data class NotificationSummaryDto(
@@ -17,10 +18,11 @@ data class NotificationSummaryDto(
     val referenceType: ReferenceType?,
     val referenceId: Long?,
     val status: NotificationStatus,
+    val isBroadcast: Boolean,
     val createdAt: LocalDateTime,
 ) {
     companion object {
-        fun from(notification: Notification): NotificationSummaryDto {
+        fun fromPersonal(notification: Notification): NotificationSummaryDto {
             return NotificationSummaryDto(
                 id = notification.id,
                 type = notification.type,
@@ -30,6 +32,23 @@ data class NotificationSummaryDto(
                 referenceType = notification.reference?.referenceType,
                 referenceId = notification.reference?.referenceId,
                 status = notification.status,
+                isBroadcast = false,
+                createdAt = notification.createdAt,
+            )
+        }
+
+        fun fromBroadcast(data: BroadcastNotificationWithReadStatus): NotificationSummaryDto {
+            val notification = data.notification
+            return NotificationSummaryDto(
+                id = notification.id,
+                type = notification.type,
+                title = notification.content.title,
+                content = notification.content.content,
+                actorId = null,
+                referenceType = notification.reference?.referenceType,
+                referenceId = notification.reference?.referenceId,
+                status = if (data.isRead) NotificationStatus.READ else NotificationStatus.UNREAD,
+                isBroadcast = true,
                 createdAt = notification.createdAt,
             )
         }
