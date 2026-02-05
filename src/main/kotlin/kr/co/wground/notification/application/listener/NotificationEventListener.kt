@@ -11,10 +11,12 @@ import kr.co.wground.common.event.StudyRecruitEndedEvent
 import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.common.event.StudyRecruitStartedEvent
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.notification.application.command.BroadcastNotificationCommandService
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.application.port.NotificationMessage
 import kr.co.wground.notification.application.port.NotificationMessageType
 import kr.co.wground.notification.application.port.NotificationSender
+import kr.co.wground.notification.domain.enums.BroadcastTargetType
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.enums.ReferenceType
 import kr.co.wground.notification.domain.vo.NotificationReference
@@ -34,6 +36,7 @@ private const val NOTIFICATION_EXECUTOR = "notificationExecutor"
 @Component
 class NotificationEventListener(
     private val notificationCommandService: NotificationCommandService,
+    private val broadcastNotificationCommandService: BroadcastNotificationCommandService,
     private val notificationSender: NotificationSender,
     private val trackRepository: TrackRepository,
     private val userRepository: UserRepository,
@@ -157,6 +160,18 @@ class NotificationEventListener(
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleAnnouncementCreated(event: AnnouncementCreatedEvent) {
+        // 인앱 알림 (전체 브로드캐스트)
+        broadcastNotificationCommandService.create(
+            type = NotificationType.ANNOUNCEMENT,
+            title = "공지사항",
+            targetType = BroadcastTargetType.ALL,
+            reference = NotificationReference(
+                referenceType = ReferenceType.POST,
+                referenceId = event.postId,
+            ),
+        )
+
+        // 슬랙 발송
         val postLink = "$frontendUrl/post/${event.postId}"
         notificationSender.send(
             NotificationMessage(
@@ -229,15 +244,26 @@ class NotificationEventListener(
     fun handleStudyRecruitStarted(event: StudyRecruitStartedEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
         val studyLink = "$frontendUrl/study"
+        val placeholders = mapOf(
+            "trackName" to track.trackName,
+            "months" to "${event.months.month}차",
+        )
 
+        // 인앱 알림 (트랙별 브로드캐스트)
+        broadcastNotificationCommandService.create(
+            type = NotificationType.STUDY_RECRUIT_START,
+            title = "스터디 모집 시작",
+            targetType = BroadcastTargetType.TRACK,
+            targetId = event.trackId,
+            placeholders = placeholders,
+        )
+
+        // 슬랙 발송
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.STUDY_RECRUIT_START_REMINDER,
                 link = studyLink,
-                metadata = mapOf(
-                    "trackName" to track.trackName,
-                    "months" to "${event.months.month}차",
-                )
+                metadata = placeholders,
             )
         )
     }
@@ -247,15 +273,26 @@ class NotificationEventListener(
     fun handleStudyRecruitEnded(event: StudyRecruitEndedEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
         val studyLink = "$frontendUrl/study"
+        val placeholders = mapOf(
+            "trackName" to track.trackName,
+            "months" to "${event.months.month}차",
+        )
 
+        // 인앱 알림 (트랙별 브로드캐스트)
+        broadcastNotificationCommandService.create(
+            type = NotificationType.STUDY_RECRUIT_END,
+            title = "스터디 모집 마감",
+            targetType = BroadcastTargetType.TRACK,
+            targetId = event.trackId,
+            placeholders = placeholders,
+        )
+
+        // 슬랙 발송
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.STUDY_RECRUIT_END_REMINDER,
                 link = studyLink,
-                metadata = mapOf(
-                    "trackName" to track.trackName,
-                    "months" to "${event.months.month}차",
-                )
+                metadata = placeholders,
             )
         )
     }
