@@ -63,4 +63,17 @@ class BroadcastNotificationCommandService(
             )
         )
     }
+
+    fun markAllAsRead(userId: Long, trackId: Long?) {
+        val unreadIds = broadcastNotificationRepository.findUnreadIdsByUserIdAndTrackId(userId, trackId)
+        if (unreadIds.isEmpty()) return
+
+        val reads = unreadIds.map { notificationId ->
+            BroadcastNotificationRead(
+                userId = userId,
+                notificationId = notificationId,
+            )
+        }
+        broadcastNotificationReadRepository.saveAll(reads)
+    }
 }

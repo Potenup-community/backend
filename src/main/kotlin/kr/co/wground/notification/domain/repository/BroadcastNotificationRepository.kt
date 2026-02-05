@@ -15,8 +15,10 @@ interface BroadcastNotificationRepository {
         trackId: Long?,
         pageable: Pageable
     ): Slice<BroadcastNotificationWithReadStatus>
-    
+
     fun countUnreadByUserIdAndTrackId(userId: Long, trackId: Long?): Long
+
+    fun findUnreadIdsByUserIdAndTrackId(userId: Long, trackId: Long?): List<Long>
 }
 
 data class BroadcastNotificationWithReadStatus(

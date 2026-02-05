@@ -62,6 +62,22 @@ class CustomBroadcastNotificationRepositoryImpl(
             .fetchOne() ?: 0L
     }
 
+    override fun findUnreadIdsByUserIdAndTrackId(userId: Long, trackId: Long?): List<Long> {
+        return queryFactory
+            .select(broadcastNotification.id)
+            .from(broadcastNotification)
+            .leftJoin(broadcastNotificationRead)
+            .on(
+                broadcastNotificationRead.notificationId.eq(broadcastNotification.id),
+                broadcastNotificationRead.userId.eq(userId)
+            )
+            .where(
+                targetCondition(trackId),
+                broadcastNotificationRead.id.isNull
+            )
+            .fetch()
+    }
+
     private fun targetCondition(trackId: Long?): BooleanExpression {
         val allCondition = broadcastNotification.targetType.eq(BroadcastTargetType.ALL)
 

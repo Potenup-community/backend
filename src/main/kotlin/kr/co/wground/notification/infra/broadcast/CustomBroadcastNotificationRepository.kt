@@ -12,4 +12,6 @@ interface CustomBroadcastNotificationRepository {
     ): Slice<BroadcastNotificationWithReadStatus>
 
     fun countUnreadByUserIdAndTrackId(userId: Long, trackId: Long?): Long
+
+    fun findUnreadIdsByUserIdAndTrackId(userId: Long, trackId: Long?): List<Long>
 }

@@ -32,4 +32,8 @@ class BroadcastNotificationRepositoryImpl(
     override fun countUnreadByUserIdAndTrackId(userId: Long, trackId: Long?): Long {
         return jpaRepository.countUnreadByUserIdAndTrackId(userId, trackId)
     }
+
+    override fun findUnreadIdsByUserIdAndTrackId(userId: Long, trackId: Long?): List<Long> {
+        return jpaRepository.findUnreadIdsByUserIdAndTrackId(userId, trackId)
+    }
 }
