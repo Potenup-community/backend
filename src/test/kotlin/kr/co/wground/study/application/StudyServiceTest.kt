@@ -374,9 +374,6 @@ class StudyServiceTest {
         assertEquals(RecruitStatus.REJECTED, updated[5L]?.recruitStatus)
     }
 
-    // To Do: 스터디가 CLOSED 상태이고 최소 인원에 미달되었을 때, 결재 시도한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)
-    
-
     // ----- 삭제 테스트
 
     @Test

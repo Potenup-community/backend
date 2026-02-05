@@ -227,6 +227,21 @@ class StudyTest {
         assertEquals(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE.code, thrown.code)
     }
 
+    @Test
+    @DisplayName("스터디가 CLOSED 상태이고 최소 인원에 미달되었을 때, 결재 시도한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)")
+    // STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER
+    fun shouldThrowStudyCannotApprovedDueToNotEnoughMember_whenApproveStudyWhichNotMeetMinimumMemberCondition() {
+
+        val thrown = assertThrows<BusinessException> {
+            val pending = createStudyWithCapacity(createRecruitingStudySchedule(), Study.MIN_CAPACITY)
+            pending.close(LocalDateTime.now().minusDays(1))
+
+            pending.approve()
+        }
+
+        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER.code, thrown.code)
+    }
+
     // ----- 참여 인원 수 테스트 (스터디 신청과의 정합성 고려 x)
 
     @Test
