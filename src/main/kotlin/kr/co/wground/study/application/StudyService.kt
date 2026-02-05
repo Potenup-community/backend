@@ -28,6 +28,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 @Transactional
@@ -58,6 +59,12 @@ class StudyService(
 
         val schedule = studyScheduleService.getCurrentSchedule(track.trackId)
             ?: throw BusinessException(StudyServiceErrorCode.NO_CURRENT_SCHEDULE)
+
+
+        val isRecruitDueOver = schedule.recruitEndDate.isBefore(LocalDateTime.now())
+        if (isRecruitDueOver) {
+            throw BusinessException(StudyServiceErrorCode.RECRUIT_DUE_IS_OVER)
+        }
 
         val enrolledStudyCount = studyRecruitmentRepository.countStudyRecruitment(user.userId, schedule.id)
         if (enrolledStudyCount >= MAX_ENROLLED_STUDY) {
