@@ -109,7 +109,6 @@ class Study(
 
     fun increaseMemberCount(recruitEndDate: LocalDateTime, isRecruitmentClosed: Boolean) {
         if (LocalDateTime.now() > recruitEndDate) {
-            refreshStatus(isRecruitmentClosed)
             throw BusinessException(StudyDomainErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
         }
 
@@ -122,7 +121,6 @@ class Study(
         }
 
         this.currentMemberCount++
-        refreshStatus(isRecruitmentClosed)
     }
 
     fun decreaseMemberCount(isRecruitmentClosed: Boolean) {
@@ -131,8 +129,6 @@ class Study(
         }
 
         this.currentMemberCount--
-
-        refreshStatus(isRecruitmentClosed)
     }
 
     fun updateStudyInfo(
@@ -178,8 +174,6 @@ class Study(
         this.externalChatUrl = newChatUrl
         this.referenceUrl = newRefUrl
         this.updatedAt = LocalDateTime.now()
-
-        refreshStatus(isRecruitmentClosed)
     }
 
     private fun isTagsChanged(newTags: List<Tag>?): Boolean {
@@ -220,6 +214,14 @@ class Study(
         this._studyTags.add(studyTag)
     }
 
+    fun close(recruitEndDate: LocalDateTime) {
+        if (LocalDateTime.now().isBefore(recruitEndDate)) {
+            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_NOT_ENDED_YET)
+        }
+
+        this.status = StudyStatus.CLOSED
+    }
+
     fun approve() {
         if (this.status != StudyStatus.CLOSED) {
             throw BusinessException(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE)
@@ -234,16 +236,7 @@ class Study(
 
     fun validateHardDeletable() {
         if (this.status == StudyStatus.APPROVED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_DETERMINE)
-        }
-    }
-
-    fun refreshStatus(isRecruitmentClosed: Boolean, now: LocalDateTime = LocalDateTime.now()) {
-        if (status == StudyStatus.APPROVED) return
-
-        this.status = when {
-            isRecruitmentClosed || currentMemberCount >= capacity -> StudyStatus.CLOSED
-            else -> StudyStatus.PENDING
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_APPROVED)
         }
     }
 

@@ -13,6 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.stream.Stream
 import kotlin.repeat
 
@@ -86,30 +87,6 @@ class StudyTest {
         }
 
         assertEquals(expectedErrorCode, thrown.code)
-    }
-
-    @Test
-    @DisplayName("모집 기간이 마감되지 않은, 참여 인원 수가 정원 수와 같고 상태가 CLOSED 인 스터디에서, 참여 인원 수가 감소한 경우, 해당 스터디의 상태는 PENDING 으로 변경된다")
-    fun shouldReopenStudyToPending_whenMemberCountDecreasesBeforeRecruitEnd() {
-        val schedule = createRecruitingStudySchedule()
-        val created = createStudyWithCapacity(schedule, 2)
-        created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-        assertEquals(StudyStatus.CLOSED, created.status)
-
-        created.decreaseMemberCount(schedule.isRecruitmentClosed())
-        assertEquals(StudyStatus.PENDING, created.status)
-    }
-
-    @Test
-    @DisplayName("모집 기간이 마감되지 않은, 참여 인원 수가 정원 수와 같고 상태가 CLOSED 인 스터디에서, 정원 수가 증가한 경우, 해당 스터디의 상태를 PENDING 으로 변경한다")
-    fun shouldReopenStudyToPending_whenCapacityIncreasesBeforeRecruitEnd() {
-        val schedule = createRecruitingStudySchedule()
-        val created = createStudyWithCapacity(schedule, 2)
-        created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-        assertEquals(StudyStatus.CLOSED, created.status)
-
-        updateStudyCapacity(created, 3, schedule.isRecruitmentClosed())
-        assertEquals(StudyStatus.PENDING, created.status)
     }
 
     // ----- 제목
@@ -232,6 +209,10 @@ class StudyTest {
         assertEquals(StudyDomainErrorCode.STUDY_URL_INVALID.code, thrown.code)
     }
 
+    // ----- 마감 테스트
+
+    // To Do: 모집 마김 일자가 지나기 전에 마감 시도한 경우 예외 발생 - BusinessException(RECRUITMENT_NOT_ENDED_YET)
+
     // ----- 결재 테스트
 
     @Test
@@ -249,25 +230,15 @@ class StudyTest {
     // ----- 참여 인원 수 테스트 (스터디 신청과의 정합성 고려 x)
 
     @Test
-    @DisplayName("참여 인원 수가 증가하여 정원 수에 도달한 경우, CLOSED 상태로 성공적으로 변경된다")
-    fun shouldCloseStudy_whenIncreaseMemberToCapacity() {
-        val schedule = createRecruitingStudySchedule()
-        val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
-        repeat(Study.MIN_CAPACITY - 1) {
-            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-        }
-        assertEquals(StudyStatus.CLOSED, created.status)
-    }
-
-    @Test
     @DisplayName("APPROVED 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
     fun shouldThrowStudyNotRecruiting_whenIncreaseMemberOnApprovedStudy() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
-            val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
-            repeat(Study.MIN_CAPACITY - 1) {
-                created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-            }
+            val created = createStudyWithCapacity(schedule, 3)
+            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+
+            // To Do: 실제 사용 시 이런 식으로 사용하면 안 되나, 테스트를 위해 의도적으로 과거 시점을 전달함
+            created.close(LocalDateTime.now().minusDays(1))
             created.approve()
 
             created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
@@ -292,7 +263,7 @@ class StudyTest {
     }
 
     @Test
-    @DisplayName("이미 모집 기간이 마감된 경우, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    @DisplayName("이미 모집 기간이 마감된 경우(스터디 상태가 CLOSED 일 때), 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
     fun shouldThrowStudyAlreadyFinishToRecruit_whenIncreaseMemberAfterRecruitEnd() {
         val thrown = assertThrows<BusinessException> {
             val alreadyStartedSchedule = createAlreadyStartedStudySchedule()
@@ -329,57 +300,6 @@ class StudyTest {
     fun shouldUpdateEditableFields_whenStudyPending() {
         val schedule = createRecruitingStudySchedule()
         val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
-
-        val newCapacity = created.capacity + 1
-        val newName = created.name + "a"
-        val newDescription = created.description + "a"
-        val newBudget = if (created.budget == BudgetType.BOOK) BudgetType.MEAL else BudgetType.BOOK
-        val newChatUrl = created.externalChatUrl + "a"
-        val newRefUrl =
-            if (created.referenceUrl == null) "https://tecoble.techcourse.co.kr/" else created.referenceUrl + "a"
-
-        val tagSizeBefore = created.studyTags.size
-        val newTags = created.studyTags
-            .map { studyTag -> studyTag.tag }
-            .toMutableList()
-        newTags.add(Tag.create("아마도새로운태그일걸요1"))
-
-        created.updateStudyInfo(
-            newCapacity = newCapacity,
-            newName = newName,
-            newDescription = newDescription,
-            newBudget = newBudget,
-            newChatUrl = newChatUrl,
-            newRefUrl = newRefUrl,
-            newTags = newTags,
-
-            newScheduleId = created.scheduleId,
-            isRecruitmentClosed = schedule.isRecruitmentClosed(),
-        )
-
-        // 문제 사유 addTag 내부에서 Tag 존재 여부를 id 로 구분하고 있으나, 새로 생성된 태그들은 모두 id 가 0 이어서 구분되지 않음.
-        created.addTag(Tag.create("아마도새로운태그일걸요2"))
-
-        assertAll(
-            { assertEquals(newCapacity, created.capacity) },
-            { assertEquals(newName, created.name) },
-            { assertEquals(newDescription, created.description) },
-            { assertEquals(newBudget, created.budget) },
-            { assertEquals(newChatUrl, created.externalChatUrl) },
-            { assertEquals(newRefUrl, created.referenceUrl) },
-            { assertTrue { 1 == created.studyTags.filter { studyTag -> studyTag.tag.name.contains("아마도새로운태그일걸요1") }.size } },
-            { assertTrue { 1 == created.studyTags.filter { studyTag -> studyTag.tag.name.contains("아마도새로운태그일걸요2") }.size } }
-        )
-    }
-
-    @Test
-    @DisplayName("CLOSED 상태이고 모집 기간 마감 전일 때, 생성 시점에만 설정 가능한 임의 항목을 수정할 시, 성공한다")
-    fun shouldUpdateEditableFields_whenStudyClosedBeforeRecruitEnd() {
-        val schedule = createRecruitingStudySchedule()
-        val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
-        created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-
-        assertEquals(StudyStatus.CLOSED, created.status)
 
         val newCapacity = created.capacity + 1
         val newName = created.name + "a"

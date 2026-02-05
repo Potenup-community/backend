@@ -30,11 +30,12 @@ enum class StudyDomainErrorCode(
     STUDY_CANNOT_MODIFY_AFTER_APPROVED(HttpStatus.BAD_REQUEST, "SD-0009", "스터디 정보 수정은 결재되기 이전에만 가능합니다."),
     STUDY_CAPACITY_TOO_BIG(HttpStatus.BAD_REQUEST, "SD-0010", "스터티의 최대 모집 정원이 너무 많습니다."),
     STUDY_TAG_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0011","스터디 태그는 최대 5개까지 가질수 있습니다."),
-    STUDY_CANT_DELETE_STATUS_DETERMINE(HttpStatus.BAD_REQUEST,"SD-0012","결재 상신된 스터디는 삭제할 수 없습니다."),
+    STUDY_CANT_DELETE_STATUS_APPROVED(HttpStatus.BAD_REQUEST,"SD-0012","결재 상신된 스터디는 삭제할 수 없습니다."),
     STUDY_ALREADY_FINISH_TO_RECRUIT(HttpStatus.BAD_REQUEST,"SD-0013","해당 스터디의 모집기한이 이미 지났습니다."),
     STUDY_MIN_MEMBER_REQUIRED(HttpStatus.BAD_REQUEST,"SD-0014","스터디장은 탈퇴 할 수 없습니다."),
     STUDY_CANNOT_MODIFY_AFTER_DEADLINE(HttpStatus.BAD_REQUEST,"SD-0015","모집 마감 상태에서 수정할 수 없는 항목입니다."),
     STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER(HttpStatus.CONFLICT, "SD-0016", "참여 인원 미달된 스터디는 승인할 수 없습니다."),
+    RECRUITMENT_NOT_ENDED_YET(HttpStatus.CONFLICT, "SD-0017", "모집 기간이 끝나지 않은 스터디는 마감시킬 수 없습니다."),
 
     //StudyRecruitment
     RECRUITMENT_APPEAL_INVALID_LENGTH_RANGE(HttpStatus.BAD_REQUEST,"SR-0001","자기 소개는 2자 이상 200자 이내로 작성해주세요."),

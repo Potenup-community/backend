@@ -140,91 +140,6 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("교육생이 모집 기간이 마감되기 전의 모집 중(PENDING)인 스터디에, 신청 후 승인되었을 때, 이로 인해 해당 스터디가 정원에 도달하면, 그 스터디는 CLOSED 상태로 변경되어야 한다")
-    fun shouldCloseStudy_whenApprovedApplicationReachesCapacity() {
-        
-        /*
-         * given
-         * 1. ENROLLED 상태의 트랙
-         * 2. 모집 중인 스터디 일정(모집 마감 전)
-         * 3. 모집 중(PENDING)이며 정원 2명인 스터디(리더 1명 포함)
-         * 4. 교육생 1명
-         */
-        val today = LocalDate.now()
-        val track = Track(
-            trackName = "테스트 트랙",
-            startDate = today.minusDays(10),
-            endDate = today.plusDays(30)
-        )
-        val savedTrack = trackRepository.save(track)
-
-        val schedule = StudySchedule(
-            trackId = savedTrack.trackId,
-            months = Months.FIRST,
-            recruitStartDate = today.minusDays(1),
-            recruitEndDate = today.plusDays(1),
-            studyEndDate = today.plusDays(20)
-        )
-        val savedSchedule = studyScheduleRepository.save(schedule)
-
-        val leader = userRepository.save(
-            User(
-                trackId = savedTrack.trackId,
-                email = "leader@gmail.com",
-                name = "스터디장",
-                phoneNumber = "010-1111-1111",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-
-        val studyId = studyService.createStudy(
-            StudyCreateCommand(
-                userId = leader.userId,
-                name = "모집 중 스터디",
-                description = "모집 중 스터디",
-                capacity = 2,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-        val savedStudy = studyRepository.findById(studyId).orElseThrow()
-
-        val student = userRepository.save(
-            User(
-                trackId = savedTrack.trackId,
-                email = "student@gmail.com",
-                name = "교육생",
-                phoneNumber = "010-2222-2222",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-
-        // when: 교육생이 스터디 신청 후 승인
-        val recruitmentId = studyRecruitmentService.requestRecruit(
-            userId = student.userId,
-            studyId = savedStudy.id,
-            appeal = "참여 희망"
-        )
-        studyRecruitmentService.determineRecruit(
-            leaderId = leader.userId,
-            recruitmentId = recruitmentId,
-            newStatus = RecruitStatus.APPROVED
-        )
-
-        // then: 정원 도달로 스터디가 CLOSED 상태로 변경
-        entityManager.flush()
-        entityManager.clear()
-        val updatedStudy = studyRepository.findById(savedStudy.id).orElseThrow()
-        assertEquals(StudyStatus.CLOSED, updatedStudy.status)
-    }
-
-    @Test
     @DisplayName("교육생이 자신의 트랙이 아닌 스터디에 신청한 경우, 예외 발생 - BusinessException(TRACK_MISMATCH)")
     fun shouldThrowTrackMismatch_whenApplicantTrackDiffers() {
 
@@ -308,7 +223,6 @@ class StudyRecruitmentServiceTest {
         assertEquals(StudyServiceErrorCode.TRACK_MISMATCH.code, thrown.code)
     }
 
-    // To Do: 나중에 모집 기간이 마감된 경우와, 모집 기간이 마감되지 않았지만 정원이 가득찬 경우를 나누어서 예외 처리 하는 것도 고려해보자.
     @ParameterizedTest(name = "신청 상태: {0}")
     @MethodSource("StudyStatusCannotBeApplied")
     @DisplayName("교육생이 신청 불가능한 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
@@ -1531,7 +1445,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("결재된 스터디에서 신청 취소하려는 경우, 예외 발생 - BusinessException(RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE)")
+    @DisplayName("결재된(APPROVED 상태의) 스터디에서 신청 취소하려는 경우, 예외 발생 - BusinessException(RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE)")
     fun shouldThrowRecruitmentStatusCantChangeInDetermine_whenCancelAfterStudyApproved() {
 
         /*
@@ -1607,6 +1521,8 @@ class StudyRecruitmentServiceTest {
         )
 
         // 관리자 결재 처리
+        val foundStudy = studyRepository.findById(studyId).orElseThrow()
+        foundStudy.close(LocalDateTime.now().minusDays(1))
         studyService.approveStudy(studyId)
 
         // when: 결재된 스터디 신청 취소 시도
@@ -1797,204 +1713,7 @@ class StudyRecruitmentServiceTest {
         assertEquals(StudyDomainErrorCode.RECRUITMENT_INVALID_STATUS_CHANGE.code, thrown.code)
     }
 
-    @Test
-    @DisplayName("모집 기간이 마감되지 않았고, 정원에 도달한, 상태가 CLOSED 인 스터디에 대해, 승인된 인원이 신청을 취소하면 스터디 상태는 PENDING 상태로 변경되어야 한다")
-    fun shouldReopenStudyToPending_whenApprovedMemberCancelsBeforeRecruitEnd() {
-
-        /*
-         * given
-         * 1. ENROLLED 트랙 및 현재 차수 일정(모집 마감 전)
-         * 2. 정원 2명 스터디 생성(스터디장 자동 참여)
-         * 3. 교육생 신청 후 승인 -> 정원 도달로 CLOSED
-         */
-        val today = LocalDate.now()
-        val track = trackRepository.save(
-            Track(
-                trackName = "테스트 트랙",
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(30)
-            )
-        )
-        studyScheduleRepository.save(
-            StudySchedule(
-                trackId = track.trackId,
-                months = Months.FIRST,
-                recruitStartDate = today.minusDays(1),
-                recruitEndDate = today.plusDays(1),
-                studyEndDate = today.plusDays(10)
-            )
-        )
-
-        val leader = userRepository.save(
-            User(
-                trackId = track.trackId,
-                email = "leader@gmail.com",
-                name = "스터디장",
-                phoneNumber = "010-9000-0007",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-        val studyId = studyService.createStudy(
-            StudyCreateCommand(
-                userId = leader.userId,
-                name = "정원 도달 스터디",
-                description = "정원 도달 스터디",
-                capacity = 2,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-
-        val approvedStudent = userRepository.save(
-            User(
-                trackId = track.trackId,
-                email = "student@gmail.com",
-                name = "교육생",
-                phoneNumber = "010-9000-0008",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-
-        val approvedRecruitmentId = studyRecruitmentService.requestRecruit(
-            userId = approvedStudent.userId,
-            studyId = studyId,
-            appeal = "신청합니다."
-        )
-        studyRecruitmentService.determineRecruit(
-            leaderId = leader.userId,
-            recruitmentId = approvedRecruitmentId,
-            newStatus = RecruitStatus.APPROVED
-        )
-        
-        // 현재 정원(2) 도달되어 closed 된 상태임
-
-        // when: 승인된 인원이 신청 취소
-        studyRecruitmentService.cancelRecruit(
-            userId = approvedStudent.userId,
-            recruitmentId = approvedRecruitmentId
-        )
-
-        // then: 스터디 상태가 PENDING으로 변경
-        entityManager.flush()
-        entityManager.clear()
-        val updatedStudy = studyRepository.findById(studyId).orElseThrow()
-        val updatedRecruitment = studyRecruitmentRepository.findById(approvedRecruitmentId).orElseThrow()
-        assertEquals(StudyStatus.PENDING, updatedStudy.status)
-        assertEquals(RecruitStatus.CANCELLED, updatedRecruitment.recruitStatus)
-    }
-
-    @Test
-    @DisplayName("모집 기간이 마감되지 않았고, 정원에 도달한, 상태가 CLOSED 인 스터디에 대해, PENDING 상태의 신청이 취소되어도 스터디 상태는 CLOSED 상태로 유지되어야 한다")
-    fun shouldKeepStudyClosed_whenPendingApplicationCancelled() {
-
-        /*
-         * given
-         * 1. ENROLLED 트랙 및 현재 차수 일정(모집 마감 전)
-         * 2. 정원 2명 스터디 생성(스터디장 자동 참여)
-         * 3. 교육생 1명 PENDING 신청
-         * 4. 다른 교육생 신청 후 승인 -> 정원 도달로 CLOSED
-         */
-        val today = LocalDate.now()
-        val track = trackRepository.save(
-            Track(
-                trackName = "테스트 트랙",
-                startDate = today.minusDays(10),
-                endDate = today.plusDays(30)
-            )
-        )
-        studyScheduleRepository.save(
-            StudySchedule(
-                trackId = track.trackId,
-                months = Months.FIRST,
-                recruitStartDate = today.minusDays(1),
-                recruitEndDate = today.plusDays(1),
-                studyEndDate = today.plusDays(10)
-            )
-        )
-
-        val leader = userRepository.save(
-            User(
-                trackId = track.trackId,
-                email = "leader@gmail.com",
-                name = "스터디장",
-                phoneNumber = "010-9000-0009",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-        val studyId = studyService.createStudy(
-            StudyCreateCommand(
-                userId = leader.userId,
-                name = "정원 도달 스터디",
-                description = "정원 도달 스터디",
-                capacity = 2,
-                budget = BudgetType.MEAL,
-                chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
-                refUrl = null,
-                tags = emptyList()
-            )
-        )
-
-        val pendingStudent = userRepository.save(
-            User(
-                trackId = track.trackId,
-                email = "pending@gmail.com",
-                name = "대기 교육생",
-                phoneNumber = "010-9000-0010",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-        val pendingRecruitmentId = studyRecruitmentService.requestRecruit(
-            userId = pendingStudent.userId,
-            studyId = studyId,
-            appeal = "대기 신청"
-        )
-
-        val approvedStudent = userRepository.save(
-            User(
-                trackId = track.trackId,
-                email = "approved@gmail.com",
-                name = "승인 교육생",
-                phoneNumber = "010-9000-0011",
-                provider = "GOOGLE",
-                role = UserRole.MEMBER,
-                status = UserStatus.ACTIVE
-            )
-        )
-        val approvedRecruitmentId = studyRecruitmentService.requestRecruit(
-            userId = approvedStudent.userId,
-            studyId = studyId,
-            appeal = "승인 신청"
-        )
-        studyRecruitmentService.determineRecruit(
-            leaderId = leader.userId,
-            recruitmentId = approvedRecruitmentId,
-            newStatus = RecruitStatus.APPROVED
-        )
-
-        // when: PENDING 신청 취소
-        studyRecruitmentService.cancelRecruit(
-            userId = pendingStudent.userId,
-            recruitmentId = pendingRecruitmentId
-        )
-
-        // then: 스터디 상태는 CLOSED 유지
-        entityManager.flush()
-        entityManager.clear()
-        val updatedStudy = studyRepository.findById(studyId).orElseThrow()
-        val updatedRecruitment = studyRecruitmentRepository.findById(pendingRecruitmentId).orElseThrow()
-        assertEquals(StudyStatus.CLOSED, updatedStudy.status)
-        assertEquals(RecruitStatus.CANCELLED, updatedRecruitment.recruitStatus)
-    }
+    // To Do: CLOSED 상태의 스터디에서 취소하려 한 경우, 예외 발생 - BusinessException(?)
 
     // ----- 신청 승인 테스트
 

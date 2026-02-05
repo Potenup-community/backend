@@ -327,7 +327,7 @@ class StudyServiceTest {
             newRecruitEnd = today.minusDays(5),
             newStudyEnd = today.plusDays(10)
         )
-        savedStudy.refreshStatus(schedule.isRecruitmentClosed())
+        savedStudy.close(schedule.recruitEndDate)
 
         val pendingRecruitment = StudyRecruitment(
             userId = 2L,
@@ -374,9 +374,8 @@ class StudyServiceTest {
         assertEquals(RecruitStatus.REJECTED, updated[5L]?.recruitStatus)
     }
 
-    // To Do: 스터디가 PENDING 상태일 때, 승인 시도한 경우, 예외 발생 - BusinessException(STUDY_MUST_BE_CLOSED_TO_APPROVE)
-
-    // To Do: 스터디가 CLOSED 상태이나 최소 인원에 미달되었을 때, 승인 시도한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)
+    // To Do: 스터디가 CLOSED 상태이고 최소 인원에 미달되었을 때, 결재 시도한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)
+    
 
     // ----- 삭제 테스트
 
@@ -508,7 +507,7 @@ class StudyServiceTest {
             newRecruitEnd = today.minusDays(5),
             newStudyEnd = today.plusDays(10)
         )
-        managedStudy.refreshStatus(schedule.isRecruitmentClosed())
+        managedStudy.close(schedule.recruitEndDate)
 
         // when: 스터디 삭제
         studyService.deleteStudy(studyId, savedLeader.userId, isAdmin = false)
@@ -570,7 +569,7 @@ class StudyServiceTest {
             newRecruitEnd = today.minusDays(5),
             newStudyEnd = today.plusDays(10)
         )
-        savedStudy.refreshStatus(schedule.isRecruitmentClosed())
+        savedStudy.close(schedule.recruitEndDate)
         savedStudy.approve()
         assertEquals(StudyStatus.APPROVED, savedStudy.status)
 
@@ -580,7 +579,7 @@ class StudyServiceTest {
         }
 
         // then: 예외 발생(STUDY_CANT_DELETE_STATUS_DETERMINE)
-        assertEquals(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_DETERMINE.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_APPROVED.code, thrown.code)
     }
 
     // ----- 참여 스터디 수 제한 테스트
