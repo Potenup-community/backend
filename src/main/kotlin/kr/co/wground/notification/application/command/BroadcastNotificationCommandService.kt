@@ -13,12 +13,17 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.UUID
+import kr.co.wground.exception.BusinessException
+import kr.co.wground.user.application.exception.UserServiceErrorCode
+import kr.co.wground.user.infra.UserRepository
+import org.springframework.data.repository.findByIdOrNull
 
 @Service
 @Transactional
 class BroadcastNotificationCommandService(
     private val broadcastNotificationRepository: BroadcastNotificationRepository,
     private val broadcastNotificationReadRepository: BroadcastNotificationReadRepository,
+    private val userRepository: UserRepository
 ) {
 
     fun create(
@@ -64,7 +69,10 @@ class BroadcastNotificationCommandService(
         )
     }
 
-    fun markAllAsRead(userId: Long, trackId: Long?) {
+    fun markAllAsRead(userId: Long) {
+        val user = userRepository.findByIdOrNull(userId)
+            ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+        val trackId = user.trackId
         val unreadIds = broadcastNotificationRepository.findUnreadIdsByUserIdAndTrackId(userId, trackId)
         if (unreadIds.isEmpty()) return
 
