@@ -23,8 +23,7 @@ import java.util.UUID
 @Table(
     name = "broadcast_notification",
     indexes = [
-        Index(name = "idx_broadcast_target", columnList = "target_type, target_id"),
-        Index(name = "idx_broadcast_created", columnList = "created_at DESC")
+        Index(name = "idx_broadcast_target_created", columnList = "target_type, target_id, created_at DESC"),
     ]
 )
 class BroadcastNotification(
