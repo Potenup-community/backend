@@ -13,6 +13,7 @@ object StudySwaggerResponseExample {
            "currentMemberCount": 3,
            "status": "PENDING",
            "budget": "MEAL",
+           "budgetExplain": "피자먹을래요",
            "chatUrl": "https://open.kakao.com/...",
            "refUrl": "https://github.com/...",
            "tags": [
@@ -26,6 +27,7 @@ object StudySwaggerResponseExample {
            "isLeader": true
          }
          """
+
     const val STUDY_SEARCH_RESPONSE = """
          {
            "content": [
@@ -51,6 +53,7 @@ object StudySwaggerResponseExample {
                "currentMemberCount": 3,
                "status": "PENDING",
                "budget": "BOOK",
+               "budgetExplain": "피자먹을래요",
                "chatUrl": null,
                "refUrl": "https://github.com/...",
                "tags": [
@@ -84,7 +87,6 @@ object StudySwaggerResponseExample {
              "trackName": "백엔드 4기",
              "userId": 101,
              "userName": "이순신",
-             "status": "PENDING",
              "createdAt": "2026-01-26T09:00:00",
            },
            {
@@ -94,7 +96,6 @@ object StudySwaggerResponseExample {
              "trackName": "백엔드 4기",
              "userId": 102,
              "userName": "장보고",
-             "status": "APPROVED",
              "createdAt": "2026-01-26T10:00:00",
           }
         ]
@@ -142,6 +143,7 @@ object StudySwaggerResponseExample {
        ]
        }
     """
+
     const val STUDY_SCHEDULE_RESPONSE = """
         {
         "id": 12,

@@ -36,4 +36,5 @@ enum class StudyDomainErrorCode(
     STUDY_CANNOT_MODIFY_AFTER_DEADLINE(HttpStatus.BAD_REQUEST,"SD-0015","모집 마감 상태에서 수정할 수 없는 항목입니다."),
     STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER(HttpStatus.CONFLICT, "SD-0016", "참여 인원 미달된 스터디는 승인할 수 없습니다."),
     RECRUITMENT_NOT_ENDED_YET(HttpStatus.CONFLICT, "SD-0017", "모집 기간이 끝나지 않은 스터디는 마감시킬 수 없습니다."),
+    STUDY_BUDGET_EXPLAIN_INVALID(HttpStatus.BAD_REQUEST, "SD-0018", "지원 항목 설명이 유효하지 않습니다."),
 }

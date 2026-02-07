@@ -32,6 +32,7 @@ class Study(
     status: StudyStatus,
     capacity: Int = RECOMMENDED_MAX_CAPACITY,
     budget: BudgetType,
+    budgetExplain: String,
     externalChatUrl: String = DEFAULT_CHAT_URL,
     referenceUrl: String? = null,
     @Column(nullable = false)
@@ -67,6 +68,9 @@ class Study(
     var budget: BudgetType = budget
         protected set
 
+    @Column(nullable = false)
+    var budgetExplain: String = budgetExplain
+
     @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true)
     protected val _recruitments: MutableList<StudyRecruitment> = ArrayList()
     val recruitments: List<StudyRecruitment> get() = _recruitments.toList()
@@ -96,6 +100,8 @@ class Study(
         const val MIN_NAME_LENGTH = 2
         const val MAX_DESCRIPTION_LENGTH = 300
         const val MIN_DESCRIPTION_LENGTH = 2
+        const val MAX_BUDGET_EXPLAIN_LENGTH = 50
+        const val MIN_BUDGET_EXPLAIN_LENGTH = 2
         const val DEFAULT_CHAT_URL = "https://www.kakaocorp.com/page/service/service/openchat"
         val URL_PATTERN = Regex("^(http|https)://.*$")
     }
@@ -103,6 +109,7 @@ class Study(
     init {
         validateName(name)
         validateDescription(description)
+        validateBudgetExplain(budgetExplain)
         validateCapacity(capacity)
         validateUrl(externalChatUrl, referenceUrl)
     }
@@ -137,12 +144,14 @@ class Study(
         newCapacity: Int,
         newScheduleId: Long,
         newBudget: BudgetType,
+        newBudgetExplain: String,
         newChatUrl: String,
         newRefUrl: String?,
         newTags: List<Tag>?,
         isRecruitmentClosed: Boolean,
     ) {
         validateCanUpdate()
+        validateBudgetExplain(newBudgetExplain)
         validateUrl(newChatUrl, newRefUrl)
 
         val isCoreInfoChanged = this.name != newName ||
@@ -170,6 +179,7 @@ class Study(
         }
 
         this.budget = newBudget
+        this.budgetExplain = newBudgetExplain
         this.scheduleId = newScheduleId
         this.externalChatUrl = newChatUrl
         this.referenceUrl = newRefUrl
@@ -259,6 +269,12 @@ class Study(
     private fun validateDescription(description: String) {
         if (description.trim().length !in MIN_DESCRIPTION_LENGTH..MAX_DESCRIPTION_LENGTH) {
             throw BusinessException(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID)
+        }
+    }
+
+    private fun validateBudgetExplain(budgetExplain: String) {
+        if (budgetExplain.trim().length !in MIN_BUDGET_EXPLAIN_LENGTH..MAX_BUDGET_EXPLAIN_LENGTH) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_BUDGET_EXPLAIN_INVALID)
         }
     }
 
