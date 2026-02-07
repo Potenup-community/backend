@@ -4,6 +4,7 @@ import java.time.LocalDateTime
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.constant.StudyStatus
 
+@Deprecated(message = "사용 안 하는듯?")
 data class StudySearchResponse(
     val id: Long,
     val name: String,
