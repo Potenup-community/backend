@@ -338,26 +338,6 @@ interface StudyApi {
         @PathVariable studyId: Long
     ): ResponseEntity<Unit>
 
-    @Operation(summary = "스터디 반려 (관리자)", description = "관리자가 스터디 개설을 반려합니다.")
-    @ApiResponses(
-        value = [
-            ApiResponse(responseCode = "204", description = "반려 성공"),
-            ApiResponse(
-                responseCode = "404", description = "자원 찾을 수 없음",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
-                        ExampleObject(name = "STUDY_NOT_FOUND", value = StudySwaggerErrorExample.Study.STUDY_NOT_FOUND),
-                    ]
-                )]
-            )
-        ]
-    )
-    fun rejectStudy(
-        @PathVariable studyId: Long
-    ): ResponseEntity<Unit>
-
     @Operation(summary = "스터디 검색/조회", description = "조건에 따라 스터디를 검색하고 조회합니다.")
     @ApiResponses(
         value = [

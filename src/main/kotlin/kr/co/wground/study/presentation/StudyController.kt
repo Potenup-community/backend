@@ -89,15 +89,6 @@ class StudyController(
         return ResponseEntity.noContent().build()
     }
 
-    @PatchMapping("/{studyId}/reject")
-    @PreAuthorize("hasRole('ADMIN')")
-    override fun rejectStudy(
-        @PathVariable studyId: Long
-    ): ResponseEntity<Unit> {
-        studyService.rejectStudy(studyId)
-        return ResponseEntity.noContent().build()
-    }
-
     @GetMapping
     override fun searchStudies(
         @ModelAttribute condition: StudySearchCondition,

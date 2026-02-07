@@ -16,7 +16,6 @@ import kr.co.wground.study.domain.constant.BudgetType
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import java.time.LocalDateTime
-import kr.co.wground.study.application.exception.StudyServiceErrorCode
 
 @Entity
 class Study(
@@ -110,7 +109,6 @@ class Study(
 
     fun increaseMemberCount(recruitEndDate: LocalDateTime, isRecruitmentClosed: Boolean) {
         if (LocalDateTime.now() > recruitEndDate) {
-            refreshStatus(isRecruitmentClosed)
             throw BusinessException(StudyDomainErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
         }
 
@@ -123,7 +121,6 @@ class Study(
         }
 
         this.currentMemberCount++
-        refreshStatus(isRecruitmentClosed)
     }
 
     fun decreaseMemberCount(isRecruitmentClosed: Boolean) {
@@ -132,8 +129,6 @@ class Study(
         }
 
         this.currentMemberCount--
-
-        refreshStatus(isRecruitmentClosed)
     }
 
     fun updateStudyInfo(
@@ -179,8 +174,6 @@ class Study(
         this.externalChatUrl = newChatUrl
         this.referenceUrl = newRefUrl
         this.updatedAt = LocalDateTime.now()
-
-        refreshStatus(isRecruitmentClosed)
     }
 
     private fun isTagsChanged(newTags: List<Tag>?): Boolean {
@@ -221,33 +214,29 @@ class Study(
         this._studyTags.add(studyTag)
     }
 
+    fun close(recruitEndDate: LocalDateTime) {
+        if (LocalDateTime.now().isBefore(recruitEndDate)) {
+            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_NOT_ENDED_YET)
+        }
+
+        this.status = StudyStatus.CLOSED
+    }
+
     fun approve() {
         if (this.status != StudyStatus.CLOSED) {
             throw BusinessException(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE)
         }
+
+        if (currentMemberCount < MIN_CAPACITY) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)
+        }
+
         this.status = StudyStatus.APPROVED
     }
 
-    fun reject() {
-        validateRejectStatus()
-        this.status = StudyStatus.REJECTED
-    }
-
     fun validateHardDeletable() {
-        if (this.status == StudyStatus.APPROVED || this.status == StudyStatus.REJECTED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_DETERMINE)
-        }
-    }
-
-    fun refreshStatus(isRecruitmentClosed: Boolean, now: LocalDateTime = LocalDateTime.now()) {
-        if (status == StudyStatus.APPROVED || status == StudyStatus.REJECTED) return
-
-        this.status = when {
-            isRecruitmentClosed && currentMemberCount < MIN_CAPACITY -> StudyStatus.REJECTED
-
-            isRecruitmentClosed || currentMemberCount >= capacity -> StudyStatus.CLOSED
-
-            else -> StudyStatus.PENDING
+        if (this.status == StudyStatus.APPROVED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_APPROVED)
         }
     }
 
@@ -256,8 +245,8 @@ class Study(
     }
 
     private fun validateCanUpdate() {
-        if (this.status == StudyStatus.APPROVED || this.status == StudyStatus.REJECTED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DETERMINED)
+        if (this.status == StudyStatus.APPROVED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_APPROVED)
         }
     }
 
@@ -294,12 +283,6 @@ class Study(
     private fun validateCurrentMemberOverCapacity(newCapacity: Int) {
         if (newCapacity < this.currentMemberCount) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_CANNOT_LESS_THAN_CURRENT)
-        }
-    }
-
-    private fun validateRejectStatus() {
-        if (this.status == StudyStatus.APPROVED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_REJECTED_IN_APPROVED_STATUS)
         }
     }
 }

@@ -5,7 +5,6 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.StudySchedule
-import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.track.domain.constant.TrackStatus
@@ -29,9 +28,8 @@ class RecruitValidator(
     }
 
     fun validateDuplicateRecruit(userId: Long, studyId: Long) {
-        val statusList = listOf(RecruitStatus.PENDING, RecruitStatus.APPROVED, RecruitStatus.REJECTED)
-        if (studyRecruitmentRepository.existsByStudyIdAndUserIdAndRecruitStatusIn(
-                studyId, userId, statusList
+        if (studyRecruitmentRepository.existsByStudyIdAndUserId(
+                studyId, userId
             )
         ) {
             throw BusinessException(StudyServiceErrorCode.ALREADY_APPLIED)
@@ -39,7 +37,7 @@ class RecruitValidator(
     }
 
     fun validateHasMaxStudyLimit(userId: Long, scheduleId: Long) {
-        val count = studyRecruitmentRepository.countActiveEnrolledStudy(userId, scheduleId)
+        val count = studyRecruitmentRepository.countStudyRecruitment(userId, scheduleId)
         if (count >= MAX_STUDY_CAN_ENROLLED) {
             throw BusinessException(StudyServiceErrorCode.MAX_STUDY_EXCEEDED)
         }
