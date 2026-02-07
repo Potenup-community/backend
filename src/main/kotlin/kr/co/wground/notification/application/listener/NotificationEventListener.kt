@@ -6,20 +6,21 @@ import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
-import kr.co.wground.common.event.StudyDetermineEvent
+import kr.co.wground.common.event.StudyRecruitmentEvent
 import kr.co.wground.common.event.StudyRecruitEndedEvent
 import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.common.event.StudyRecruitStartedEvent
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.notification.application.command.BroadcastNotificationCommandService
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.application.port.NotificationMessage
 import kr.co.wground.notification.application.port.NotificationMessageType
 import kr.co.wground.notification.application.port.NotificationSender
+import kr.co.wground.notification.domain.enums.BroadcastTargetType
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.enums.ReferenceType
 import kr.co.wground.notification.domain.vo.NotificationReference
 import kr.co.wground.notification.exception.NotificationErrorCode
-import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.beans.factory.annotation.Value
@@ -34,6 +35,7 @@ private const val NOTIFICATION_EXECUTOR = "notificationExecutor"
 @Component
 class NotificationEventListener(
     private val notificationCommandService: NotificationCommandService,
+    private val broadcastNotificationCommandService: BroadcastNotificationCommandService,
     private val notificationSender: NotificationSender,
     private val trackRepository: TrackRepository,
     private val userRepository: UserRepository,
@@ -157,6 +159,18 @@ class NotificationEventListener(
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleAnnouncementCreated(event: AnnouncementCreatedEvent) {
+        // 인앱 알림 (전체 브로드캐스트)
+        broadcastNotificationCommandService.create(
+            type = NotificationType.ANNOUNCEMENT,
+            title = "공지사항",
+            targetType = BroadcastTargetType.ALL,
+            reference = NotificationReference(
+                referenceType = ReferenceType.POST,
+                referenceId = event.postId,
+            ),
+        )
+
+        // 슬랙 발송
         val postLink = "$frontendUrl/post/${event.postId}"
         notificationSender.send(
             NotificationMessage(
@@ -188,8 +202,7 @@ class NotificationEventListener(
 
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun handleStudyDetermine(event: StudyDetermineEvent) {
-        if (event.recruitStatus != RecruitStatus.APPROVED) return
+    fun handleStudyDetermine(event: StudyRecruitmentEvent) {
 
         createNotificationSafely {
             notificationCommandService.create(
@@ -229,15 +242,26 @@ class NotificationEventListener(
     fun handleStudyRecruitStarted(event: StudyRecruitStartedEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
         val studyLink = "$frontendUrl/study"
+        val placeholders = mapOf(
+            "trackName" to track.trackName,
+            "months" to "${event.months.month}차",
+        )
 
+        // 인앱 알림 (트랙별 브로드캐스트)
+        broadcastNotificationCommandService.create(
+            type = NotificationType.STUDY_RECRUIT_START,
+            title = "스터디 모집 시작",
+            targetType = BroadcastTargetType.TRACK,
+            targetId = event.trackId,
+            placeholders = placeholders,
+        )
+
+        // 슬랙 발송
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.STUDY_RECRUIT_START_REMINDER,
                 link = studyLink,
-                metadata = mapOf(
-                    "trackName" to track.trackName,
-                    "months" to "${event.months.month}차",
-                )
+                metadata = placeholders,
             )
         )
     }
@@ -247,15 +271,26 @@ class NotificationEventListener(
     fun handleStudyRecruitEnded(event: StudyRecruitEndedEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
         val studyLink = "$frontendUrl/study"
+        val placeholders = mapOf(
+            "trackName" to track.trackName,
+            "months" to "${event.months.month}차",
+        )
 
+        // 인앱 알림 (트랙별 브로드캐스트)
+        broadcastNotificationCommandService.create(
+            type = NotificationType.STUDY_RECRUIT_END,
+            title = "스터디 모집 마감",
+            targetType = BroadcastTargetType.TRACK,
+            targetId = event.trackId,
+            placeholders = placeholders,
+        )
+
+        // 슬랙 발송
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.STUDY_RECRUIT_END_REMINDER,
                 link = studyLink,
-                metadata = mapOf(
-                    "trackName" to track.trackName,
-                    "months" to "${event.months.month}차",
-                )
+                metadata = placeholders,
             )
         )
     }

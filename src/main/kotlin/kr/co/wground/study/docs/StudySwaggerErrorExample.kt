@@ -113,27 +113,15 @@ object StudySwaggerErrorExample {
     }
 
     object Recruitment {
-        const val RECRUITMENT_APPEAL_TOO_BIG = """{
-            "code": "SR-0001",
-            "message": "자기 소개는 최대 100자까지 작성 할 수 있습니다.",
-            "status": 400,
-            "errors": []
-        }"""
-        const val RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE = """{
+        const val RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING = """{
             "code": "SR-0002",
-            "message": "스터디가 확정되거나 반려된 상태에서는 신청 상태를 변경할 수 없습니다.",
+            "message": "스터디 상태가 PENDING 이 아닌 경우 신청을 취소할 수 없습니다.",
             "status": 400,
             "errors": []
         }"""
         const val RECRUITMENT_INVALID_STATUS_CHANGE = """{
             "code": "SR-0003",
             "message": "유효하지 않은 상태 변경입니다.",
-            "status": 400,
-            "errors": []
-        }"""
-        const val RECRUITMENT_APPEAL_EMPTY = """{
-            "code": "SR-0004",
-            "message": "자기소개가 입력되지 않았습니다.",
             "status": 400,
             "errors": []
         }"""

@@ -1,7 +1,7 @@
 package kr.co.wground.study.application
 
 import kr.co.wground.common.event.StudyRecruitEvent
-import kr.co.wground.common.event.StudyDetermineEvent
+import kr.co.wground.common.event.StudyRecruitmentEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
@@ -9,7 +9,7 @@ import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.StudyRecruitment
 import kr.co.wground.study.domain.StudySchedule
-import kr.co.wground.study.domain.constant.RecruitStatus
+import kr.co.wground.study.domain.constant.StudyStatus
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.StudyScheduleRepository
@@ -37,7 +37,7 @@ class StudyRecruitmentService(
     private val eventPublisher: ApplicationEventPublisher
 ) {
 
-    fun requestRecruit(userId: Long, studyId: Long, appeal: String): Long {
+    fun participate(userId: Long, studyId: Long): Long {
         val user = findUser(userId)
         val trackStatus = findTrackStatus(user.trackId)
         recruitValidator.validateGraduated(trackStatus)
@@ -53,8 +53,9 @@ class StudyRecruitmentService(
         recruitValidator.validateCurrentMonth(schedule, requestMonth)
         recruitValidator.validateHasMaxStudyLimit(userId, schedule.id)
 
-        val recruitment = StudyRecruitment.apply(userId, appeal, study)
+        val recruitment = StudyRecruitment.apply(userId, study)
         val savedRecruitment = studyRecruitmentRepository.save(recruitment)
+        recruitment.study.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
 
         eventPublisher.publishEvent(
             StudyRecruitEvent(
@@ -72,31 +73,12 @@ class StudyRecruitmentService(
         recruitValidator.validateRecruitUserId(recruitment.userId, userId)
         recruitValidator.validateLeaderCancel(recruitment.study, userId)
 
-        if (recruitment.recruitStatus == RecruitStatus.APPROVED) {
-            recruitment.study.decreaseMemberCount(schedule.isRecruitmentClosed())
-        }
-        recruitment.cancel()
-    }
-
-    fun determineRecruit(leaderId: Long, recruitmentId: Long, newStatus: RecruitStatus) {
-        val recruitment = findRecruitment(recruitmentId)
-        val schedule = findScheduleById(recruitment.study.scheduleId)
-
-        recruitValidator.validateDetermineLeader(recruitment.study, leaderId)
-
-        if (newStatus == RecruitStatus.APPROVED) {
-            recruitment.study.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+        if (recruitment.study.status != StudyStatus.PENDING) {
+            throw BusinessException(StudyServiceErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING)
         }
 
-        recruitment.updateRecruitStatus(newStatus)
-
-        eventPublisher.publishEvent(
-            StudyDetermineEvent(
-                studyId = recruitment.study.id,
-                userId = recruitment.userId,
-                recruitStatus = recruitment.recruitStatus
-            )
-        )
+        recruitment.study.decreaseMemberCount(schedule.isRecruitmentClosed())
+        studyRecruitmentRepository.delete(recruitment)
     }
 
     @Transactional(readOnly = true)

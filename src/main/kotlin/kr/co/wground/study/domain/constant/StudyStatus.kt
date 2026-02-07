@@ -4,5 +4,4 @@ enum class StudyStatus {
     PENDING,
     APPROVED,
     CLOSED,
-    REJECTED,
 }

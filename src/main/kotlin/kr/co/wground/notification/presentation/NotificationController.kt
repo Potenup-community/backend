@@ -2,6 +2,7 @@ package kr.co.wground.notification.presentation
 
 import kr.co.wground.global.common.NotificationId
 import kr.co.wground.global.config.resolver.CurrentUserId
+import kr.co.wground.notification.application.command.BroadcastNotificationCommandService
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.application.query.NotificationQueryService
 import kr.co.wground.notification.presentation.response.NotificationsResponse
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 class NotificationController(
     private val notificationQueryService: NotificationQueryService,
     private val notificationCommandService: NotificationCommandService,
+    private val broadcastNotificationCommandService: BroadcastNotificationCommandService,
 ) : NotificationApi {
 
     @GetMapping
@@ -45,15 +48,22 @@ class NotificationController(
     @PatchMapping("/{id}/read")
     override fun markAsRead(
         @PathVariable id: NotificationId,
+        @RequestParam(defaultValue = "false") isBroadcast: Boolean,
         userId: CurrentUserId,
     ): ResponseEntity<Unit> {
-        notificationCommandService.markAsRead(id, userId.value)
+        if (isBroadcast) {
+            broadcastNotificationCommandService.markAsRead(userId.value, id)
+        } else {
+            notificationCommandService.markAsRead(id, userId.value)
+        }
         return ResponseEntity.noContent().build()
     }
 
     @PatchMapping("/read-all")
     override fun markAllAsRead(userId: CurrentUserId): ResponseEntity<Unit> {
         notificationCommandService.markAllAsRead(userId.value)
+        broadcastNotificationCommandService.markAllAsRead(userId.value)
+
         return ResponseEntity.noContent().build()
     }
 }

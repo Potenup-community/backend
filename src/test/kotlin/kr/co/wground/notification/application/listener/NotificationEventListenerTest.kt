@@ -6,13 +6,13 @@ import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
-import kr.co.wground.common.event.StudyDetermineEvent
+import kr.co.wground.common.event.StudyRecruitmentEvent
 import kr.co.wground.common.event.StudyRecruitEvent
+import kr.co.wground.notification.application.command.BroadcastNotificationCommandService
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.application.port.NotificationSender
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.vo.NotificationReference
-import kr.co.wground.study.domain.constant.RecruitStatus
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.infra.UserRepository
 import org.assertj.core.api.Assertions.assertThat
@@ -33,6 +33,9 @@ import org.mockito.MockitoAnnotations
 class NotificationEventListenerTest {
     @Mock
     private lateinit var notificationCommandService: NotificationCommandService
+
+    @Mock
+    private lateinit var broadcastNotificationCommandService: BroadcastNotificationCommandService
 
     @Mock
     private lateinit var notificationSender: NotificationSender
@@ -71,6 +74,7 @@ class NotificationEventListenerTest {
         MockitoAnnotations.openMocks(this)
         listener = NotificationEventListener(
             notificationCommandService,
+            broadcastNotificationCommandService,
             notificationSender,
             trackRepository,
             userRepository,
@@ -329,35 +333,7 @@ class NotificationEventListenerTest {
             assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_APPLICATION)
         }
 
-        @DisplayName("스터디 승인 시 지원자에게 알림이 생성된다")
-        @Test
-        fun shouldCreateNotification_whenStudyApproved() {
-            // given
-            val event = StudyDetermineEvent(
-                studyId = 1L,
-                userId = 200L,
-                recruitStatus = RecruitStatus.APPROVED
-            )
-
-            // when
-            listener.handleStudyDetermine(event)
-
-            // then
-            verify(notificationCommandService).create(
-                capture(recipientCaptor),
-                capture(actorCaptor),
-                capture(typeCaptor),
-                capture(titleCaptor),
-                capture(referenceCaptor),
-                capture(placeholdersCaptor),
-                capture(expiresAtCaptor)
-            )
-
-            assertThat(recipientCaptor.value).isEqualTo(200L)
-            assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_APPROVED)
-        }
-
-        @DisplayName("스터디 삭제 시 지원자들에게 알림이 생성된다")
+        @DisplayName("스터디 삭제(취소) 시 지원자들에게 알림이 생성된다")
         @Test
         fun shouldCreateNotificationForEachRecruit_whenStudyDeleted() {
             // given
