@@ -6,15 +6,15 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.global.common.UserId
 import kr.co.wground.point.domain.PointType
 import kr.co.wground.point.domain.QPointHistory.pointHistory
-import kr.co.wground.point.domain.ReferenceType
 import kr.co.wground.point.infra.dto.PointTypeStatsDto
-import kr.co.wground.point.infra.dto.UserDailyCountDto
 import java.time.LocalDateTime
 import kr.co.wground.point.domain.PointHistory
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
+import org.springframework.stereotype.Repository
 
+@Repository
 class CustomPointHistoryRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : CustomPointHistoryRepository {
