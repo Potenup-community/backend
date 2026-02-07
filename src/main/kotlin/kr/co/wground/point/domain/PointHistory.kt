@@ -76,6 +76,7 @@ class PointHistory private constructor(
             return PointHistory(userId, amount, type, refType, refId)
         }
 
+        //좋아요 받았을 때
         fun forPostLikeReward(userId: UserId, reactionId: Long): PointHistory {
             return create(
                 userId = userId,
@@ -91,6 +92,27 @@ class PointHistory private constructor(
                 userId = userId,
                 amount = PointType.RECEIVE_LIKE_COMMENT.amount,
                 type = PointType.RECEIVE_LIKE_COMMENT,
+                refType = ReferenceType.COMMENT_REACTION,
+                refId = reactionId
+            )
+        }
+
+        //좋아요 눌렀을때
+        fun forGivePostLike(userId: UserId, reactionId: Long): PointHistory {
+            return create(
+                userId = userId,
+                amount = PointType.GIVE_LIKE_POST.amount,
+                type = PointType.GIVE_LIKE_POST,
+                refType = ReferenceType.POST_REACTION,
+                refId = reactionId
+            )
+        }
+
+        fun forGiveCommentLike(userId: UserId, reactionId: Long): PointHistory {
+            return create(
+                userId = userId,
+                amount = PointType.GIVE_LIKE_COMMENT.amount,
+                type = PointType.GIVE_LIKE_COMMENT,
                 refType = ReferenceType.COMMENT_REACTION,
                 refId = reactionId
             )
@@ -121,6 +143,16 @@ class PointHistory private constructor(
                 userId = userId,
                 amount = PointType.ATTENDANCE.amount,
                 type = PointType.ATTENDANCE,
+                refType = ReferenceType.ATTENDANCE,
+                refId = attendanceId
+            )
+        }
+
+        fun forAttendanceStreak(userId: UserId, attendanceId: Long): PointHistory {
+            return create(
+                userId = userId,
+                amount = PointType.ATTENDANCE_STREAK.amount,
+                type = PointType.ATTENDANCE_STREAK,
                 refType = ReferenceType.ATTENDANCE,
                 refId = attendanceId
             )
