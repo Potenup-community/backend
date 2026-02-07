@@ -1,6 +1,7 @@
 package kr.co.wground.study.domain.exception
 
 import kr.co.wground.exception.ErrorCode
+import kr.co.wground.study.domain.Study
 import org.springframework.http.HttpStatus
 
 enum class StudyDomainErrorCode(
@@ -29,7 +30,7 @@ enum class StudyDomainErrorCode(
     STUDY_MUST_BE_CLOSED_TO_APPROVE(HttpStatus.BAD_REQUEST, "SD-0008", "모집이 완료된 스터디만 결재 할 수 있습니다."),
     STUDY_CANNOT_MODIFY_AFTER_APPROVED(HttpStatus.BAD_REQUEST, "SD-0009", "스터디 정보 수정은 결재되기 이전에만 가능합니다."),
     STUDY_CAPACITY_TOO_BIG(HttpStatus.BAD_REQUEST, "SD-0010", "스터티의 최대 모집 정원이 너무 많습니다."),
-    STUDY_TAG_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0011","스터디 태그는 최대 5개까지 가질수 있습니다."),
+    STUDY_TAG_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0011","스터디 태그는 최대 ${Study.MAX_TAG_COUNT}개까지 가질수 있습니다."),
     STUDY_CANT_DELETE_STATUS_APPROVED(HttpStatus.BAD_REQUEST,"SD-0012","결재 상신된 스터디는 삭제할 수 없습니다."),
     STUDY_ALREADY_FINISH_TO_RECRUIT(HttpStatus.BAD_REQUEST,"SD-0013","해당 스터디의 모집기한이 이미 지났습니다."),
     STUDY_MIN_MEMBER_REQUIRED(HttpStatus.BAD_REQUEST,"SD-0014","스터디장은 탈퇴 할 수 없습니다."),
