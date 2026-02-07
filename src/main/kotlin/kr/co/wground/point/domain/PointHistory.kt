@@ -32,7 +32,7 @@ import java.time.LocalDateTime
     ]
 )
 class PointHistory private constructor(
-    @Column(name = "user_id", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     val userId: UserId,
 
     @Column(nullable = false, updatable = false)
@@ -43,10 +43,10 @@ class PointHistory private constructor(
     val type: PointType,
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "ref_type", nullable = false, updatable = false, length = 20)
+    @Column(nullable = false, updatable = false, length = 20)
     val refType: ReferenceType,
 
-    @Column(name = "ref_id", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     val refId: Long
 ) {
     @Id
@@ -54,7 +54,7 @@ class PointHistory private constructor(
     var id: Long? = null
         protected set
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()
         protected set
 
