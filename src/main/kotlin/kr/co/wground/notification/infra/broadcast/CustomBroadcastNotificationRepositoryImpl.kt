@@ -81,12 +81,11 @@ class CustomBroadcastNotificationRepositoryImpl(
     private fun targetCondition(trackId: Long?): BooleanExpression {
         val allCondition = broadcastNotification.targetType.eq(BroadcastTargetType.ALL)
 
-        return if (trackId != null) {
-            val trackCondition = broadcastNotification.targetType.eq(BroadcastTargetType.TRACK)
-                .and(broadcastNotification.targetId.eq(trackId))
-            allCondition.or(trackCondition)
-        } else {
-            allCondition
+        val trackCondition = trackId?.let {
+            broadcastNotification.targetType.eq(BroadcastTargetType.TRACK)
+                .and(broadcastNotification.targetId.eq(it))
         }
+
+        return trackCondition?.let { allCondition.or(it) } ?: allCondition
     }
 }
