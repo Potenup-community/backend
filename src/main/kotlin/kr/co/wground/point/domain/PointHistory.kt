@@ -51,8 +51,7 @@ class PointHistory private constructor(
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null
-        protected set
+    val id: Long = 0
 
     @Column(nullable = false, updatable = false)
     var createdAt: LocalDateTime = LocalDateTime.now()
