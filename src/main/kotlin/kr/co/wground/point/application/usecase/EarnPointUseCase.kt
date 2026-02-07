@@ -75,8 +75,20 @@ class EarnPointUseCase(
         earn(userId, PointHistory.forStudyCreate(userId, studyId))
     }
 
-    fun forStudyJoin(userId: UserId, studyId: Long) {
-        earn(userId, PointHistory.forStudyJoin(userId, studyId))
+    fun forStudyJoin(userIds: List<UserId>, studyId: Long) {
+        val pointHistories = userIds.mapNotNull { userId ->
+            val history = PointHistory.forStudyJoin(userId, studyId)
+            if (validateAlreadyReceivedByStudy(history)) null else history
+        }
+
+        if (pointHistories.isEmpty()) return
+
+        pointHistoryRepository.saveAll(pointHistories)
+
+        pointHistories.forEach { history ->
+            val wallet = getOrCreateWallet(history.userId)
+            wallet.addBalance(history.amount)
+        }
     }
 
     // 하루 수집 포인트 체크 후 포인트 지급
@@ -115,6 +127,12 @@ class EarnPointUseCase(
         if (exists) {
             throw BusinessException(PointErrorCode.DUPLICATE_POINT_HISTORY)
         }
+    }
+
+    private fun validateAlreadyReceivedByStudy(history: PointHistory): Boolean {
+        return pointHistoryRepository.existsByUserIdAndRefTypeAndRefIdAndType(
+            history.userId, history.refType, history.refId, history.type
+        )
     }
 
     private fun validateExceededDailyLimit(todayCount: Long, dailyLimit: Int) {
