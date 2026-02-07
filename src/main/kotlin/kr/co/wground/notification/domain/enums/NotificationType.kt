@@ -19,5 +19,9 @@ enum class NotificationType {
 
     // 공지사항
     ANNOUNCEMENT,
+
+    // 스터디 모집
+    STUDY_RECRUIT_START,
+    STUDY_RECRUIT_END,
     ;
 }

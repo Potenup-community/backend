@@ -108,6 +108,7 @@ interface NotificationApi {
     )
     fun markAsRead(
         @Parameter(description = "읽음 처리할 알림 ID", example = "1") id: NotificationId,
+        @Parameter(description = "브로드캐스트 알림 여부", example = "false") isBroadcast: Boolean,
         @Parameter(
             `in` = ParameterIn.COOKIE,
             name = "accessToken",
