@@ -1,3 +1,5 @@
+package kr.co.wground.point.domain
+
 enum class PointType(
     val description: String,
     val amount: Long,

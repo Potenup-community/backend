@@ -1,6 +1,5 @@
 package kr.co.wground.point.domain
 
-import PointType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -147,10 +146,10 @@ class PointHistory private constructor(
             )
         }
 
-        fun forShopPurchase(userId: UserId, amount: Long, itemId: Long): PointHistory {
+        fun forPurchase(userId: UserId, amount: Long, itemId: Long): PointHistory {
             return create(
                 userId = userId,
-                amount = -amount, // 차감
+                amount = -amount,
                 type = PointType.USE_SHOP,
                 refType = ReferenceType.SHOP_ITEM,
                 refId = itemId
