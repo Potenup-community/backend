@@ -26,7 +26,6 @@ import java.time.LocalDateTime
         )
     ],
     indexes = [
-        Index(name = "idx_point_history_user_id", columnList = "user_id"),
         Index(name = "idx_point_history_created_at", columnList = "created_at"),
         Index(name = "idx_point_history_user_type_created", columnList = "user_id, type, created_at"),
         Index(name = "idx_point_history_ref", columnList = "ref_type, ref_id")
