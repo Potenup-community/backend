@@ -187,6 +187,16 @@ class PointHistory private constructor(
             )
         }
 
+        fun forAdminGiven(userId: UserId, amount: Long, adminId: UserId): PointHistory {
+            return create(
+                userId = userId,
+                amount = amount,
+                type = PointType.EVENT_ADMIN,
+                refType = ReferenceType.EVENT,
+                refId = adminId
+            )
+        }
+
         private fun validate(userId: UserId, amount: Long, refId: Long) {
             if (userId <= 0) {
                 throw BusinessException(PointErrorCode.INVALID_USER_ID)
