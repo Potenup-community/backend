@@ -25,8 +25,6 @@ class WebConfig(
             .addMapping("/api/**")
             .allowedOrigins(
                 "http://localhost:5173",
-                "https://potenup-depth.vercel.app",
-                "https://depth-preview.vercel.app",
                 "http://localhost:3000"
             )
             .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
