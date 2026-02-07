@@ -1,6 +1,6 @@
-package kr.co.wground.study.infra
+package kr.co.wground.study_schedule.infra
 
-import kr.co.wground.study.domain.StudySchedule
+import kr.co.wground.study_schedule.domain.StudySchedule
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import java.time.LocalDateTime

@@ -8,14 +8,14 @@ import kr.co.wground.study.application.dto.StudyCreateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.StudyRecruitment
-import kr.co.wground.study.domain.StudySchedule
-import kr.co.wground.study.domain.constant.BudgetType
-import kr.co.wground.study.domain.constant.Months
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study_schedule.domain.StudySchedule
+import kr.co.wground.study.domain.enums.BudgetType
+import kr.co.wground.study_schedule.domain.enums.Months
+import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
-import kr.co.wground.study.infra.StudyScheduleRepository
+import kr.co.wground.study_schedule.infra.StudyScheduleRepository
 import kr.co.wground.track.domain.Track
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.domain.User
@@ -67,14 +67,14 @@ class StudyRecruitmentServiceTest {
     companion object {
         @JvmStatic
         fun studyStatusCannotBeApplied(): Stream<Arguments> = Stream.of(
-            Arguments.of("CLOSED", StudyStatus.CLOSED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
-            Arguments.of("APPROVED", StudyStatus.APPROVED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
+            Arguments.of("CLOSED", StudyStatus.CLOSED, StudyServiceErrorCode.STUDY_NOT_PENDING.code),
+            Arguments.of("APPROVED", StudyStatus.APPROVED, StudyServiceErrorCode.STUDY_NOT_PENDING.code),
         )
 
         @JvmStatic
         fun studyStatusCannotBeWithdrawn(): Stream<Arguments> = Stream.of(
-            Arguments.of("CLOSED", StudyStatus.CLOSED, StudyServiceErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING.code),
-            Arguments.of("APPROVED", StudyStatus.APPROVED, StudyServiceErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING.code),
+            Arguments.of("CLOSED", StudyStatus.CLOSED, StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING.code),
+            Arguments.of("APPROVED", StudyStatus.APPROVED, StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING.code),
         )
     }
 
@@ -108,7 +108,7 @@ class StudyRecruitmentServiceTest {
         )
         val savedSchedule = studyScheduleRepository.save(schedule)
 
-        val study = Study(
+        val study = Study.createNew(
             name = "졸업 트랙 스터디",
             leaderId = 10L,
             trackId = savedTrack.trackId,
@@ -191,7 +191,7 @@ class StudyRecruitmentServiceTest {
         )
 
         val study = studyRepository.save(
-            Study(
+            Study.createNew(
                 name = "타 트랙 스터디",
                 leaderId = 10L,
                 trackId = otherTrack.trackId,
@@ -259,7 +259,7 @@ class StudyRecruitmentServiceTest {
         )
 
         val study = studyRepository.save(
-            Study(
+            Study.createNew(
                 name = "스터디 이름",
                 leaderId = 10L,
                 trackId = track.trackId,
@@ -375,7 +375,7 @@ class StudyRecruitmentServiceTest {
         }
 
         // then: 예외 발생(ALREADY_APPLIED)
-        assertEquals(StudyServiceErrorCode.ALREADY_APPLIED.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.ALREADY_APPLIED.code, thrown.code)
     }
 
     // ----- 참여 스터디 수 제한 테스트
@@ -431,7 +431,7 @@ class StudyRecruitmentServiceTest {
         )
 
         val pastStudy = studyRepository.save(
-            Study(
+            Study.createNew(
                 name = "과거 차수 스터디",
                 leaderId = 999L,
                 trackId = track.trackId,
@@ -444,7 +444,7 @@ class StudyRecruitmentServiceTest {
             )
         )
         studyRecruitmentRepository.save(
-            StudyRecruitment(
+            StudyRecruitment.apply(
                 userId = student.userId,
                 study = pastStudy,
             )
@@ -582,7 +582,7 @@ class StudyRecruitmentServiceTest {
         )
 
         val study = studyRepository.save(
-            Study(
+            Study.createNew(
                 name = "스터디 이름",
                 leaderId = 10L,
                 trackId = track.trackId,
@@ -613,7 +613,7 @@ class StudyRecruitmentServiceTest {
         )
 
         // 모집 마감
-        study.close(LocalDateTime.now().minusDays(1))
+        study.close()
 
         // when: 스터디 취소
         val thrown = assertThrows<BusinessException> {
@@ -705,7 +705,7 @@ class StudyRecruitmentServiceTest {
         }
 
         // then: 예외 발생(LEADER_CANNOT_LEAVE)
-        assertEquals(StudyServiceErrorCode.LEADER_CANNOT_LEAVE.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.LEADER_CANNOT_LEAVE.code, thrown.code)
     }
 
     // ----- 참여 인원 수 동기화 테스트
@@ -819,6 +819,6 @@ class StudyRecruitmentServiceTest {
         val updatedStudy = studyRepository.findById(studyId).orElseThrow()
         val approvedCount = studyRecruitmentRepository.findAllByStudyId(studyId).size
         assertEquals(4, approvedCount)
-        assertEquals(approvedCount, updatedStudy.currentMemberCount)
+        assertEquals(approvedCount, updatedStudy.recruitments.size)
     }
 }

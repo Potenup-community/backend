@@ -4,8 +4,7 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
-import kr.co.wground.study.domain.StudySchedule
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study_schedule.domain.StudySchedule
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.track.domain.constant.TrackStatus
 import org.springframework.stereotype.Component
@@ -18,21 +17,9 @@ class RecruitValidator(
         const val MAX_STUDY_CAN_ENROLLED = 2
     }
 
-    fun validateApply(userTrackId: Long, study: Study) {
+    fun trackExists(userTrackId: Long, study: Study) {
         if (userTrackId != study.trackId) {
             throw BusinessException(StudyServiceErrorCode.TRACK_MISMATCH)
-        }
-        if (study.status != StudyStatus.PENDING) {
-            throw BusinessException(StudyServiceErrorCode.STUDY_NOT_RECRUITING)
-        }
-    }
-
-    fun validateDuplicateRecruit(userId: Long, studyId: Long) {
-        if (studyRecruitmentRepository.existsByStudyIdAndUserId(
-                studyId, userId
-            )
-        ) {
-            throw BusinessException(StudyServiceErrorCode.ALREADY_APPLIED)
         }
     }
 
@@ -45,7 +32,7 @@ class RecruitValidator(
 
     fun validateSchedule(schedule: StudySchedule) {
         if (schedule.isRecruitmentClosed()) {
-            throw BusinessException(StudyServiceErrorCode.STUDY_NOT_RECRUITING)
+            throw BusinessException(StudyServiceErrorCode.STUDY_NOT_PENDING)
         }
     }
 
@@ -58,12 +45,6 @@ class RecruitValidator(
     fun validateRecruitUserId(recruitUserId: Long, userId: UserId) {
         if (recruitUserId != userId) {
             throw BusinessException(StudyServiceErrorCode.NOT_RECRUITMENT_OWNER)
-        }
-    }
-
-    fun validateLeaderCancel(study: Study, userId: UserId) {
-        if (study.isLeader(userId)) {
-            throw BusinessException(StudyServiceErrorCode.LEADER_CANNOT_LEAVE)
         }
     }
 

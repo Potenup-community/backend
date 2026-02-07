@@ -1,8 +1,8 @@
-package kr.co.wground.study.presentation.request.schedule
+package kr.co.wground.study_schedule.presentation.request
 
 import kr.co.wground.global.common.TrackId
-import kr.co.wground.study.application.dto.ScheduleUpdateCommand
-import kr.co.wground.study.domain.constant.Months
+import kr.co.wground.study_schedule.application.dto.ScheduleUpdateCommand
+import kr.co.wground.study_schedule.domain.enums.Months
 import java.time.LocalDate
 
 data class ScheduleUpdateRequest(

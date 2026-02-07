@@ -1,9 +1,9 @@
-package kr.co.wground.study.application.event
+package kr.co.wground.study_schedule.application.event
 
 import kr.co.wground.global.common.TrackId
-import kr.co.wground.study.domain.constant.Months
+import kr.co.wground.study_schedule.domain.enums.Months
 import java.time.LocalDateTime
-import kr.co.wground.study.domain.StudySchedule
+import kr.co.wground.study_schedule.domain.StudySchedule
 
 data class StudyScheduleChangedEvent(
     val scheduleId: Long,

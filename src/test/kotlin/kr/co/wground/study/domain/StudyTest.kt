@@ -1,10 +1,12 @@
 package kr.co.wground.study.domain
 
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.study.domain.constant.BudgetType
-import kr.co.wground.study.domain.constant.Months
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study.domain.enums.BudgetType
+import kr.co.wground.study_schedule.domain.enums.Months
+import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
+import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
+import kr.co.wground.study_schedule.domain.StudySchedule
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
@@ -22,7 +24,9 @@ import kotlin.repeat
 class StudyTest {
 
     // To Do: 특정 값을 변경하고 싶지 않은 경우, null 을 명시적으로 전달하는 방식이 괜찮을 지 모르겠음
-    val NOT_GONNA_CHANGE = null;
+    val NOT_GONNA_CHANGE = null
+    val THE_LEADER_ID = 1L
+    val THE_OTHER_USER_ID = 2L
 
     companion object {
 
@@ -96,8 +100,7 @@ class StudyTest {
             val schedule = createRecruitingStudySchedule()
             val validCapacity = Study.MIN_CAPACITY
             val created = createStudyWithCapacity(schedule, validCapacity)
-            updateStudyCapacity(
-                created, givenCapacity, schedule.isRecruitmentClosed())
+            updateStudyCapacity(created, givenCapacity)
         }
 
         assertEquals(expectedErrorCode, thrown.code)
@@ -126,7 +129,7 @@ class StudyTest {
             val validTitle: String = "유효한 제목"
             val created = createStudyWithName(schedule, validTitle)
 
-            updateStudyName(created, givenTitle, schedule.isRecruitmentClosed())
+            updateStudyName(created, givenTitle)
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_NAME_INVALID.code, thrown.code)
@@ -154,8 +157,7 @@ class StudyTest {
             val validDescription = "유효한 소개글"
             val created = createStudyWithDescription(schedule, validDescription)
 
-            updateStudyDescription(
-                created, givenDescription, schedule.isRecruitmentClosed())
+            updateStudyDescription(created, givenDescription)
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID.code, thrown.code)
@@ -182,8 +184,7 @@ class StudyTest {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithBudgetExplain(schedule, "피자먹을래요")
 
-            updateStudyBudgetExplain(
-                created, givenBudgetExplain, schedule.isRecruitmentClosed())
+            updateStudyBudgetExplain(created, givenBudgetExplain)
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_BUDGET_EXPLAIN_INVALID.code, thrown.code)
@@ -210,11 +211,7 @@ class StudyTest {
             val created = createStudyWithExternalChatUrl(
                 schedule, "https://www.kakaocorp.com/page/service/service/openchat")
 
-            updateStudyExternalChatUrl(
-                created,
-                "유효하지 않은 형식의 링크",
-                schedule.isRecruitmentClosed()
-            )
+            updateStudyExternalChatUrl(created, "유효하지 않은 형식의 링크")
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_URL_INVALID.code, thrown.code)
@@ -241,19 +238,11 @@ class StudyTest {
             val created = createStudyWithReferenceUrl(
                 schedule, "https://www.kakaocorp.com/page/service/service/openchat")
 
-            updateStudyReferenceUrl(
-                created,
-                "유효하지 않은 형식의 링크",
-                schedule.isRecruitmentClosed()
-            )
+            updateStudyReferenceUrl(created, "유효하지 않은 형식의 링크")
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_URL_INVALID.code, thrown.code)
     }
-
-    // ----- 마감 테스트
-
-    // To Do: 모집 마김 일자가 지나기 전에 마감 시도한 경우 예외 발생 - BusinessException(RECRUITMENT_NOT_ENDED_YET)
 
     // ----- 결재 테스트
 
@@ -276,8 +265,7 @@ class StudyTest {
 
         val thrown = assertThrows<BusinessException> {
             val pending = createStudyWithCapacity(createRecruitingStudySchedule(), Study.MIN_CAPACITY)
-            pending.close(LocalDateTime.now().minusDays(1))
-
+            pending.close()
             pending.approve()
         }
 
@@ -292,16 +280,14 @@ class StudyTest {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, 3)
-            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-
-            // To Do: 실제 사용 시 이런 식으로 사용하면 안 되나, 테스트를 위해 의도적으로 과거 시점을 전달함
-            created.close(LocalDateTime.now().minusDays(1))
+            created.participate(THE_OTHER_USER_ID)
+            created.close()
             created.approve()
 
-            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+            created.participate(THE_OTHER_USER_ID + 1)
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_NOT_RECRUITING.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_NOT_PENDING.code, thrown.code)
     }
 
     @Test
@@ -310,10 +296,9 @@ class StudyTest {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
-            repeat(Study.MIN_CAPACITY - 1) {
-                created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+            for (i in 0..<Study.MIN_CAPACITY) {
+                created.participate(THE_OTHER_USER_ID + i)
             }
-            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_CAPACITY_FULL.code, thrown.code)
@@ -326,13 +311,10 @@ class StudyTest {
             val alreadyStartedSchedule = createAlreadyStartedStudySchedule()
             val created = createStudyWithName(alreadyStartedSchedule, "유효한 이름")
 
-            created.increaseMemberCount(
-                alreadyStartedSchedule.recruitEndDate,
-                alreadyStartedSchedule.isRecruitmentClosed()
-            )
+            created.participate(THE_OTHER_USER_ID)
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT.code, thrown.code)
+        assertEquals(StudyScheduleServiceErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT.code, thrown.code)
     }
 
     // ----- 수정 테스트
@@ -343,11 +325,11 @@ class StudyTest {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
-            created.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-            created.close(LocalDateTime.now().minusDays(1))
+            created.participate(THE_OTHER_USER_ID)
+            created.close()
             created.approve()
 
-            updateStudyName(created, "제목제목", schedule.isRecruitmentClosed())
+            updateStudyName(created, "제목제목")
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_APPROVED.code, thrown.code)
@@ -383,9 +365,7 @@ class StudyTest {
             newBudgetExplain = newBudgetExplain,
             newChatUrl = newChatUrl,
             newRefUrl = newRefUrl,
-            newTags = newTags,
-            newScheduleId = created.scheduleId,
-            isRecruitmentClosed = schedule.isRecruitmentClosed(),
+            newTags = newTags
         )
 
         // 문제 사유 addTag 내부에서 Tag 존재 여부를 id 로 구분하고 있으나, 새로 생성된 태그들은 모두 id 가 0 이어서 구분되지 않음.
@@ -404,7 +384,7 @@ class StudyTest {
         )
     }
 
-    // ----- factories for test
+    // ----- factories
 
     private fun createRecruitingStudySchedule(): StudySchedule {
         return StudySchedule(
@@ -427,13 +407,13 @@ class StudyTest {
     }
 
     private fun createStudyWithCapacity(schedule: StudySchedule, capacity: Int): Study {
-        return Study(
+        return Study.createNew(
             capacity = capacity,
             budget = BudgetType.BOOK,
             name = "스터디 제목",
             description = "스터디 소개글",
             budgetExplain = "피자먹을래요",
-            leaderId = 1L,
+            leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
             status = StudyStatus.PENDING
@@ -441,12 +421,12 @@ class StudyTest {
     }
 
     private fun createStudyWithName(schedule: StudySchedule, name: String): Study {
-        return Study(
+        return Study.createNew(
             budget = BudgetType.BOOK,
             name = name,
             description = "스터디 소개글",
             budgetExplain = "피자먹을래요",
-            leaderId = 1L,
+            leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
             status = StudyStatus.PENDING
@@ -454,12 +434,12 @@ class StudyTest {
     }
 
     private fun createStudyWithDescription(schedule: StudySchedule, description: String): Study {
-        return Study(
+        return Study.createNew(
             budget = BudgetType.BOOK,
             name = "유효한 제목",
             description = description,
             budgetExplain = "피자먹을래요",
-            leaderId = 1L,
+            leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
             status = StudyStatus.PENDING
@@ -467,12 +447,12 @@ class StudyTest {
     }
 
     private fun createStudyWithBudgetExplain(schedule: StudySchedule, budgetExplain: String): Study {
-        return Study(
+        return Study.createNew(
             budget = BudgetType.BOOK,
             name = "유효한 제목",
             description = "스터디 소개글",
             budgetExplain = budgetExplain,
-            leaderId = 1L,
+            leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
             status = StudyStatus.PENDING
@@ -480,12 +460,12 @@ class StudyTest {
     }
 
     private fun createStudyWithExternalChatUrl(schedule: StudySchedule, externalChatUrl: String): Study {
-        return Study(
+        return Study.createNew(
             budget = BudgetType.BOOK,
             name = "유효한 제목",
             description = "유효한 소개글",
             budgetExplain = "피자먹을래요",
-            leaderId = 1L,
+            leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
             status = StudyStatus.PENDING,
@@ -494,12 +474,12 @@ class StudyTest {
     }
 
     private fun createStudyWithReferenceUrl(schedule: StudySchedule, referenceUrl: String): Study {
-        return Study(
+        return Study.createNew(
             budget = BudgetType.BOOK,
             name = "유효한 제목",
             description = "유효한 소개글",
             budgetExplain = "피자먹을래요",
-            leaderId = 1L,
+            leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
             status = StudyStatus.PENDING,
@@ -509,7 +489,7 @@ class StudyTest {
 
     // ----- helpers
 
-    private fun updateStudyCapacity(study: Study, capacity: Int, isRecruitmentClosed: Boolean) {
+    private fun updateStudyCapacity(study: Study, capacity: Int) {
         return study.updateStudyInfo(
             newCapacity = capacity,
             newName = study.name,
@@ -518,13 +498,11 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
-            newTags = NOT_GONNA_CHANGE,
-            newScheduleId = study.scheduleId,
-            isRecruitmentClosed = isRecruitmentClosed
+            newTags = NOT_GONNA_CHANGE
         )
     }
 
-    private fun updateStudyName(study: Study, name: String, isRecruitmentClosed: Boolean) {
+    private fun updateStudyName(study: Study, name: String) {
         return study.updateStudyInfo(
             newCapacity = study.capacity,
             newName = name,
@@ -533,13 +511,11 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
-            newTags = NOT_GONNA_CHANGE,
-            newScheduleId = study.scheduleId,
-            isRecruitmentClosed = isRecruitmentClosed
+            newTags = NOT_GONNA_CHANGE
         )
     }
 
-    private fun updateStudyDescription(study: Study, description: String, isRecruitmentClosed: Boolean) {
+    private fun updateStudyDescription(study: Study, description: String) {
         return study.updateStudyInfo(
             newCapacity = study.capacity,
             newName = study.name,
@@ -548,13 +524,11 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
-            newTags = NOT_GONNA_CHANGE,
-            newScheduleId = study.scheduleId,
-            isRecruitmentClosed = isRecruitmentClosed
+            newTags = NOT_GONNA_CHANGE
         )
     }
 
-    private fun updateStudyBudgetExplain(study: Study, budgetExplain: String, isRecruitmentClosed: Boolean) {
+    private fun updateStudyBudgetExplain(study: Study, budgetExplain: String) {
         return study.updateStudyInfo(
             newCapacity = study.capacity,
             newName = study.name,
@@ -563,13 +537,11 @@ class StudyTest {
             newBudgetExplain = budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
-            newTags = NOT_GONNA_CHANGE,
-            newScheduleId = study.scheduleId,
-            isRecruitmentClosed = isRecruitmentClosed
+            newTags = NOT_GONNA_CHANGE
         )
     }
 
-    private fun updateStudyExternalChatUrl(study: Study, externalChatUrl: String, isRecruitmentClosed: Boolean) {
+    private fun updateStudyExternalChatUrl(study: Study, externalChatUrl: String) {
         return study.updateStudyInfo(
             newCapacity = study.capacity,
             newName = study.name,
@@ -578,13 +550,11 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = externalChatUrl,
             newRefUrl = study.referenceUrl,
-            newTags = NOT_GONNA_CHANGE,
-            newScheduleId = study.scheduleId,
-            isRecruitmentClosed = isRecruitmentClosed
+            newTags = NOT_GONNA_CHANGE
         )
     }
 
-    private fun updateStudyReferenceUrl(study: Study, referenceUrl: String, isRecruitmentClosed: Boolean) {
+    private fun updateStudyReferenceUrl(study: Study, referenceUrl: String) {
         return study.updateStudyInfo(
             newCapacity = study.capacity,
             newName = study.name,
@@ -593,9 +563,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = referenceUrl,
-            newTags = NOT_GONNA_CHANGE,
-            newScheduleId = study.scheduleId,
-            isRecruitmentClosed = isRecruitmentClosed
+            newTags = NOT_GONNA_CHANGE
         )
     }
 }

@@ -1,7 +1,5 @@
 package kr.co.wground.study.infra
 
-import com.querydsl.core.types.Order
-import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.common.SortType
@@ -9,9 +7,9 @@ import kr.co.wground.study.application.dto.QStudyQueryDto
 import kr.co.wground.study.application.dto.StudyQueryDto
 import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.domain.QStudy.study
-import kr.co.wground.study.domain.QStudySchedule.studySchedule
+import kr.co.wground.study_schedule.domain.QStudySchedule.studySchedule
 import kr.co.wground.study.domain.QTag.tag
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.track.domain.QTrack.track
 import kr.co.wground.user.domain.QUser.user
 import org.springframework.data.domain.Pageable

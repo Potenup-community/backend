@@ -12,13 +12,17 @@ import jakarta.persistence.OneToMany
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
-import kr.co.wground.study.domain.constant.BudgetType
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study.application.exception.StudyServiceErrorCode
+import kr.co.wground.study.domain.enums.BudgetType
+import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
+import lombok.AccessLevel
+import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 
 @Entity
-class Study(
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+class Study protected constructor(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
@@ -53,10 +57,6 @@ class Study(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: StudyStatus = status
-        protected set
-
-    @Column(nullable = false)
-    var currentMemberCount: Int = 1
         protected set
 
     @Column(nullable = false)
@@ -104,6 +104,72 @@ class Study(
         const val MIN_BUDGET_EXPLAIN_LENGTH = 2
         const val DEFAULT_CHAT_URL = "https://www.kakaocorp.com/page/service/service/openchat"
         val URL_PATTERN = Regex("^(http|https)://.*$")
+
+        fun createNew(
+            name: String,
+            leaderId: UserId,
+            trackId: TrackId,
+            scheduleId: Long,
+            description: String,
+            status: StudyStatus,
+            capacity: Int = RECOMMENDED_MAX_CAPACITY,
+            budget: BudgetType,
+            budgetExplain: String,
+            externalChatUrl: String = DEFAULT_CHAT_URL,
+            referenceUrl: String? = null,
+        ): Study {
+            val created = Study(
+                name = name,
+                leaderId = leaderId,
+                trackId = trackId,
+                scheduleId = scheduleId,
+                description = description,
+                status = status,
+                capacity = capacity,
+                budget = budget,
+                budgetExplain = budgetExplain,
+                externalChatUrl = externalChatUrl,
+                referenceUrl = referenceUrl
+            )
+
+            created.participate(leaderId)
+
+            return created
+        }
+
+        fun loadFromDb(
+            id: Long,
+            name: String,
+            leaderId: UserId,
+            trackId: TrackId,
+            scheduleId: Long,
+            description: String,
+            status: StudyStatus,
+            capacity: Int = RECOMMENDED_MAX_CAPACITY,
+            budget: BudgetType,
+            budgetExplain: String,
+            externalChatUrl: String = DEFAULT_CHAT_URL,
+            referenceUrl: String? = null,
+            createdAt: LocalDateTime,
+            updatedAt: LocalDateTime
+        ): Study {
+            return Study(
+                id = id,
+                name = name,
+                leaderId = leaderId,
+                trackId = trackId,
+                scheduleId = scheduleId,
+                description = description,
+                status = status,
+                capacity = capacity,
+                budget = budget,
+                budgetExplain = budgetExplain,
+                externalChatUrl = externalChatUrl,
+                referenceUrl = referenceUrl,
+                createdAt = createdAt,
+                updatedAt = updatedAt
+            )
+        }
     }
 
     init {
@@ -114,76 +180,70 @@ class Study(
         validateUrl(externalChatUrl, referenceUrl)
     }
 
-    fun increaseMemberCount(recruitEndDate: LocalDateTime, isRecruitmentClosed: Boolean) {
-        if (LocalDateTime.now() > recruitEndDate) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
-        }
+    fun participate(userId: UserId) {
 
-        if (this.currentMemberCount >= this.capacity) {
+        if (_recruitments.size >= this.capacity) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_FULL)
         }
 
         if (this.status != StudyStatus.PENDING) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_NOT_RECRUITING)
+            throw BusinessException(StudyDomainErrorCode.STUDY_NOT_PENDING)
         }
 
-        this.currentMemberCount++
+        if (_recruitments.any { it.userId == userId }) {
+            throw BusinessException(StudyDomainErrorCode.ALREADY_APPLIED)
+        }
+
+        _recruitments.add(StudyRecruitment.apply(userId = userId, this))
     }
 
-    fun decreaseMemberCount(isRecruitmentClosed: Boolean) {
-        if (this.currentMemberCount <= 1) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_MIN_MEMBER_REQUIRED)
+    fun withdraw(userId: UserId) {
+
+        if (userId == leaderId) {
+            throw BusinessException(StudyDomainErrorCode.LEADER_CANNOT_LEAVE)
         }
 
-        this.currentMemberCount--
+        if (_recruitments.none { it.userId == userId }) {
+            throw BusinessException(StudyDomainErrorCode.NOT_PARTICIPATED_THAT_STUDY)
+        }
+
+        if (status != StudyStatus.PENDING) {
+            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING)
+        }
+
+        // orphanRemoval == true!
+        _recruitments.remove(_recruitments.find { it.userId == userId })
     }
 
     fun updateStudyInfo(
         newName: String,
         newDescription: String,
         newCapacity: Int,
-        newScheduleId: Long,
         newBudget: BudgetType,
         newBudgetExplain: String,
         newChatUrl: String,
         newRefUrl: String?,
-        newTags: List<Tag>?,
-        isRecruitmentClosed: Boolean,
+        newTags: List<Tag>?
     ) {
         validateCanUpdate()
         validateBudgetExplain(newBudgetExplain)
         validateUrl(newChatUrl, newRefUrl)
-
-        val isCoreInfoChanged = this.name != newName ||
-                this.description != newDescription ||
-                this.capacity != newCapacity ||
-                isTagsChanged(newTags)
-
-        if (isRecruitmentClosed && isCoreInfoChanged) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_DEADLINE)
-        }
-
-        if (!isRecruitmentClosed) {
-            validateName(newName)
-            validateDescription(newDescription)
-            validateCapacity(newCapacity)
-            validateCurrentMemberOverCapacity(newCapacity)
-
-            this.name = newName
-            this.description = newDescription
-            this.capacity = newCapacity
-
-            if (newTags != null) {
-                updateTags(newTags)
-            }
-        }
+        validateName(newName)
+        validateDescription(newDescription)
+        validateCapacity(newCapacity)
+        validateCurrentMemberOverCapacity(newCapacity)
 
         this.budget = newBudget
         this.budgetExplain = newBudgetExplain
-        this.scheduleId = newScheduleId
         this.externalChatUrl = newChatUrl
         this.referenceUrl = newRefUrl
+        this.name = newName
+        this.description = newDescription
+        this.capacity = newCapacity
         this.updatedAt = LocalDateTime.now()
+        if (newTags != null) {
+            updateTags(newTags)
+        }
     }
 
     private fun isTagsChanged(newTags: List<Tag>?): Boolean {
@@ -220,15 +280,11 @@ class Study(
             return
         }
 
-        val studyTag = StudyTag(study = this, tag = tag)
+        val studyTag = StudyTag.create(study = this, tag = tag)
         this._studyTags.add(studyTag)
     }
 
-    fun close(recruitEndDate: LocalDateTime) {
-        if (LocalDateTime.now().isBefore(recruitEndDate)) {
-            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_NOT_ENDED_YET)
-        }
-
+    fun close() {
         this.status = StudyStatus.CLOSED
     }
 
@@ -237,12 +293,14 @@ class Study(
             throw BusinessException(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE)
         }
 
-        if (currentMemberCount < MIN_CAPACITY) {
+        if (_recruitments.size < MIN_CAPACITY) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)
         }
 
         this.status = StudyStatus.APPROVED
     }
+
+    // ----- validate
 
     fun validateHardDeletable() {
         if (this.status == StudyStatus.APPROVED) {
@@ -297,7 +355,7 @@ class Study(
     }
 
     private fun validateCurrentMemberOverCapacity(newCapacity: Int) {
-        if (newCapacity < this.currentMemberCount) {
+        if (newCapacity < _recruitments.size) {
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_CANNOT_LESS_THAN_CURRENT)
         }
     }

@@ -1,5 +1,6 @@
-package kr.co.wground.study.application.dto
+package kr.co.wground.study_schedule.application.dto
 
+import kr.co.wground.study.application.dto.StudyQueryDto
 import java.time.LocalDateTime
 
 data class ScheduleDto(

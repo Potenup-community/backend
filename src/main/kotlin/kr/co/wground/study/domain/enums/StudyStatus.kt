@@ -1,4 +1,4 @@
-package kr.co.wground.study.domain.constant
+package kr.co.wground.study.domain.enums
 
 enum class StudyStatus {
     PENDING,

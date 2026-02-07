@@ -1,4 +1,4 @@
-package kr.co.wground.study.presentation
+package kr.co.wground.study_schedule.presentation
 
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -11,12 +11,12 @@ import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.docs.StudySwaggerErrorExample
 import kr.co.wground.study.docs.StudySwaggerResponseExample
-import kr.co.wground.study.presentation.request.schedule.ScheduleCreateRequest
-import kr.co.wground.study.presentation.request.schedule.ScheduleUpdateRequest
-import kr.co.wground.study.presentation.response.schedule.ScheduleCreateResponse
-import kr.co.wground.study.presentation.response.schedule.ScheduleListResponse
-import kr.co.wground.study.presentation.response.schedule.ScheduleQueryResponse
-import kr.co.wground.study.presentation.response.schedule.ScheduleUpdateResponse
+import kr.co.wground.study_schedule.presentation.request.ScheduleCreateRequest
+import kr.co.wground.study_schedule.presentation.request.ScheduleUpdateRequest
+import kr.co.wground.study_schedule.presentation.response.ScheduleCreateResponse
+import kr.co.wground.study_schedule.presentation.response.ScheduleListResponse
+import kr.co.wground.study_schedule.presentation.response.ScheduleQueryResponse
+import kr.co.wground.study_schedule.presentation.response.ScheduleUpdateResponse
 import kr.co.wground.user.docs.UserSwaggerErrorExample
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable

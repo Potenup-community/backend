@@ -1,7 +1,9 @@
-package kr.co.wground.study.domain.constant
+package kr.co.wground.study_schedule.domain.enums
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
+import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
+import kr.co.wground.study_schedule.domain.exception.StudyScheduleDomainErrorCode
 
 enum class Months(val month: String) {
     FIRST("1"),
@@ -15,7 +17,7 @@ enum class Months(val month: String) {
     companion object {
                  fun from(value: String): Months {
                          return entries.find { it.name == value }
-                             ?: throw BusinessException(StudyDomainErrorCode.STUDY_MONTH_ILLEGAL_RANGE)
+                             ?: throw BusinessException(StudyScheduleDomainErrorCode.STUDY_MONTH_ILLEGAL_RANGE)
                      }
              }
 }

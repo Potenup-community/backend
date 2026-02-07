@@ -1,8 +1,10 @@
 package kr.co.wground.study.domain
 
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.study.domain.constant.Months
+import kr.co.wground.study_schedule.domain.enums.Months
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
+import kr.co.wground.study_schedule.domain.StudySchedule
+import kr.co.wground.study_schedule.domain.exception.StudyScheduleDomainErrorCode
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -28,7 +30,7 @@ class StudyScheduleTest {
             )
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_CANT_START_AFTER_END_DATE.code, thrown.code)
+        assertEquals(StudyScheduleDomainErrorCode.STUDY_CANT_START_AFTER_END_DATE.code, thrown.code)
     }
 
     @Test
@@ -51,7 +53,7 @@ class StudyScheduleTest {
             )
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_CANT_START_AFTER_END_DATE.code, thrown.code)
+        assertEquals(StudyScheduleDomainErrorCode.STUDY_CANT_START_AFTER_END_DATE.code, thrown.code)
     }
 
     @Test
@@ -67,7 +69,7 @@ class StudyScheduleTest {
             )
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE.code, thrown.code)
+        assertEquals(StudyScheduleDomainErrorCode.STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE.code, thrown.code)
     }
 
     @Test
@@ -90,6 +92,6 @@ class StudyScheduleTest {
             )
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE.code, thrown.code)
+        assertEquals(StudyScheduleDomainErrorCode.STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE.code, thrown.code)
     }
 }

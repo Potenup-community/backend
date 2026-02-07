@@ -1,7 +1,7 @@
 package kr.co.wground.study.application.dto
 
 import kr.co.wground.global.common.UserId
-import kr.co.wground.study.domain.constant.BudgetType
+import kr.co.wground.study.domain.enums.BudgetType
 
 data class StudyUpdateCommand(
     val studyId: Long,

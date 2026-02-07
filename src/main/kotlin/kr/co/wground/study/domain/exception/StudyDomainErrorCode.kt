@@ -9,18 +9,13 @@ enum class StudyDomainErrorCode(
     override val code: String,
     override val message: String,
 ) : ErrorCode {
-    //StudySchedule
-    STUDY_CANT_START_AFTER_END_DATE(HttpStatus.BAD_REQUEST, "SS-0001", "모집 시작은 모집 종료보다 빨라야 합니다."),
-    STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE(HttpStatus.BAD_REQUEST, "SS-0002", "모집 종료는 스터디 종료보다 빨라야 합니다."),
-    STUDY_MONTH_ILLEGAL_RANGE(HttpStatus.BAD_REQUEST, "SS-0003", "유효하지 않은 차수입니다. 1 ~ 6차 사이여야 합니다."),
-    STUDY_SCHEDULE_IS_NOT_IN_TRACK(HttpStatus.BAD_REQUEST,"SS-0004","해당 차수 일정은 현재 과정에 존재하지 않습니다."),
 
     //Tag
     TAG_LENGTH_INVALID_RANGE(HttpStatus.BAD_REQUEST, "TG-0001", "태그의 길이가 양식에 맞지 않습니다."),
     TAG_FORMAT_INVALID(HttpStatus.BAD_REQUEST, "TG-0002", "태그의 입력 양식이 올바르지 않습니다."),
 
     //Study
-    STUDY_NOT_RECRUITING(HttpStatus.BAD_REQUEST, "SD-0001", "해당 스터디는 모집중이 아닙니다."),
+    STUDY_NOT_PENDING(HttpStatus.BAD_REQUEST, "SD-0001", "해당 스터디는 모집중이 아닙니다."),
     STUDY_CAPACITY_FULL(HttpStatus.BAD_REQUEST, "SD-0002", "해당 스터디의 최대 모집 정원이 전부 찼습니다."),
     STUDY_NAME_INVALID(HttpStatus.BAD_REQUEST, "SD-0003", "스터디의 이름이 유효하지 않습니다. 1 ~ 50자 이내로 작성해주세요."),
     STUDY_DESCRIPTION_INVALID(HttpStatus.BAD_REQUEST, "SD-0004", "스터디의 상세 설명이 유효하지 않습니다. 1 ~ 300자 이내로 작성해주세요."),
@@ -32,10 +27,10 @@ enum class StudyDomainErrorCode(
     STUDY_CAPACITY_TOO_BIG(HttpStatus.BAD_REQUEST, "SD-0010", "스터티의 최대 모집 정원이 너무 많습니다."),
     STUDY_TAG_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0011","스터디 태그는 최대 ${Study.MAX_TAG_COUNT}개까지 가질수 있습니다."),
     STUDY_CANT_DELETE_STATUS_APPROVED(HttpStatus.BAD_REQUEST,"SD-0012","결재 상신된 스터디는 삭제할 수 없습니다."),
-    STUDY_ALREADY_FINISH_TO_RECRUIT(HttpStatus.BAD_REQUEST,"SD-0013","해당 스터디의 모집기한이 이미 지났습니다."),
-    STUDY_MIN_MEMBER_REQUIRED(HttpStatus.BAD_REQUEST,"SD-0014","스터디장은 탈퇴 할 수 없습니다."),
-    STUDY_CANNOT_MODIFY_AFTER_DEADLINE(HttpStatus.BAD_REQUEST,"SD-0015","모집 마감 상태에서 수정할 수 없는 항목입니다."),
+    LEADER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST,"SD-0014","스터디장은 탈퇴할 수 없습니다."),
     STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER(HttpStatus.CONFLICT, "SD-0016", "참여 인원 미달된 스터디는 승인할 수 없습니다."),
-    RECRUITMENT_NOT_ENDED_YET(HttpStatus.CONFLICT, "SD-0017", "모집 기간이 끝나지 않은 스터디는 마감시킬 수 없습니다."),
     STUDY_BUDGET_EXPLAIN_INVALID(HttpStatus.BAD_REQUEST, "SD-0018", "지원 항목 설명이 유효하지 않습니다."),
+    ALREADY_APPLIED(HttpStatus.BAD_REQUEST,"SD-0019","이미 참여 중인 스터디입니다."),
+    NOT_PARTICIPATED_THAT_STUDY(HttpStatus.BAD_REQUEST, "SD-0020", "해당 스터디에 참여 중이지 않습니다."),
+    RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING(HttpStatus.CONFLICT,"SR-0021","스터디 상태가 PENDING 이 아닌 경우 신청을 취소할 수 없습니다.")
 }

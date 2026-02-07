@@ -2,11 +2,11 @@ package kr.co.wground.study.presentation.response.study
 
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.domain.Study
-import kr.co.wground.study.domain.constant.BudgetType
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study.domain.enums.BudgetType
+import kr.co.wground.study.domain.enums.StudyStatus
 import java.time.LocalDateTime
 import kr.co.wground.study.application.dto.LeaderDto
-import kr.co.wground.study.application.dto.ScheduleDto
+import kr.co.wground.study_schedule.application.dto.ScheduleDto
 
 data class StudyQueryResponse(
     val id: Long,
@@ -43,7 +43,7 @@ data class StudyQueryResponse(
                 name = study.name,
                 description = study.description,
                 capacity = study.capacity,
-                currentMemberCount = study.currentMemberCount,
+                currentMemberCount = study.recruitments.size,
                 status = study.status,
                 budget = study.budget,
                 budgetExplain = study.budgetExplain,

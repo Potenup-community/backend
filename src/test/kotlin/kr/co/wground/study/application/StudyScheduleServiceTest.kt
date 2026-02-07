@@ -3,20 +3,21 @@
 import java.time.LocalDate
 import java.time.LocalTime
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.study.application.dto.ScheduleCreateCommand
+import kr.co.wground.study_schedule.application.dto.ScheduleCreateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
-import kr.co.wground.study.domain.StudySchedule
-import kr.co.wground.study.domain.constant.BudgetType
-import kr.co.wground.study.domain.constant.Months
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study_schedule.domain.StudySchedule
+import kr.co.wground.study.domain.enums.BudgetType
+import kr.co.wground.study_schedule.domain.enums.Months
+import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.infra.StudyRepository
-import kr.co.wground.study.infra.StudyScheduleRepository
+import kr.co.wground.study_schedule.application.StudyScheduleService
+import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
+import kr.co.wground.study_schedule.infra.StudyScheduleRepository
 import kr.co.wground.track.domain.Track
 import kr.co.wground.track.infra.TrackRepository
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.DisplayName
@@ -151,7 +152,7 @@ class StudyScheduleServiceTest {
             studyScheduleService.createSchedule(command)
         }
 
-        assertEquals(StudyServiceErrorCode.DUPLICATE_SCHEDULE_MONTH.code, thrown.code)
+        assertEquals(StudyScheduleServiceErrorCode.DUPLICATE_SCHEDULE_MONTH.code, thrown.code)
     }
 
     // ----- 시점
@@ -192,7 +193,7 @@ class StudyScheduleServiceTest {
 
         // To Do: 이 테스트의 에러는 일정이 겹치는 부분이 아니라 순서가 뒤바뀌었을 때의 규칙에 대한 것이므로 이름에 OVERLAP 이 포함된 것은 혼동을 줄 여지가 있음.
         // then: 이전 차수와 겹침 예외 발생
-        assertEquals(StudyServiceErrorCode.SCHEDULE_OVERLAP_WITH_PREVIOUS.code, thrown.code)
+        assertEquals(StudyScheduleServiceErrorCode.SCHEDULE_OVERLAP_WITH_PREVIOUS.code, thrown.code)
     }
 
     @Test
@@ -229,7 +230,7 @@ class StudyScheduleServiceTest {
             studyScheduleService.createSchedule(command)
         }
 
-        assertEquals(StudyServiceErrorCode.SCHEDULE_OVERLAP_WITH_NEXT.code, thrown.code)
+        assertEquals(StudyScheduleServiceErrorCode.SCHEDULE_OVERLAP_WITH_NEXT.code, thrown.code)
     }
 
     // ----- Track
@@ -307,7 +308,7 @@ class StudyScheduleServiceTest {
         )
         val savedSchedule = studyScheduleRepository.save(schedule)
 
-        val study = Study(
+        val study = Study.createNew(
             name = "스터디 이름",
             leaderId = 1L,
             trackId = savedTrack.trackId,
@@ -326,7 +327,7 @@ class StudyScheduleServiceTest {
             studyScheduleService.deleteSchedule(savedSchedule.id)
         }
 
-        assertEquals(StudyServiceErrorCode.CANNOT_DELETE_SCHEDULE_WITH_STUDIES.code, thrown.code)
+        assertEquals(StudyScheduleServiceErrorCode.CANNOT_DELETE_SCHEDULE_WITH_STUDIES.code, thrown.code)
     }
 
     // ----- helpers
