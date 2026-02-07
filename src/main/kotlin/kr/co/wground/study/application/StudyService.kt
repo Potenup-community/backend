@@ -84,6 +84,7 @@ class StudyService(
             status = StudyStatus.PENDING,
             capacity = command.capacity,
             budget = command.budget,
+            budgetExplain = command.budgetExplain,
             externalChatUrl = command.chatUrl,
             referenceUrl = command.refUrl
         )
@@ -113,6 +114,7 @@ class StudyService(
             newDescription = command.description ?: study.description,
             newCapacity = command.capacity ?: study.capacity,
             newBudget = command.budget ?: study.budget,
+            newBudgetExplain = command.budgetExplain ?: study.budgetExplain,
             newScheduleId = command.scheduleId,
             newChatUrl = command.chatUrl ?: study.externalChatUrl,
             newRefUrl = command.refUrl ?: study.referenceUrl,
