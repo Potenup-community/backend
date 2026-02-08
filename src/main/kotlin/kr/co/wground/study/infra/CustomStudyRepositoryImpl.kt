@@ -4,7 +4,7 @@ import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.common.SortType
 import kr.co.wground.study.application.dto.QStudyQueryDto
-import kr.co.wground.study.application.dto.StudyQueryDto
+import kr.co.wground.study.application.dto.StudyQueryResult
 import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.domain.QStudy.study
 import kr.co.wground.study_schedule.domain.QStudySchedule.studySchedule
@@ -22,7 +22,7 @@ class CustomStudyRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : CustomStudyRepository {
 
-    override fun searchStudies(condition: StudySearchCondition, pageable: Pageable, sortType: SortType): Slice<StudyQueryDto> {
+    override fun searchStudies(condition: StudySearchCondition, pageable: Pageable, sortType: SortType): Slice<StudyQueryResult> {
         val pageSize = pageable.pageSize
 
         val content = queryFactory

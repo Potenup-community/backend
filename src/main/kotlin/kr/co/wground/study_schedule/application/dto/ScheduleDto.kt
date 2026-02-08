@@ -1,6 +1,6 @@
 package kr.co.wground.study_schedule.application.dto
 
-import kr.co.wground.study.application.dto.StudyQueryDto
+import kr.co.wground.study.application.dto.StudyQueryResult
 import java.time.LocalDateTime
 
 data class ScheduleDto(
@@ -11,7 +11,7 @@ data class ScheduleDto(
     val studyEndDate: LocalDateTime,
 ){
     companion object {
-        fun from(dto: StudyQueryDto): ScheduleDto {
+        fun from(dto: StudyQueryResult): ScheduleDto {
             return ScheduleDto(
                 id = dto.schedule.id,
                 month = dto.schedule.months.month,

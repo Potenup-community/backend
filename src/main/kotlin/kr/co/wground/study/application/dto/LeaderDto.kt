@@ -11,7 +11,7 @@ data class LeaderDto(
     val profileImageUrl: String,
 ){
     companion object {
-        fun from(dto: StudyQueryDto): LeaderDto {
+        fun from(dto: StudyQueryResult): LeaderDto {
             return LeaderDto(
                 id = dto.leader.userId,
                 name = dto.leader.name,
