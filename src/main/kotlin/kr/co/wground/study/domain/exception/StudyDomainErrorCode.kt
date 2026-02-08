@@ -27,10 +27,10 @@ enum class StudyDomainErrorCode(
     STUDY_CAPACITY_TOO_BIG(HttpStatus.BAD_REQUEST, "SD-0010", "스터티의 최대 모집 정원이 너무 많습니다."),
     STUDY_TAG_COUNT_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0011","스터디 태그는 최대 ${Study.MAX_TAG_COUNT}개까지 가질수 있습니다."),
     STUDY_CANT_DELETE_STATUS_APPROVED(HttpStatus.BAD_REQUEST,"SD-0012","결재 상신된 스터디는 삭제할 수 없습니다."),
-    LEADER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST,"SD-0014","스터디장은 탈퇴할 수 없습니다."),
-    STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER(HttpStatus.CONFLICT, "SD-0016", "참여 인원 미달된 스터디는 승인할 수 없습니다."),
-    STUDY_BUDGET_EXPLAIN_INVALID(HttpStatus.BAD_REQUEST, "SD-0018", "지원 항목 설명이 유효하지 않습니다."),
-    ALREADY_APPLIED(HttpStatus.BAD_REQUEST,"SD-0019","이미 참여 중인 스터디입니다."),
-    NOT_PARTICIPATED_THAT_STUDY(HttpStatus.BAD_REQUEST, "SD-0020", "해당 스터디에 참여 중이지 않습니다."),
-    RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING(HttpStatus.CONFLICT,"SR-0021","스터디 상태가 PENDING 이 아닌 경우 신청을 취소할 수 없습니다.")
+    LEADER_CANNOT_LEAVE(HttpStatus.BAD_REQUEST,"SD-0013","스터디장은 탈퇴할 수 없습니다."),
+    STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER(HttpStatus.CONFLICT, "SD-0014", "참여 인원 미달된 스터디는 승인할 수 없습니다."),
+    STUDY_BUDGET_EXPLAIN_INVALID(HttpStatus.BAD_REQUEST, "SD-0015", "지원 항목 설명이 유효하지 않습니다."),
+    ALREADY_APPLIED(HttpStatus.BAD_REQUEST,"SD-0016","이미 참여 중인 스터디입니다."),
+    NOT_PARTICIPATED_THAT_STUDY(HttpStatus.BAD_REQUEST, "SD-0017", "해당 스터디에 참여 중이지 않습니다."),
+    RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING(HttpStatus.CONFLICT,"SD-0018","스터디 상태가 PENDING 이 아닌 경우 신청을 취소할 수 없습니다.")
 }
