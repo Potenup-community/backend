@@ -272,7 +272,7 @@ class StudyTest {
         assertEquals(StudyDomainErrorCode.STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER.code, thrown.code)
     }
 
-    // ----- 참여 인원 수 테스트 (스터디 신청과의 정합성 고려 x)
+    // ----- 참여 테스트
 
     @Test
     @DisplayName("APPROVED 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
@@ -302,19 +302,6 @@ class StudyTest {
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_CAPACITY_FULL.code, thrown.code)
-    }
-
-    @Test
-    @DisplayName("이미 모집 기간이 마감된 경우(스터디 상태가 CLOSED 일 때), 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
-    fun shouldThrowStudyAlreadyFinishToRecruit_whenIncreaseMemberAfterRecruitEnd() {
-        val thrown = assertThrows<BusinessException> {
-            val alreadyStartedSchedule = createAlreadyStartedStudySchedule()
-            val created = createStudyWithName(alreadyStartedSchedule, "유효한 이름")
-
-            created.participate(THE_OTHER_USER_ID)
-        }
-
-        assertEquals(StudyScheduleServiceErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT.code, thrown.code)
     }
 
     // ----- 수정 테스트
@@ -416,7 +403,6 @@ class StudyTest {
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
-            status = StudyStatus.PENDING
         )
     }
 
@@ -429,7 +415,6 @@ class StudyTest {
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
-            status = StudyStatus.PENDING
         )
     }
 
@@ -442,7 +427,6 @@ class StudyTest {
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
-            status = StudyStatus.PENDING
         )
     }
 
@@ -455,7 +439,6 @@ class StudyTest {
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
-            status = StudyStatus.PENDING
         )
     }
 
@@ -468,7 +451,6 @@ class StudyTest {
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
-            status = StudyStatus.PENDING,
             externalChatUrl = externalChatUrl
         )
     }
@@ -482,7 +464,6 @@ class StudyTest {
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
-            status = StudyStatus.PENDING,
             referenceUrl = referenceUrl
         )
     }

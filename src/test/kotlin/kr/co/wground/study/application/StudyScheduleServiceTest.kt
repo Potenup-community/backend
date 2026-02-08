@@ -314,7 +314,6 @@ class StudyScheduleServiceTest {
             trackId = savedTrack.trackId,
             scheduleId = savedSchedule.id,
             description = "스터디 설명",
-            status = StudyStatus.PENDING,
             capacity = 5,
             budget = BudgetType.MEAL,
             budgetExplain = "🍕🍕🍕",

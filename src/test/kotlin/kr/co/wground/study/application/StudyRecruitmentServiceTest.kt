@@ -2,7 +2,6 @@ package kr.co.wground.study.application
 
 import jakarta.persistence.EntityManager
 import java.time.LocalDate
-import java.time.LocalDateTime
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.application.dto.StudyCreateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
@@ -15,6 +14,7 @@ import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
+import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
 import kr.co.wground.study_schedule.infra.StudyScheduleRepository
 import kr.co.wground.track.domain.Track
 import kr.co.wground.track.infra.TrackRepository
@@ -26,11 +26,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
 import java.util.stream.Stream
@@ -78,7 +80,7 @@ class StudyRecruitmentServiceTest {
         )
     }
 
-    // ----- 신청 테스트
+    // ----- 참여 테스트
 
     // To Do: 조기 수료 가능한 지 아름님한테 물어볼 것
     @Test
@@ -114,7 +116,6 @@ class StudyRecruitmentServiceTest {
             trackId = savedTrack.trackId,
             scheduleId = savedSchedule.id,
             description = "졸업 트랙 스터디 설명",
-            status = StudyStatus.PENDING,
             capacity = 5,
             budget = BudgetType.MEAL,
             budgetExplain = "🍕🍕🍕",
@@ -197,7 +198,6 @@ class StudyRecruitmentServiceTest {
                 trackId = otherTrack.trackId,
                 scheduleId = otherTrackStudySchedule.id,
                 description = "타 트랙 스터디",
-                status = StudyStatus.PENDING,
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
@@ -228,10 +228,9 @@ class StudyRecruitmentServiceTest {
         assertEquals(StudyServiceErrorCode.TRACK_MISMATCH.code, thrown.code)
     }
 
-    @ParameterizedTest(name = "신청 상태: {0}")
-    @MethodSource("studyStatusCannotBeApplied")
-    @DisplayName("교육생이 신청 불가능한 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
-    fun shouldThrowStudyNotRecruiting_whenApplyToStudyCannotBeApplied(caseName: String, givenStudyStatus: StudyStatus, expectedErrorCode: String) {
+    @Test
+    @DisplayName("교육생이 CLOSED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    fun shouldThrowStudyNotRecruiting_whenApplyToClosedStudy() {
 
         /*
          * given
@@ -265,14 +264,13 @@ class StudyRecruitmentServiceTest {
                 trackId = track.trackId,
                 scheduleId = schedule.id,
                 description = "스터디 설명",
-                status = givenStudyStatus,
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
             )
         )
 
-        val user = userRepository.save(
+        val participant = userRepository.save(
             User(
                 trackId = track.trackId,
                 email = "student@gmail.com",
@@ -283,8 +281,31 @@ class StudyRecruitmentServiceTest {
                 status = UserStatus.ACTIVE
             )
         )
+        study.participate(participant.userId)
+
+        schedule.updateSchedule(
+            newMonths = null,
+            newRecruitStart = null,
+            newRecruitEnd = LocalDate.now().minusDays(1),
+            newStudyEnd = null
+        )
+        studyScheduleRepository.save(schedule)
+
+        study.close()
+        studyRepository.save(study)
 
         // when: 스터디 신청
+        val user = userRepository.save(
+            User(
+                trackId = track.trackId,
+                email = "late@gmail.com",
+                name = "교육생",
+                phoneNumber = "010-3333-3333",
+                provider = "GOOGLE",
+                role = UserRole.MEMBER,
+                status = UserStatus.ACTIVE
+            )
+        )
         val thrown = assertThrows<BusinessException> {
             studyRecruitmentService.participate(
                 userId = user.userId,
@@ -293,7 +314,97 @@ class StudyRecruitmentServiceTest {
         }
 
         // then: 예외 발생(STUDY_NOT_RECRUITING)
-        assertEquals(expectedErrorCode, thrown.code)
+        assertEquals(StudyScheduleServiceErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT.code, thrown.code)
+    }
+
+    @Test
+    @DisplayName("교육생이 APPROVED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    fun shouldThrowStudyNotRecruiting_whenApplyToApprovedStudy() {
+
+        /*
+         * given
+         * 1. ENROLLED 트랙
+         * 2. 모집 기간이 마감되기 전의 일정
+         * 3. givenStudyStatus 상태 스터디
+         * 4. 교육생
+         */
+        val today = LocalDate.now()
+        val track = trackRepository.save(
+            Track(
+                trackName = "테스트 트랙",
+                startDate = today.minusDays(10),
+                endDate = today.plusDays(30)
+            )
+        )
+        val schedule = studyScheduleRepository.save(
+            StudySchedule(
+                trackId = track.trackId,
+                months = Months.FIRST,
+                recruitStartDate = today.minusDays(1),
+                recruitEndDate = today.plusDays(1),
+                studyEndDate = today.plusDays(10)
+            )
+        )
+
+        val study = studyRepository.save(
+            Study.createNew(
+                name = "스터디 이름",
+                leaderId = 10L,
+                trackId = track.trackId,
+                scheduleId = schedule.id,
+                description = "스터디 설명",
+                capacity = 5,
+                budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
+            )
+        )
+
+        val participant = userRepository.save(
+            User(
+                trackId = track.trackId,
+                email = "student@gmail.com",
+                name = "교육생",
+                phoneNumber = "010-4444-4444",
+                provider = "GOOGLE",
+                role = UserRole.MEMBER,
+                status = UserStatus.ACTIVE
+            )
+        )
+        study.participate(participant.userId)
+
+        schedule.updateSchedule(
+            newMonths = null,
+            newRecruitStart = null,
+            newRecruitEnd = LocalDate.now().minusDays(1),
+            newStudyEnd = null
+        )
+        studyScheduleRepository.save(schedule)
+
+        study.close()
+        study.approve()
+        studyRepository.save(study)
+
+        // when: 스터디 신청
+        val user = userRepository.save(
+            User(
+                trackId = track.trackId,
+                email = "late@gmail.com",
+                name = "교육생",
+                phoneNumber = "010-3333-3333",
+                provider = "GOOGLE",
+                role = UserRole.MEMBER,
+                status = UserStatus.ACTIVE
+            )
+        )
+        val thrown = assertThrows<BusinessException> {
+            studyRecruitmentService.participate(
+                userId = user.userId,
+                studyId = study.id,
+            )
+        }
+
+        // then: 예외 발생(STUDY_NOT_RECRUITING)
+        assertEquals(StudyScheduleServiceErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT.code, thrown.code)
     }
 
     @Test
@@ -378,6 +489,99 @@ class StudyRecruitmentServiceTest {
         assertEquals(StudyDomainErrorCode.ALREADY_APPLIED.code, thrown.code)
     }
 
+    @Test
+    @DisplayName("이미 모집 기간이 마감된 경우(스터디 상태가 CLOSED 일 때), 참여 시, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    fun shouldThrowStudyAlreadyFinishToRecruit_whenIncreaseMemberAfterRecruitEnd() {
+
+        val thrown = assertThrows<BusinessException> {
+
+            val today = LocalDate.now()
+            val track = trackRepository.save(
+                Track(
+                    trackName = "테스트 트랙",
+                    startDate = today.minusDays(10),
+                    endDate = today.plusDays(30)
+                )
+            )
+            val schedule = studyScheduleRepository.save(
+                StudySchedule(
+                    trackId = track.trackId,
+                    months = Months.FIRST,
+                    recruitStartDate = today.minusDays(1),
+                    recruitEndDate = today.plusDays(1),
+                    studyEndDate = today.plusDays(10)
+                )
+            )
+
+            val leader = User(
+                trackId = track.trackId,
+                email = "test@gmail.com",
+                name = "스터디장",
+                phoneNumber = "010-5555-5555",
+                provider = "GOOGLE",
+                role = UserRole.MEMBER,
+                status = UserStatus.ACTIVE
+            )
+            val savedLeader = userRepository.save(leader)
+
+            val student1 = User(
+                trackId = track.trackId,
+                email = "student1@gmail.com",
+                name = "참가자",
+                phoneNumber = "010-4444-4444",
+                provider = "GOOGLE",
+                role = UserRole.MEMBER,
+                status = UserStatus.ACTIVE
+            )
+            val savedStudent1 = userRepository.save(student1)
+
+            val study = Study.createNew(
+                name = "삭제 테스트 스터디(PENDING)",
+                leaderId = leader.userId,
+                trackId = track.trackId,
+                scheduleId = schedule.id,
+                description = "삭제 테스트",
+                capacity = 5,
+                budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
+                externalChatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
+                referenceUrl = null,
+            )
+            study.participate(student1.userId)
+            study.close()
+            studyRepository.save(study)
+
+            entityManager.flush()
+            entityManager.clear()
+
+            val found = studyRepository.findByIdOrNull(study.id) ?: fail("알 수 없는 이유로 스터디가 생성되지 않았습니다.")
+
+            // then
+            val student2 = User(
+                trackId = track.trackId,
+                email = "student2@gmail.com",
+                name = "참가자",
+                phoneNumber = "010-4444-4444",
+                provider = "GOOGLE",
+                role = UserRole.MEMBER,
+                status = UserStatus.ACTIVE
+            )
+            val savedStudent2 = userRepository.save(student2)
+
+            //then
+            schedule.updateSchedule(
+                newMonths = null,
+                newRecruitStart = null,
+                newRecruitEnd = LocalDate.now().minusDays(1),
+                newStudyEnd = null
+            )
+            studyScheduleRepository.save(schedule)
+            studyRecruitmentService.participate(userId = student2.userId, studyId = found.id)
+        }
+
+        assertEquals(StudyScheduleServiceErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT.code, thrown.code)
+    }
+
     // ----- 참여 스터디 수 제한 테스트
 
     @Test
@@ -437,7 +641,6 @@ class StudyRecruitmentServiceTest {
                 trackId = track.trackId,
                 scheduleId = pastSchedule.id,
                 description = "과거 차수 참여",
-                status = StudyStatus.APPROVED,
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
@@ -588,7 +791,6 @@ class StudyRecruitmentServiceTest {
                 trackId = track.trackId,
                 scheduleId = schedule.id,
                 description = "스터디 설명",
-                status = StudyStatus.PENDING,
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",

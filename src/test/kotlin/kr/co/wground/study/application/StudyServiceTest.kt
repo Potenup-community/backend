@@ -15,6 +15,7 @@ import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
+import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
 import kr.co.wground.study_schedule.infra.StudyScheduleRepository
 import kr.co.wground.track.domain.Track
 import kr.co.wground.track.infra.TrackRepository
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
@@ -282,6 +284,8 @@ class StudyServiceTest {
     // ----- 결재 테스트
 
     // ----- 마감 테스트
+
+    // ----- 참여 테스트
 
     // To Do: 모집 마김 일자가 지나기 전에 마감 시도한 경우 예외 발생 - BusinessException(RECRUITMENT_NOT_ENDED_YET)
 
@@ -550,7 +554,6 @@ class StudyServiceTest {
             trackId = savedTrack.trackId,
             scheduleId = savedPastSchedule.id,
             description = "과거 차수 참여",
-            status = StudyStatus.PENDING,
             capacity = 5,
             budget = BudgetType.MEAL,
             budgetExplain = "🍕🍕🍕",
