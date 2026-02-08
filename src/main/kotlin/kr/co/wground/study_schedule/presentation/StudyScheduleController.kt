@@ -63,7 +63,8 @@ class StudyScheduleController(
 
         return ResponseEntity.ok().body(result)
     }
-
+    
+    // To Do: 아래 두 메서드를 합치는 것 고려
     @GetMapping("/my")
     override fun getMyTrackSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>{
         val result = studyScheduleService.getAllSchedulesByTrackOfTheUser(userId.value)
