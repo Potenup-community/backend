@@ -1,17 +1,16 @@
 package kr.co.wground.study.presentation.response.study
 
 import kr.co.wground.global.common.UserId
+import kr.co.wground.study.application.dto.ParticipantInfo
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.enums.BudgetType
 import kr.co.wground.study.domain.enums.StudyStatus
+import kr.co.wground.study_schedule.application.dto.ScheduleDto
 import java.time.LocalDateTime
 import kr.co.wground.study_schedule.domain.StudySchedule
 
 data class StudyDetailResponse(
     val id: Long,
-    val scheduleId: Long,
-    val scheduleName: String,
-    val leaderId: UserId,
     val name: String,
     val description: String,
     val capacity: Int,
@@ -26,14 +25,21 @@ data class StudyDetailResponse(
     val updatedAt: LocalDateTime,
     val isRecruitmentClosed: Boolean,
     val isLeader: Boolean,
+    val isParticipant: Boolean,  // leader 인 경우에도 true
+    val participants: List<ParticipantInfo>,  // 스터디 장 포함
+
+    val schedule: ScheduleDto,
+    val leader: ParticipantInfo,
 ) {
     companion object {
-        fun of(study: Study, canViewChatUrl: Boolean, schedule: StudySchedule, userId: UserId?): StudyDetailResponse {
+        fun of(
+            study: Study,
+            userId: UserId,
+            schedule: StudySchedule,
+            participants: List<ParticipantInfo>
+        ): StudyDetailResponse {
             return StudyDetailResponse(
                 id = study.id,
-                scheduleId = schedule.id,
-                scheduleName = schedule.months.month,
-                leaderId = study.leaderId,
                 name = study.name,
                 description = study.description,
                 capacity = study.capacity,
@@ -41,19 +47,18 @@ data class StudyDetailResponse(
                 status = study.status,
                 budget = study.budget,
                 budgetExplain = study.budgetExplain,
-                chatUrl = if (canViewChatUrl) study.externalChatUrl else null,
+                chatUrl = if (study.recruitments.any{ it.userId == userId }) study.externalChatUrl else null,
                 refUrl = study.referenceUrl,
                 tags = study.studyTags.map { it.tag.name },
                 createdAt = study.createdAt,
                 updatedAt = study.updatedAt,
                 isRecruitmentClosed = schedule.isRecruitmentClosed(),
-                isLeader = isStudyLeader(study.leaderId, userId)
+                isLeader = study.leaderId == userId,
+                isParticipant = study.recruitments.any { it.userId == userId },
+                participants = participants,
+                schedule = ScheduleDto.from(schedule),
+                leader = participants.first { it.id == study.leaderId },
             )
-        }
-
-        fun isStudyLeader(leaderId: UserId, userId: UserId?): Boolean {
-            if (userId == null) return false
-            return userId == leaderId
         }
     }
 }

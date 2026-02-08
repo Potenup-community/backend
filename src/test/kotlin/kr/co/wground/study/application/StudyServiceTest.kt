@@ -272,8 +272,7 @@ class StudyServiceTest {
                 budgetExplain = null,
                 chatUrl = null,
                 refUrl = null,
-                tags = updateTags,
-                scheduleId = schedule.id
+                tags = updateTags
             )
             studyService.updateStudy(command)
         }

@@ -2,7 +2,7 @@ package kr.co.wground.study.application
 
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.study.application.dto.LeaderDto
+import kr.co.wground.study.application.dto.ParticipantInfo
 import kr.co.wground.study_schedule.application.dto.ScheduleDto
 import kr.co.wground.study.application.dto.StudyCreateCommand
 import kr.co.wground.study.application.dto.StudySearchDto
@@ -10,12 +10,11 @@ import kr.co.wground.study.application.dto.StudyUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.Tag
-import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.TagRepository
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
-import kr.co.wground.study.presentation.response.study.StudyQueryResponse
+import kr.co.wground.study.presentation.response.study.StudySearchResponse
 import kr.co.wground.study_schedule.application.StudyScheduleService
 import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
 import kr.co.wground.track.domain.constant.TrackStatus
@@ -98,7 +97,7 @@ class StudyService(
         val study = findStudyEntityOrThrows(command.studyId)
         
         // 스케쥴이 없으면 예외 발생함
-        studyScheduleService.getScheduleById(command.scheduleId)
+        studyScheduleService.getScheduleById(study.scheduleId)
 
         if (!study.isLeader(command.userId)) {
             throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
@@ -154,44 +153,53 @@ class StudyService(
     @Transactional(readOnly = true)
     fun searchStudies(
         condition: StudySearchDto
-    ): Slice<StudyQueryResponse> {
+    ): Slice<StudySearchResponse> {
         val userId = condition.userId
         val result = studyRepository.searchStudies(condition.condition, condition.pageable, condition.sortType)
-        val studyIds = result.content.map { it.study.id }
 
-        val joinedStudyIds = studyRecruitmentRepository.findAllByUserIdAndStudyIds(userId, studyIds).toSet()
+        return result.map { result ->
+            val leaderInfo = ParticipantInfo(
+                result.leader.userId,
+                result.leader.name,
+                result.track.trackId,
+                result.track.trackName,
+                result.study.recruitments.first{ it.userId == result.leader.userId }.createdAt,
+                result.leader.accessProfile()
+            )
 
-        return result.map { dto ->
-            val leaderDto = LeaderDto.from(dto)
-            val scheduleDto = ScheduleDto.from(dto)
-
-            val isJoined = joinedStudyIds.contains(dto.study.id)
-            val canViewChatUrl = (userId == dto.study.leaderId) || isJoined
-            val isRecruitmentClosed = dto.schedule.isRecruitmentClosed()
-
-            StudyQueryResponse.of(
-                study = dto.study,
-                canViewChatUrl = canViewChatUrl,
-                schedule = scheduleDto,
+            StudySearchResponse.of(
+                study = result.study,
                 userId = userId,
-                leaderDto = leaderDto,
-                isRecruitmentClosed = isRecruitmentClosed
+                leaderInfo = leaderInfo,
             )
         }
     }
 
     @Transactional(readOnly = true)
-    fun getStudy(studyId: Long, userId: Long?): StudyDetailResponse {
+    fun getStudy(studyId: Long, userId: Long): StudyDetailResponse {
         val study = findStudyEntityOrThrows(studyId)
         val schedule = studyScheduleService.getScheduleById(study.scheduleId)
+        val track = trackRepository.findByIdOrNull(study.trackId)
+            ?: throw BusinessException(StudyServiceErrorCode.TRACK_NOT_FOUND)
 
-        // 채팅 링크 마스킹 로직
-        val canViewChatUrl = if (userId == null) false else {
-            study.leaderId == userId // 스터디장이거나
-            || studyRecruitmentRepository.existsByStudyIdAndUserId(studyId, userId) // 참여자거나
-        }
+        val participants = userRepository.findByUserIdIn(study.recruitments.map { it.userId })
+        val participantInfoList = participants.map {
+                ParticipantInfo(
+                    id = it.userId,
+                    name = it.name,
+                    trackId = track.trackId,
+                    trackName = track.trackName,
+                    joinedAt = study.recruitments.first{ it.userId == it.userId }.createdAt,
+                    profileImageUrl = it.accessProfile()
+                )
+            }
 
-        return StudyDetailResponse.of(study, canViewChatUrl, schedule, userId)
+        return StudyDetailResponse.of(
+            study = study,
+            userId = userId,
+            schedule = schedule,
+            participants = participantInfoList
+        )
     }
 
     // ----- helpers

@@ -11,7 +11,6 @@ data class StudyUpdateCommand(
     val capacity: Int?,
     val budget: BudgetType?,
     val budgetExplain: String?,
-    val scheduleId: Long,
     val chatUrl: String?,
     val refUrl: String?,
     val tags: List<String>? = emptyList()

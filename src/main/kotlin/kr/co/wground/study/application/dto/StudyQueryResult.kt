@@ -6,9 +6,8 @@ import kr.co.wground.study_schedule.domain.StudySchedule
 import kr.co.wground.track.domain.Track
 import kr.co.wground.user.domain.User
 
-data class StudyQueryDto @QueryProjection constructor(
+data class StudyQueryResult @QueryProjection constructor(
     val study: Study,
-    val schedule: StudySchedule,
     val leader: User,
     val track: Track
 )
