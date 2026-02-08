@@ -81,7 +81,6 @@ class StudyService(
             trackId = track.trackId,
             scheduleId = scheduleEntity.id,
             description = command.description,
-            status = StudyStatus.PENDING,
             capacity = command.capacity,
             budget = command.budget,
             budgetExplain = command.budgetExplain,
