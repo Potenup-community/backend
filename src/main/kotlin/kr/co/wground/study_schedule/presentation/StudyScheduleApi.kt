@@ -1,12 +1,14 @@
 package kr.co.wground.study_schedule.presentation
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.docs.StudySwaggerErrorExample
@@ -21,6 +23,7 @@ import kr.co.wground.user.docs.UserSwaggerErrorExample
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 
 @Tag(name = "Study Schedule", description = "스터디 일정(차수) 관리 API (Admin)")
 interface StudyScheduleApi {
@@ -179,6 +182,37 @@ interface StudyScheduleApi {
         ]
     )
     fun deleteSchedule(@PathVariable id: Long): ResponseEntity<Unit>
+
+    @Operation(
+        summary = "관리자 용 스터디 일정 조회(trackIds)",
+        description = "제시된 trackIds 에 해당하는 모든 일정을 반환, trackIds 가 비어있는 경우 현재 ENROLLED 상태인 과정의 모든 일정을 반환"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200",
+                description = "조회 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(
+                            type = "object",
+                            description = "key=trackId(JSON object key는 string), value=ScheduleQueryResponse[]",
+                            additionalProperties = Schema.AdditionalPropertiesValue.USE_ADDITIONAL_PROPERTIES_ANNOTATION
+                        ),
+                        additionalPropertiesArraySchema = ArraySchema(
+                            schema = Schema(implementation = ScheduleQueryResponse::class)
+                        ),
+                        examples = [ExampleObject(value = StudySwaggerResponseExample.SCHEDULE_OF_TRACK_IDS)]
+                    )
+                ]
+            )
+        ]
+    )
+    fun getSchedules(
+        userId: CurrentUserId,
+        @RequestParam trackIds: List<TrackId>
+    ): ResponseEntity<Map<TrackId, List<ScheduleQueryResponse>>>
 
     @Operation(summary = "스터디 일정 조회", description = "해당 유저가 속한 트랙의 스터디 일정(차수)을 조회")
     @ApiResponses(
