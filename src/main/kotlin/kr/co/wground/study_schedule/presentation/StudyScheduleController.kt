@@ -64,13 +64,13 @@ class StudyScheduleController(
         return ResponseEntity.ok().body(result)
     }
 
-    @GetMapping
+    @GetMapping("/my")
     override fun getMyTrackSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>{
         val result = studyScheduleService.getAllSchedulesByTrackOfTheUser(userId.value)
         return ResponseEntity.ok().body(ScheduleListResponse(result))
     }
 
-    @GetMapping("/me")
+    @GetMapping("/my/current")
     override fun getMyTrackCurrentSchedule(userId: CurrentUserId): ResponseEntity<ScheduleQueryResponse>{
         val result = studyScheduleService.getCurrentScheduleByUserId(userId.value)
         return ResponseEntity.ok().body(result)
