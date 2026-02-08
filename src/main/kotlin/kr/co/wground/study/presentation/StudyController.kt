@@ -46,15 +46,6 @@ class StudyController(
         return ResponseEntity.status(HttpStatus.CREATED).body(StudyIdResponse(studyId))
     }
 
-    @GetMapping("/{studyId}")
-    override fun getStudy(
-        userId: CurrentUserId,
-        @PathVariable studyId: Long
-    ): ResponseEntity<StudyDetailResponse> {
-        val response = studyService.getStudy(studyId, userId.value)
-        return ResponseEntity.ok(response)
-    }
-
     @PatchMapping("/{studyId}")
     override fun updateStudy(
         userId: CurrentUserId,
@@ -87,6 +78,15 @@ class StudyController(
     ): ResponseEntity<Unit> {
         studyService.approveStudy(studyId)
         return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/{studyId}")
+    override fun getStudy(
+        userId: CurrentUserId,
+        @PathVariable studyId: Long
+    ): ResponseEntity<StudyDetailResponse> {
+        val response = studyService.getStudy(studyId, userId.value)
+        return ResponseEntity.ok(response)
     }
 
     @GetMapping
