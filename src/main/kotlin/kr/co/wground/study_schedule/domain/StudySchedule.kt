@@ -1,4 +1,4 @@
-package kr.co.wground.study.domain
+package kr.co.wground.study_schedule.domain
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -9,13 +9,14 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import java.time.LocalDate
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
-import kr.co.wground.study.domain.constant.Months
+import kr.co.wground.study_schedule.domain.enums.Months
+import kr.co.wground.study.domain.exception.StudyDomainErrorCode
+import kr.co.wground.study_schedule.domain.exception.StudyScheduleDomainErrorCode
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import kr.co.wground.exception.BusinessException
-import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 
 @Entity
 @Table(
@@ -105,16 +106,16 @@ class StudySchedule(
         studyEnd: LocalDateTime
     ) {
         if (!recruitStart.isBefore(recruitEnd)) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_START_AFTER_END_DATE)
+            throw BusinessException(StudyScheduleDomainErrorCode.STUDY_CANT_START_AFTER_END_DATE)
         }
         if (!recruitEnd.isBefore(studyEnd)) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE)
+            throw BusinessException(StudyScheduleDomainErrorCode.STUDY_RECRUIT_COMPLETE_BEFORE_END_DATE)
         }
     }
 
     fun validateTrackId(trackId: TrackId) {
         if (!this.trackId.equals(trackId)) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_SCHEDULE_IS_NOT_IN_TRACK)
+            throw BusinessException(StudyScheduleDomainErrorCode.STUDY_SCHEDULE_IS_NOT_IN_TRACK)
         }
     }
 

@@ -1,7 +1,7 @@
-package kr.co.wground.study.presentation.response.schedule
+package kr.co.wground.study_schedule.presentation.response
 
 import kr.co.wground.global.common.TrackId
-import kr.co.wground.study.domain.constant.Months
+import kr.co.wground.study_schedule.domain.enums.Months
 
 data class ScheduleUpdateResponse(
     val id: Long,

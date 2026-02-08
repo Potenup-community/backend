@@ -2,7 +2,7 @@ package kr.co.wground.study.presentation.response.study
 
 import java.time.LocalDateTime
 import kr.co.wground.study.domain.Study
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study.domain.enums.StudyStatus
 
 @Deprecated(message = "사용 안 하는듯?")
 data class StudySearchResponse(
@@ -22,7 +22,7 @@ data class StudySearchResponse(
                 name = study.name,
                 description = study.description,
                 capacity = study.capacity,
-                currentMemberCount = study.currentMemberCount,
+                currentMemberCount = study.recruitments.size,
                 status = study.status,
                 tags = study.studyTags.map { it.tag.name },
                 createdAt = study.createdAt

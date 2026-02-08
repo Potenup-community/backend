@@ -53,7 +53,7 @@ object StudySwaggerResponseExample {
                "currentMemberCount": 3,
                "status": "PENDING",
                "budget": "BOOK",
-               "budgetExplain": "피자먹을래요",
+               "budgetExplain": "오브젝트",
                "chatUrl": null,
                "refUrl": "https://github.com/...",
                "tags": [
