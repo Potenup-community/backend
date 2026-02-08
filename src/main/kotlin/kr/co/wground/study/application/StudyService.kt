@@ -181,15 +181,13 @@ class StudyService(
     }
 
     @Transactional(readOnly = true)
-    fun getStudy(studyId: Long, userId: Long?): StudyDetailResponse {
+    fun getStudy(studyId: Long, userId: Long): StudyDetailResponse {
         val study = findStudyEntityOrThrows(studyId)
         val schedule = studyScheduleService.getScheduleById(study.scheduleId)
 
         // 채팅 링크 마스킹 로직
-        val canViewChatUrl = if (userId == null) false else {
-            study.leaderId == userId // 스터디장이거나
-            || studyRecruitmentRepository.existsByStudyIdAndUserId(studyId, userId) // 참여자거나
-        }
+        val canViewChatUrl = study.leaderId == userId
+                || studyRecruitmentRepository.existsByStudyIdAndUserId(studyId, userId)
 
         return StudyDetailResponse.of(study, canViewChatUrl, schedule, userId)
     }
