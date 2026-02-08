@@ -19,6 +19,5 @@ enum class StudyScheduleServiceErrorCode(
     INVALID_SCHEDULE_PARAMETER(HttpStatus.BAD_REQUEST,"SS-0011","스케줄 입력 값이 유효하지 않습니다."),
     RECRUIT_DUE_IS_OVER(HttpStatus.BAD_REQUEST, "SS-0012", "현재 스터디 모집 기간이 종료되었습니다."),
 
-    STUDY_ALREADY_FINISH_TO_RECRUIT(HttpStatus.BAD_REQUEST,"SD-0013","해당 스터디의 모집기한이 이미 지났습니다."),
-    STUDY_CANNOT_MODIFY_AFTER_DEADLINE(HttpStatus.BAD_REQUEST,"SD-0015","모집 마감 상태에서 수정할 수 없는 항목입니다."),
+    STUDY_ALREADY_FINISH_TO_RECRUIT(HttpStatus.BAD_REQUEST,"SD-0013","해당 스터디의 모집기한이 이미 지났습니다.")
 }
