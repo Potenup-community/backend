@@ -12,7 +12,6 @@ import jakarta.persistence.OneToMany
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
-import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.enums.BudgetType
 import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
@@ -111,7 +110,6 @@ class Study private constructor(
             trackId: TrackId,
             scheduleId: Long,
             description: String,
-            status: StudyStatus,
             capacity: Int = RECOMMENDED_MAX_CAPACITY,
             budget: BudgetType,
             budgetExplain: String,
@@ -124,7 +122,7 @@ class Study private constructor(
                 trackId = trackId,
                 scheduleId = scheduleId,
                 description = description,
-                status = status,
+                status = StudyStatus.PENDING,
                 capacity = capacity,
                 budget = budget,
                 budgetExplain = budgetExplain,
