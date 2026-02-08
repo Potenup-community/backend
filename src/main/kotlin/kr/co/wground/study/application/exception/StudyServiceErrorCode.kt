@@ -1,6 +1,7 @@
 package kr.co.wground.study.application.exception
 
 import kr.co.wground.exception.ErrorCode
+import kr.co.wground.study.application.RecruitValidator
 import org.springframework.http.HttpStatus
 
 enum class StudyServiceErrorCode(
@@ -24,7 +25,7 @@ enum class StudyServiceErrorCode(
 
     //Study
     STUDY_NOT_FOUND(HttpStatus.NOT_FOUND,"SD-0015","해당 스터디를 찾을수 없습니다."),
-    MAX_STUDY_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0016","스터디는 최대 2개까지 가입 가능합니다."),
+    MAX_STUDY_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0016","스터디는 최대 ${RecruitValidator.MAX_STUDY_CAN_ENROLLED}개까지 가입 가능합니다."),
     NOT_STUDY_LEADER(HttpStatus.FORBIDDEN,"SD-0017","스터디장만 사용할 수 있습니다."),
     ONLY_ADMIN_AND_LEADER_COULD_DELETE_STUDY(HttpStatus.UNAUTHORIZED, "SD-0018", "삭제 권한이 없습니다."),
 

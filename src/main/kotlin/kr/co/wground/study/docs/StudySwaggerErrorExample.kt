@@ -1,5 +1,7 @@
 package kr.co.wground.study.docs
 
+import kr.co.wground.study.application.RecruitValidator
+
 object StudySwaggerErrorExample {
     object Study {
         const val STUDY_NOT_RECRUITING = """{
@@ -64,7 +66,7 @@ object StudySwaggerErrorExample {
         }"""
         const val STUDY_TAG_COUNT_EXCEEDED = """{
             "code": "SD-0011",
-            "message": "스터디 태그는 최대 5개까지 가질수 있습니다.",
+            "message": "스터디 태그는 최대 ${kr.co.wground.study.domain.Study.MAX_TAG_COUNT}개까지 가질수 있습니다.",
             "status": 400,
             "errors": []
         }"""
@@ -100,7 +102,7 @@ object StudySwaggerErrorExample {
         }"""
         const val MAX_STUDY_EXCEEDED = """{
             "code": "SD-0016",
-            "message": "스터디는 최대 2개까지 가입 가능합니다.",
+            "message": "스터디는 최대 ${RecruitValidator.MAX_STUDY_CAN_ENROLLED}개까지 가입 가능합니다.",
             "status": 400,
             "errors": []
         }"""
