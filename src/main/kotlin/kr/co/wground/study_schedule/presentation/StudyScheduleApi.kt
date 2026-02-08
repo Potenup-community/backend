@@ -209,7 +209,7 @@ interface StudyScheduleApi {
             ),
         ]
     )
-    fun getSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>
+    fun getMyTrackSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>
 
     @Operation(summary = "내 과정에서 현재 진행중인 스터디 일정 조회", description = "해당 유저가 속한 트랙의 스터디 일정(차수)을 조회")
     @ApiResponses(
@@ -236,5 +236,5 @@ interface StudyScheduleApi {
             ),
         ]
     )
-    fun getCurrentSchedule(userId: CurrentUserId): ResponseEntity<ScheduleQueryResponse>
+    fun getMyTrackCurrentSchedule(userId: CurrentUserId): ResponseEntity<ScheduleQueryResponse>
 }

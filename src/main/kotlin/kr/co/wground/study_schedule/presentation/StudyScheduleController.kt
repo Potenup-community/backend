@@ -47,15 +47,16 @@ class StudyScheduleController(
     }
 
     // To Do: 관리자 트랙 조회 api 필요(트랙으로 필터링 가능해야 함)
+    // 스웨거도 잊지 말 것
 
     @GetMapping
-    override fun getSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>{
-        val result = studyScheduleService.getSchedulesByUserId(userId.value)
+    override fun getMyTrackSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>{
+        val result = studyScheduleService.getAllSchedulesByTrackOfTheUser(userId.value)
         return ResponseEntity.ok().body(ScheduleListResponse(result))
     }
 
     @GetMapping("/me")
-    override fun getCurrentSchedule(userId: CurrentUserId): ResponseEntity<ScheduleQueryResponse>{
+    override fun getMyTrackCurrentSchedule(userId: CurrentUserId): ResponseEntity<ScheduleQueryResponse>{
         val result = studyScheduleService.getCurrentScheduleByUserId(userId.value)
         return ResponseEntity.ok().body(result)
     }

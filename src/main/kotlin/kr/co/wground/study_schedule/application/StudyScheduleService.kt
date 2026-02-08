@@ -125,7 +125,7 @@ class StudyScheduleService(
     }
 
     @Transactional(readOnly = true)
-    fun getSchedulesByUserId(userId: UserId): List<QueryStudyScheduleDto> {
+    fun getAllSchedulesByTrackOfTheUser(userId: UserId): List<QueryStudyScheduleDto> {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
