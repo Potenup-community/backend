@@ -9,6 +9,7 @@ data class StudyCreateCommand(
     val description: String,
     val capacity: Int,
     val budget: BudgetType,
+    val budgetExplain: String,
     val chatUrl: String,
     val refUrl: String?,
     val tags: List<String> = emptyList()

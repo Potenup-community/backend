@@ -101,9 +101,10 @@ class StudyServiceTest {
             description = "스터디 설명",
             capacity = 5,
             budget = BudgetType.MEAL,
+            budgetExplain = "🍕🍕🍕",
             chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
             refUrl = null,
-            tags = emptyList()
+            tags = emptyList(),
         )
         val studyId = studyService.createStudy(command)
 
@@ -155,6 +156,7 @@ class StudyServiceTest {
                 description = "졸업생 스터디 설명",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -204,6 +206,7 @@ class StudyServiceTest {
                 description = "태그 초과 생성 테스트",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = tags
@@ -246,6 +249,7 @@ class StudyServiceTest {
             description = "태그 수정 테스트",
             capacity = 5,
             budget = BudgetType.MEAL,
+            budgetExplain = "🍕🍕🍕",
             chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
             refUrl = null,
             tags = listOf("tag1", "tag2")
@@ -264,6 +268,7 @@ class StudyServiceTest {
                 description = null,
                 capacity = null,
                 budget = null,
+                budgetExplain = null,
                 chatUrl = null,
                 refUrl = null,
                 tags = updateTags,
@@ -311,6 +316,7 @@ class StudyServiceTest {
                 description = "삭제 테스트",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -375,6 +381,7 @@ class StudyServiceTest {
                 description = "삭제 테스트",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -449,6 +456,7 @@ class StudyServiceTest {
                 description = "삭제 테스트",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -533,7 +541,8 @@ class StudyServiceTest {
             description = "과거 차수 참여",
             status = StudyStatus.PENDING,
             capacity = 5,
-            budget = BudgetType.MEAL
+            budget = BudgetType.MEAL,
+            budgetExplain = "🍕🍕🍕",
         )
         val savedPastStudy = studyRepository.save(pastStudy)
         val pastRecruitment = StudyRecruitment(
@@ -561,6 +570,7 @@ class StudyServiceTest {
                 description = "현재 차수 스터디1",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -585,6 +595,7 @@ class StudyServiceTest {
                 description = "현재 차수 스터디2",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -615,6 +626,7 @@ class StudyServiceTest {
                 description = "추가 스터디",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()

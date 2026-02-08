@@ -21,6 +21,8 @@ data class StudyUpdateRequest(
 
     val budget: BudgetType,
 
+    val budgetExplain: String,
+
     val scheduleId: Long,
 
     val chatUrl: String,
@@ -38,6 +40,7 @@ data class StudyUpdateRequest(
             description = description,
             capacity = capacity,
             budget = budget,
+            budgetExplain = budgetExplain,
             scheduleId = scheduleId,
             chatUrl = chatUrl,
             refUrl = refUrl,

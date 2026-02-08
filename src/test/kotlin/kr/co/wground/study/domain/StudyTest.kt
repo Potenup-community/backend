@@ -57,6 +57,19 @@ class StudyTest {
             Arguments.of("too short(${Study.MIN_DESCRIPTION_LENGTH}자 미만; mixed)", " \t1\n "),
             Arguments.of("too long(${Study.MAX_DESCRIPTION_LENGTH}자 초과)", " \t" + "*".repeat(Study.MAX_DESCRIPTION_LENGTH + 1) + "\n ")
         )
+
+        @JvmStatic
+        fun invalidBudgetExplains(): Stream<Arguments> = Stream.of(
+            Arguments.of("empty", ""),
+            Arguments.of("blank(space)", " "),
+            Arguments.of("blank(tab)", "\t"),
+            Arguments.of("blank(newline)", "\n"),
+            Arguments.of("blank(mixed)", " \t \n "),
+            Arguments.of("too short(${Study.MIN_BUDGET_EXPLAIN_LENGTH}자 미만)", "1".repeat(Study.MIN_BUDGET_EXPLAIN_LENGTH - 1)),
+            Arguments.of("too short(${Study.MIN_BUDGET_EXPLAIN_LENGTH}자 미만; trimmed)", " 1 "),
+            Arguments.of("too short(${Study.MIN_BUDGET_EXPLAIN_LENGTH}자 미만; mixed)", " \t1\n "),
+            Arguments.of("too long(${Study.MAX_BUDGET_EXPLAIN_LENGTH}자 초과)", " \t" + "1".repeat(Study.MAX_BUDGET_EXPLAIN_LENGTH + 1) + "\n ")
+        )
     }
 
     // ----- 정원 수
@@ -146,6 +159,34 @@ class StudyTest {
         }
 
         assertEquals(StudyDomainErrorCode.STUDY_DESCRIPTION_INVALID.code, thrown.code)
+    }
+
+    // ----- 지원 항목 설명
+
+    @ParameterizedTest(name = "희망 지원 항목 설명: {0}")
+    @MethodSource("invalidBudgetExplains")
+    @DisplayName("스터디 생성 시, 앞뒤 공백 제거 기준, 희망 지원 항목 설명이 유효하지 않은 경우, 예외 발생 - BusinessException(STUDY_BUDGET_EXPLAIN_INVALID)")
+    fun shouldThrowStudyBudgetExplainInvalid_whenCreateStudyWithInvalidBudgetExplain(caseName: String, givenBudgetExplain: String) {
+        val thrown = assertThrows<BusinessException> {
+            createStudyWithBudgetExplain(createRecruitingStudySchedule(), givenBudgetExplain)
+        }
+
+        assertEquals(StudyDomainErrorCode.STUDY_BUDGET_EXPLAIN_INVALID.code, thrown.code)
+    }
+
+    @ParameterizedTest(name = "희망 지원 항목 설명: {0}")
+    @MethodSource("invalidBudgetExplains")
+    @DisplayName("스터디 수정 시, 앞뒤 공백 제거 기준, 희망 지원 항목 설명이 유효하지 않은 경우, 예외 발생 - BusinessException(STUDY_BUDGET_EXPLAIN_INVALID)")
+    fun shouldThrowStudyBudgetExplainInvalid_whenUpdateStudyWithInvalidBudgetExplain(caseName: String, givenBudgetExplain: String) {
+        val thrown = assertThrows<BusinessException> {
+            val schedule = createRecruitingStudySchedule()
+            val created = createStudyWithBudgetExplain(schedule, "피자먹을래요")
+
+            updateStudyBudgetExplain(
+                created, givenBudgetExplain, schedule.isRecruitmentClosed())
+        }
+
+        assertEquals(StudyDomainErrorCode.STUDY_BUDGET_EXPLAIN_INVALID.code, thrown.code)
     }
 
     // ----- 채팅 방 링크
@@ -323,6 +364,7 @@ class StudyTest {
         val newName = created.name + "a"
         val newDescription = created.description + "a"
         val newBudget = if (created.budget == BudgetType.BOOK) BudgetType.MEAL else BudgetType.BOOK
+        val newBudgetExplain = if (newBudget == BudgetType.BOOK) "오브젝트" else "피자"
         val newChatUrl = created.externalChatUrl + "a"
         val newRefUrl =
             if (created.referenceUrl == null) "https://tecoble.techcourse.co.kr/" else created.referenceUrl + "a"
@@ -338,10 +380,10 @@ class StudyTest {
             newName = newName,
             newDescription = newDescription,
             newBudget = newBudget,
+            newBudgetExplain = newBudgetExplain,
             newChatUrl = newChatUrl,
             newRefUrl = newRefUrl,
             newTags = newTags,
-
             newScheduleId = created.scheduleId,
             isRecruitmentClosed = schedule.isRecruitmentClosed(),
         )
@@ -353,6 +395,7 @@ class StudyTest {
             { assertEquals(newCapacity, created.capacity) },
             { assertEquals(newName, created.name) },
             { assertEquals(newDescription, created.description) },
+            { assertEquals(newDescription, created.budgetExplain) },
             { assertEquals(newBudget, created.budget) },
             { assertEquals(newChatUrl, created.externalChatUrl) },
             { assertEquals(newRefUrl, created.referenceUrl) },
@@ -389,6 +432,7 @@ class StudyTest {
             budget = BudgetType.BOOK,
             name = "스터디 제목",
             description = "스터디 소개글",
+            budgetExplain = "피자먹을래요",
             leaderId = 1L,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -401,6 +445,7 @@ class StudyTest {
             budget = BudgetType.BOOK,
             name = name,
             description = "스터디 소개글",
+            budgetExplain = "피자먹을래요",
             leaderId = 1L,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -413,6 +458,20 @@ class StudyTest {
             budget = BudgetType.BOOK,
             name = "유효한 제목",
             description = description,
+            budgetExplain = "피자먹을래요",
+            leaderId = 1L,
+            trackId = 3L,
+            scheduleId = schedule.id,
+            status = StudyStatus.PENDING
+        )
+    }
+
+    private fun createStudyWithBudgetExplain(schedule: StudySchedule, budgetExplain: String): Study {
+        return Study(
+            budget = BudgetType.BOOK,
+            name = "유효한 제목",
+            description = "스터디 소개글",
+            budgetExplain = budgetExplain,
             leaderId = 1L,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -425,6 +484,7 @@ class StudyTest {
             budget = BudgetType.BOOK,
             name = "유효한 제목",
             description = "유효한 소개글",
+            budgetExplain = "피자먹을래요",
             leaderId = 1L,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -438,6 +498,7 @@ class StudyTest {
             budget = BudgetType.BOOK,
             name = "유효한 제목",
             description = "유효한 소개글",
+            budgetExplain = "피자먹을래요",
             leaderId = 1L,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -454,6 +515,7 @@ class StudyTest {
             newName = study.name,
             newDescription = study.description,
             newBudget = study.budget,
+            newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
             newTags = NOT_GONNA_CHANGE,
@@ -468,6 +530,7 @@ class StudyTest {
             newName = name,
             newDescription = study.description,
             newBudget = study.budget,
+            newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
             newTags = NOT_GONNA_CHANGE,
@@ -482,6 +545,22 @@ class StudyTest {
             newName = study.name,
             newDescription = description,
             newBudget = study.budget,
+            newBudgetExplain = study.budgetExplain,
+            newChatUrl = study.externalChatUrl,
+            newRefUrl = study.referenceUrl,
+            newTags = NOT_GONNA_CHANGE,
+            newScheduleId = study.scheduleId,
+            isRecruitmentClosed = isRecruitmentClosed
+        )
+    }
+
+    private fun updateStudyBudgetExplain(study: Study, budgetExplain: String, isRecruitmentClosed: Boolean) {
+        return study.updateStudyInfo(
+            newCapacity = study.capacity,
+            newName = study.name,
+            newDescription = study.description,
+            newBudget = study.budget,
+            newBudgetExplain = budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
             newTags = NOT_GONNA_CHANGE,
@@ -496,6 +575,7 @@ class StudyTest {
             newName = study.name,
             newDescription = study.description,
             newBudget = study.budget,
+            newBudgetExplain = study.budgetExplain,
             newChatUrl = externalChatUrl,
             newRefUrl = study.referenceUrl,
             newTags = NOT_GONNA_CHANGE,
@@ -510,6 +590,7 @@ class StudyTest {
             newName = study.name,
             newDescription = study.description,
             newBudget = study.budget,
+            newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = referenceUrl,
             newTags = NOT_GONNA_CHANGE,

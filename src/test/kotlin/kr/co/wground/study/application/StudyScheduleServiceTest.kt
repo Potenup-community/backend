@@ -315,7 +315,8 @@ class StudyScheduleServiceTest {
             description = "스터디 설명",
             status = StudyStatus.PENDING,
             capacity = 5,
-            budget = BudgetType.MEAL
+            budget = BudgetType.MEAL,
+            budgetExplain = "🍕🍕🍕",
         )
         studyRepository.save(study)
 

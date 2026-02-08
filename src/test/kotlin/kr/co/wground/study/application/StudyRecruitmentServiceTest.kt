@@ -116,7 +116,8 @@ class StudyRecruitmentServiceTest {
             description = "졸업 트랙 스터디 설명",
             status = StudyStatus.PENDING,
             capacity = 5,
-            budget = BudgetType.MEAL
+            budget = BudgetType.MEAL,
+            budgetExplain = "🍕🍕🍕",
         )
         val savedStudy = studyRepository.save(study)
 
@@ -198,7 +199,8 @@ class StudyRecruitmentServiceTest {
                 description = "타 트랙 스터디",
                 status = StudyStatus.PENDING,
                 capacity = 5,
-                budget = BudgetType.MEAL
+                budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
             )
         )
 
@@ -265,7 +267,8 @@ class StudyRecruitmentServiceTest {
                 description = "스터디 설명",
                 status = givenStudyStatus,
                 capacity = 5,
-                budget = BudgetType.MEAL
+                budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
             )
         )
 
@@ -339,6 +342,7 @@ class StudyRecruitmentServiceTest {
                 description = "승인 중복 신청 스터디",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -435,7 +439,8 @@ class StudyRecruitmentServiceTest {
                 description = "과거 차수 참여",
                 status = StudyStatus.APPROVED,
                 capacity = 5,
-                budget = BudgetType.MEAL
+                budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
             )
         )
         studyRecruitmentRepository.save(
@@ -486,6 +491,7 @@ class StudyRecruitmentServiceTest {
                 description = "현재 차수 스터디1",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -498,9 +504,10 @@ class StudyRecruitmentServiceTest {
                 description = "현재 차수 스터디2",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
-                tags = emptyList()
+                tags = emptyList(),
             )
         )
         val studyId3 = studyService.createStudy(
@@ -510,6 +517,7 @@ class StudyRecruitmentServiceTest {
                 description = "현재 차수 스터디3",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -582,7 +590,8 @@ class StudyRecruitmentServiceTest {
                 description = "스터디 설명",
                 status = StudyStatus.PENDING,
                 capacity = 5,
-                budget = BudgetType.MEAL
+                budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
             )
         )
 
@@ -661,6 +670,7 @@ class StudyRecruitmentServiceTest {
                 description = "리더 취소 테스트 스터디",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
@@ -746,6 +756,7 @@ class StudyRecruitmentServiceTest {
                 description = "승인 카운트 스터디",
                 capacity = 5,
                 budget = BudgetType.MEAL,
+                budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
                 tags = emptyList()
