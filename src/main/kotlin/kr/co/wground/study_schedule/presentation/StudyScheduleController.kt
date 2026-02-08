@@ -48,13 +48,12 @@ class StudyScheduleController(
         return ResponseEntity.noContent().build()
     }
 
-    // To Do: 관리자 트랙 조회 api 필요(트랙으로 필터링 가능해야 함) - 스웨거도 잊지 말 것
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     override fun getSchedules(
         userId: CurrentUserId,
         @RequestParam trackIds: List<TrackId> // 비어있는 경우 ENROLLED 상태인 모든 트랙의 스케쥴들을 반환
-    ): ResponseEntity<Map<TrackId, ScheduleQueryResponse>> {
+    ): ResponseEntity<Map<TrackId, List<ScheduleQueryResponse>>> {
 
         val trackIdsSet = trackIds.toSet()
         val result = when (trackIdsSet.isEmpty()) {

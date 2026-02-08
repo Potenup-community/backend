@@ -101,23 +101,26 @@ class StudyScheduleService(
     }
 
     @Transactional(readOnly = true)
-    fun getAllSchedulesInTrackIds(trackIds: Set<TrackId>): Map<TrackId, ScheduleQueryResponse> {
+    fun getAllSchedulesInTrackIds(trackIds: Set<TrackId>): Map<TrackId, List<ScheduleQueryResponse>> {
 
         if (trackIds.isEmpty()) {
             return emptyMap()
         }
 
         val foundSchedules: List<StudySchedule> = studyScheduleRepository.findAllByTrackIdIn(trackIds)
-        return foundSchedules.associate { it.trackId to ScheduleQueryResponse.from(it) }
+        val groupedSchedules: Map<TrackId, List<StudySchedule>> = foundSchedules.groupBy { it.trackId }
+        return trackIds.associateWith { trackIds ->
+            groupedSchedules[trackIds]
+                .orEmpty()
+                .map { ScheduleQueryResponse.from(it) }
+        }
     }
 
     @Transactional(readOnly = true)
-    fun getAllSchedulesOfEnrolledTracks(): Map<TrackId, ScheduleQueryResponse> {
+    fun getAllSchedulesOfEnrolledTracks(): Map<TrackId, List<ScheduleQueryResponse>> {
         val enrolledTracks: List<Track> = trackRepository.findAllByTrackStatus(TrackStatus.ENROLLED)
-        val trackIds = enrolledTracks.map { it.trackId }.toSet()
-
-        val foundSchedules: List<StudySchedule> = studyScheduleRepository.findAllByTrackIdIn(trackIds)
-        return foundSchedules.associate { it.trackId to ScheduleQueryResponse.from(it) }
+        val enrolledTrackIds = enrolledTracks.map { it.trackId }.toSet()
+        return getAllSchedulesInTrackIds(enrolledTrackIds)
     }
 
     @Transactional(readOnly = true)
