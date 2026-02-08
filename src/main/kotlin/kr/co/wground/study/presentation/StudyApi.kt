@@ -22,7 +22,7 @@ import kr.co.wground.study.presentation.request.study.StudyUpdateRequest
 import kr.co.wground.study.presentation.response.CustomSliceResponse
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
 import kr.co.wground.study.presentation.response.study.StudyIdResponse
-import kr.co.wground.study.presentation.response.study.StudyQueryResponse
+import kr.co.wground.study.presentation.response.study.StudySearchResponse
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -361,5 +361,5 @@ interface StudyApi {
             description = "현재 로그인한 사용자 ID",
             schema = Schema(type = "string", example = "token_value")
         ) userId: CurrentUserId
-    ): ResponseEntity<CustomSliceResponse<StudyQueryResponse>>
+    ): ResponseEntity<CustomSliceResponse<StudySearchResponse>>
 }

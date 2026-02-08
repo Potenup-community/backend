@@ -12,7 +12,7 @@ import kr.co.wground.study.presentation.request.study.StudyUpdateRequest
 import kr.co.wground.study.presentation.response.CustomSliceResponse
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
 import kr.co.wground.study.presentation.response.study.StudyIdResponse
-import kr.co.wground.study.presentation.response.study.StudyQueryResponse
+import kr.co.wground.study.presentation.response.study.StudySearchResponse
 import kr.co.wground.user.domain.constant.UserRole
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -95,7 +95,7 @@ class StudyController(
         @RequestParam(defaultValue = "DESC") sortType: SortType,
         @PageableDefault(size = 10) pageable: Pageable,
         userId: CurrentUserId
-    ): ResponseEntity<CustomSliceResponse<StudyQueryResponse>> {
+    ): ResponseEntity<CustomSliceResponse<StudySearchResponse>> {
         val response = studyService.searchStudies(StudySearchDto.of(userId.value, condition, sortType, pageable))
         return ResponseEntity.ok(CustomSliceResponse.from(response))
     }

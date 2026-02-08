@@ -3,11 +3,10 @@ package kr.co.wground.study.infra
 import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.common.SortType
-import kr.co.wground.study.application.dto.QStudyQueryDto
+import kr.co.wground.study.application.dto.QStudyQueryResult
 import kr.co.wground.study.application.dto.StudyQueryResult
 import kr.co.wground.study.application.dto.StudySearchCondition
 import kr.co.wground.study.domain.QStudy.study
-import kr.co.wground.study_schedule.domain.QStudySchedule.studySchedule
 import kr.co.wground.study.domain.QTag.tag
 import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.track.domain.QTrack.track
@@ -26,9 +25,8 @@ class CustomStudyRepositoryImpl(
         val pageSize = pageable.pageSize
 
         val content = queryFactory
-            .select(QStudyQueryDto(study, studySchedule, user, track))
+            .select(QStudyQueryResult(study, user, track))
             .from(study)
-            .join(studySchedule).on(study.scheduleId.eq(studySchedule.id))
             .join(user).on(study.leaderId.eq(user.userId))
             .join(track).on(user.trackId.eq(track.trackId))
             .where(

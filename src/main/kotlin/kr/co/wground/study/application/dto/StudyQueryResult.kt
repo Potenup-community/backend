@@ -8,7 +8,6 @@ import kr.co.wground.user.domain.User
 
 data class StudyQueryResult @QueryProjection constructor(
     val study: Study,
-    val schedule: StudySchedule,
     val leader: User,
     val track: Track
 )
