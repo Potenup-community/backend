@@ -115,6 +115,7 @@ class Study private constructor(
             budgetExplain: String,
             externalChatUrl: String = DEFAULT_CHAT_URL,
             referenceUrl: String? = null,
+            tags: List<Tag>? = emptyList()
         ): Study {
             val created = Study(
                 name = name,
@@ -131,6 +132,10 @@ class Study private constructor(
             )
 
             created.participate(leaderId)
+
+            if (tags != null) {
+                created.updateTags(tags)
+            }
 
             return created
         }
@@ -149,9 +154,10 @@ class Study private constructor(
             externalChatUrl: String = DEFAULT_CHAT_URL,
             referenceUrl: String? = null,
             createdAt: LocalDateTime,
-            updatedAt: LocalDateTime
+            updatedAt: LocalDateTime,
+            tags: List<Tag>? = emptyList()
         ): Study {
-            return Study(
+            val created = Study(
                 id = id,
                 name = name,
                 leaderId = leaderId,
@@ -167,6 +173,12 @@ class Study private constructor(
                 createdAt = createdAt,
                 updatedAt = updatedAt
             )
+
+            if (tags != null) {
+                created.updateTags(tags)
+            }
+
+            return created
         }
     }
 
