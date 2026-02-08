@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kr.co.wground.study_schedule.domain.enums.Months
+import kr.co.wground.track.domain.constant.TrackStatus
 
 @Service
 @Transactional
@@ -97,6 +98,26 @@ class StudyScheduleService(
         studyScheduleRepository.deleteById(scheduleId)
 
         publishUpdateEvent(schedule, StudyScheduleChangedEvent.EventType.DELETED)
+    }
+
+    @Transactional(readOnly = true)
+    fun getAllSchedulesInTrackIds(trackIds: Set<TrackId>): Map<TrackId, ScheduleQueryResponse> {
+
+        if (trackIds.isEmpty()) {
+            return emptyMap()
+        }
+
+        val foundSchedules: List<StudySchedule> = studyScheduleRepository.findAllByTrackIdIn(trackIds)
+        return foundSchedules.associate { it.trackId to ScheduleQueryResponse.from(it) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getAllSchedulesOfEnrolledTracks(): Map<TrackId, ScheduleQueryResponse> {
+        val enrolledTracks: List<Track> = trackRepository.findAllByTrackStatus(TrackStatus.ENROLLED)
+        val trackIds = enrolledTracks.map { it.trackId }.toSet()
+
+        val foundSchedules: List<StudySchedule> = studyScheduleRepository.findAllByTrackIdIn(trackIds)
+        return foundSchedules.associate { it.trackId to ScheduleQueryResponse.from(it) }
     }
 
     @Transactional(readOnly = true)
