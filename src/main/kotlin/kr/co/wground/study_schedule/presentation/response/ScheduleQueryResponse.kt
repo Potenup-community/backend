@@ -1,5 +1,6 @@
 package kr.co.wground.study_schedule.presentation.response
 
+import kr.co.wground.study_schedule.domain.StudySchedule
 import kr.co.wground.study_schedule.domain.enums.Months
 import java.time.LocalDateTime
 
@@ -11,4 +12,18 @@ data class ScheduleQueryResponse(
     val recruitStartDate: LocalDateTime,
     val recruitEndDate: LocalDateTime,
     val studyEndDate: LocalDateTime,
-)
+) {
+    companion object {
+        fun from(schedule: StudySchedule): ScheduleQueryResponse {
+            return ScheduleQueryResponse(
+                id = schedule.id,
+                trackId = schedule.trackId,
+                months = schedule.months,
+                monthName = schedule.months.name,
+                recruitStartDate = schedule.recruitStartDate,
+                recruitEndDate = schedule.recruitEndDate,
+                studyEndDate = schedule.studyEndDate
+            )
+        }
+    }
+}
