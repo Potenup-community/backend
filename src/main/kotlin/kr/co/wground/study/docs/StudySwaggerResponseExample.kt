@@ -155,4 +155,34 @@ object StudySwaggerResponseExample {
         "studyEndDate": "2028-01-27T10:14:56"
     }
     """
+
+    const val SCHEDULE_OF_TRACK_IDS =
+        """
+        {
+          "2": [
+            {
+              "id": 3,
+              "trackId": 2,
+              "months": "1",
+              "monthName": "First",
+              "recruitStartDate": "2026-02-01T00:00:00",
+              "recruitEndDate": "2026-02-14T23:59:59",
+              "studyEndDate": "2026-03-31T23:59:59"
+            },
+            {
+              "id": 7,
+              "trackId": 2,
+              "months": "2",
+              "monthName": "Second",
+              "recruitStartDate": "2026-03-01T00:00:00",
+              "recruitEndDate": "2026-03-14T23:59:59",
+              "studyEndDate": "2026-04-31T23:59:59"
+            }
+            ...
+          ],
+          "3": [
+            ...
+          ]
+        }
+        """
 }

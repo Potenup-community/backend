@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.LocalTime
 import kr.co.wground.study_schedule.domain.enums.Months
+import kr.co.wground.track.domain.constant.TrackStatus
 
 @Service
 @Transactional
@@ -100,6 +101,29 @@ class StudyScheduleService(
     }
 
     @Transactional(readOnly = true)
+    fun getAllSchedulesInTrackIds(trackIds: Set<TrackId>): Map<TrackId, List<ScheduleQueryResponse>> {
+
+        if (trackIds.isEmpty()) {
+            return emptyMap()
+        }
+
+        val foundSchedules: List<StudySchedule> = studyScheduleRepository.findAllByTrackIdIn(trackIds)
+        val groupedSchedules: Map<TrackId, List<StudySchedule>> = foundSchedules.groupBy { it.trackId }
+        return trackIds.associateWith { trackIds ->
+            groupedSchedules[trackIds]
+                .orEmpty()
+                .map { ScheduleQueryResponse.from(it) }
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun getAllSchedulesOfEnrolledTracks(): Map<TrackId, List<ScheduleQueryResponse>> {
+        val enrolledTracks: List<Track> = trackRepository.findAllByTrackStatus(TrackStatus.ENROLLED)
+        val enrolledTrackIds = enrolledTracks.map { it.trackId }.toSet()
+        return getAllSchedulesInTrackIds(enrolledTrackIds)
+    }
+
+    @Transactional(readOnly = true)
     fun getCurrentScheduleByUserId(userId: UserId): ScheduleQueryResponse? {
         val trackId = findTrackIdByUserIdOrThrows(userId)
         return getCurrentSchedule(trackId)
@@ -125,7 +149,7 @@ class StudyScheduleService(
     }
 
     @Transactional(readOnly = true)
-    fun getSchedulesByUserId(userId: UserId): List<QueryStudyScheduleDto> {
+    fun getAllSchedulesByTrackOfTheUser(userId: UserId): List<QueryStudyScheduleDto> {
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 

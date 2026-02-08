@@ -1,5 +1,6 @@
 package kr.co.wground.study_schedule.presentation
 
+import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study_schedule.application.StudyScheduleService
 import kr.co.wground.study_schedule.presentation.request.ScheduleCreateRequest
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -46,16 +48,30 @@ class StudyScheduleController(
         return ResponseEntity.noContent().build()
     }
 
-    // To Do: 관리자 트랙 조회 api 필요(트랙으로 필터링 가능해야 함)
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    override fun getSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>{
-        val result = studyScheduleService.getSchedulesByUserId(userId.value)
+    override fun getSchedules(
+        userId: CurrentUserId,
+        @RequestParam trackIds: List<TrackId> // 비어있는 경우 ENROLLED 상태인 모든 트랙의 스케쥴들을 반환
+    ): ResponseEntity<Map<TrackId, List<ScheduleQueryResponse>>> {
+
+        val trackIdsSet = trackIds.toSet()
+        val result = when (trackIdsSet.isEmpty()) {
+            true -> studyScheduleService.getAllSchedulesOfEnrolledTracks()
+            false -> studyScheduleService.getAllSchedulesInTrackIds(trackIdsSet)
+        }
+
+        return ResponseEntity.ok().body(result)
+    }
+
+    @GetMapping("/my")
+    override fun getMyTrackSchedules(userId: CurrentUserId): ResponseEntity<ScheduleListResponse>{
+        val result = studyScheduleService.getAllSchedulesByTrackOfTheUser(userId.value)
         return ResponseEntity.ok().body(ScheduleListResponse(result))
     }
 
-    @GetMapping("/me")
-    override fun getCurrentSchedule(userId: CurrentUserId): ResponseEntity<ScheduleQueryResponse>{
+    @GetMapping("/my/current")
+    override fun getMyTrackCurrentSchedule(userId: CurrentUserId): ResponseEntity<ScheduleQueryResponse>{
         val result = studyScheduleService.getCurrentScheduleByUserId(userId.value)
         return ResponseEntity.ok().body(result)
     }
