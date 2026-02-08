@@ -22,7 +22,7 @@ import java.time.LocalDateTime
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-class Study protected constructor(
+class Study private constructor(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
