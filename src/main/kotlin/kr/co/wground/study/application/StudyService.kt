@@ -98,7 +98,7 @@ class StudyService(
         val study = findStudyEntityOrThrows(command.studyId)
         
         // 스케쥴이 없으면 예외 발생함
-        studyScheduleService.getScheduleById(command.scheduleId)
+        studyScheduleService.getScheduleById(study.scheduleId)
 
         if (!study.isLeader(command.userId)) {
             throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
