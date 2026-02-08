@@ -6,6 +6,7 @@ import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study_schedule.domain.StudySchedule
 import kr.co.wground.study.infra.StudyRecruitmentRepository
+import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
 import kr.co.wground.track.domain.constant.TrackStatus
 import org.springframework.stereotype.Component
 
@@ -32,7 +33,7 @@ class RecruitValidator(
 
     fun validateSchedule(schedule: StudySchedule) {
         if (schedule.isRecruitmentClosed()) {
-            throw BusinessException(StudyServiceErrorCode.STUDY_NOT_PENDING)
+            throw BusinessException(StudyScheduleServiceErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
         }
     }
 
