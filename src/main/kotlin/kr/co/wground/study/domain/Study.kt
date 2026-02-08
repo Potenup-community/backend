@@ -5,6 +5,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -70,11 +71,11 @@ class Study private constructor(
     @Column(nullable = false)
     var budgetExplain: String = budgetExplain
 
-    @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     protected val _recruitments: MutableList<StudyRecruitment> = ArrayList()
     val recruitments: List<StudyRecruitment> get() = _recruitments.toList()
 
-    @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     protected val _studyTags: MutableList<StudyTag> = ArrayList()
     val studyTags: List<StudyTag> get() = _studyTags.toList()
 
