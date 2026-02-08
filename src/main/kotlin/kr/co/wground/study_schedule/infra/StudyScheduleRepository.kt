@@ -1,5 +1,6 @@
 package kr.co.wground.study_schedule.infra
 
+import kr.co.wground.global.common.TrackId
 import kr.co.wground.study_schedule.domain.StudySchedule
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
@@ -9,4 +10,5 @@ interface StudyScheduleRepository : JpaRepository<StudySchedule, Long> {
     fun save(studySchedule: StudySchedule): StudySchedule
     fun findAllByTrackIdOrderByMonthsAsc(trackId: Long): List<StudySchedule>
     fun findAllByStudyEndDateAfter(studyEndDate: LocalDateTime, pageable: Pageable): List<StudySchedule>
+    fun findAllByTrackIdIn(trackIds: MutableCollection<TrackId>): MutableList<StudySchedule>
 }
