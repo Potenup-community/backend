@@ -24,6 +24,8 @@ class WebConfig(
         registry
             .addMapping("/api/**")
             .allowedOrigins(
+                "https://www.potenup-community.cloud",
+                "https://potenup-community.cloud",
                 "http://localhost:5173",
                 "http://localhost:3000"
             )

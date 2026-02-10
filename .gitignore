@@ -47,3 +47,4 @@ out/
 *.alloy
 docker-compose.yml
 prometheus.yml
+AGENTS.md
