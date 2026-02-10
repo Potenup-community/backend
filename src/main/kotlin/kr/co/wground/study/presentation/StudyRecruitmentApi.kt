@@ -9,16 +9,14 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
 import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.docs.StudySwaggerErrorExample
 import kr.co.wground.study.docs.StudySwaggerResponseExample
-import kr.co.wground.study.presentation.request.recruitment.StudyRecruitRequest
+import kr.co.wground.study.presentation.response.recruit.StudyRecruitmentListResponse
 import kr.co.wground.study.presentation.response.recruit.StudyRecruitmentResponse
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestBody
 
 @Tag(name = "Study Recruitment", description = "스터디 모집/신청 API")
 interface StudyRecruitmentApi {
@@ -33,14 +31,6 @@ interface StudyRecruitmentApi {
                     mediaType = "application/json",
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
-                        ExampleObject(
-                            name = "RECRUITMENT_APPEAL_TOO_BIG",
-                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_APPEAL_TOO_BIG
-                        ),
-                        ExampleObject(
-                            name = "RECRUITMENT_APPEAL_EMPTY",
-                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_APPEAL_EMPTY
-                        ),
                         ExampleObject(
                             name = "TRACK_MISMATCH",
                             value = StudySwaggerErrorExample.Recruitment.TRACK_MISMATCH
@@ -92,7 +82,6 @@ interface StudyRecruitmentApi {
             schema = Schema(type = "string", example = "token_value")
         ) userId: CurrentUserId,
         @PathVariable studyId: Long,
-        @RequestBody @Valid request: StudyRecruitRequest
     ): ResponseEntity<Unit>
 
     @Operation(summary = "스터디 신청 취소", description = "스터디 신청을 취소합니다.")
@@ -110,8 +99,8 @@ interface StudyRecruitmentApi {
                             value = StudySwaggerErrorExample.Recruitment.LEADER_CANNOT_LEAVE
                         ),
                         ExampleObject(
-                            name = "RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE",
-                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE
+                            name = "RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING",
+                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING
                         ),
                     ]
                 )]
@@ -155,128 +144,6 @@ interface StudyRecruitmentApi {
         @PathVariable recruitmentId: Long
     ): ResponseEntity<Unit>
 
-    @Operation(summary = "스터디 신청 승인 (스터디장)", description = "스터디장이 참여 신청을 승인합니다.")
-    @ApiResponses(
-        value = [
-            ApiResponse(responseCode = "204", description = "승인 성공"),
-            ApiResponse(
-                responseCode = "400", description = "승인 불가",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
-                        ExampleObject(
-                            name = "RECRUITMENT_INVALID_STATUS_CHANGE",
-                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_INVALID_STATUS_CHANGE
-                        ),
-                        ExampleObject(
-                            name = "STUDY_CAPACITY_FULL",
-                            value = StudySwaggerErrorExample.Study.STUDY_CAPACITY_FULL
-                        ),
-                        ExampleObject(
-                            name = "STUDY_ALREADY_FINISH_TO_RECRUIT",
-                            value = StudySwaggerErrorExample.Study.STUDY_ALREADY_FINISH_TO_RECRUIT
-                        ),
-                    ]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "403", description = "권한 없음",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
-                        ExampleObject(
-                            name = "NOT_STUDY_LEADER",
-                            value = StudySwaggerErrorExample.Study.NOT_STUDY_LEADER
-                        ),
-                    ]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "404", description = "자원 찾을 수 없음",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
-                        ExampleObject(
-                            name = "RECRUITMENT_NOT_FOUND",
-                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_NOT_FOUND
-                        ),
-                        ExampleObject(name = "STUDY_NOT_FOUND", value = StudySwaggerErrorExample.Study.STUDY_NOT_FOUND),
-                    ]
-                )]
-            )
-        ]
-    )
-    fun approveApplication(
-        @Parameter(
-            `in` = ParameterIn.COOKIE,
-            name = "accessToken",
-            description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")
-        ) userId: CurrentUserId,
-        @PathVariable studyId: Long,
-        @PathVariable recruitmentId: Long
-    ): ResponseEntity<Unit>
-
-    @Operation(summary = "스터디 신청 반려 (스터디장)", description = "스터디장이 참여 신청을 반려합니다.")
-    @ApiResponses(
-        value = [
-            ApiResponse(responseCode = "204", description = "반려 성공"),
-            ApiResponse(
-                responseCode = "400", description = "반려 불가",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
-                        ExampleObject(
-                            name = "RECRUITMENT_INVALID_STATUS_CHANGE",
-                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_INVALID_STATUS_CHANGE
-                        ),
-                    ]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "403", description = "권한 없음",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
-                        ExampleObject(
-                            name = "NOT_STUDY_LEADER",
-                            value = StudySwaggerErrorExample.Study.NOT_STUDY_LEADER
-                        ),
-                    ]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "404", description = "자원 찾을 수 없음",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
-                        ExampleObject(
-                            name = "RECRUITMENT_NOT_FOUND",
-                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_NOT_FOUND
-                        ),
-                        ExampleObject(name = "STUDY_NOT_FOUND", value = StudySwaggerErrorExample.Study.STUDY_NOT_FOUND),
-                    ]
-                )]
-            )
-        ]
-    )
-    fun rejectApplication(
-        @Parameter(
-            `in` = ParameterIn.COOKIE,
-            name = "accessToken",
-            description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")
-        ) userId: CurrentUserId,
-        @PathVariable studyId: Long,
-        @PathVariable recruitmentId: Long
-    ): ResponseEntity<Unit>
-
     @Operation(summary = "내 신청 목록 조회", description = "내가 신청한 스터디 모집 현황을 조회합니다.")
     @ApiResponses(
         value = [
@@ -297,7 +164,7 @@ interface StudyRecruitmentApi {
             description = "현재 로그인한 사용자 ID",
             schema = Schema(type = "string", example = "token_value")
         ) userId: CurrentUserId
-    ): ResponseEntity<List<StudyRecruitmentResponse>>
+    ): ResponseEntity<StudyRecruitmentListResponse>
 
     @Operation(summary = "스터디 신청자 목록 조회 (스터디장)", description = "특정 스터디의 신청자 목록을 조회합니다.")
     @ApiResponses(

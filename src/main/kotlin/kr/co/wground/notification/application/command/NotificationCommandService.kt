@@ -27,11 +27,13 @@ class NotificationCommandService(
         recipientId: RecipientId,
         actorId: UserId?,
         type: NotificationType,
-        content: NotificationContent,
+        title: String,
         reference: NotificationReference?,
+        placeholders: Map<String, String> = emptyMap(),
         expiresAt: LocalDateTime? = null,
     ) {
         val eventId = UUID.randomUUID()
+        val content = NotificationContent.random(type, title, placeholders)
 
         try {
             notificationRepository.save(
@@ -62,3 +64,4 @@ class NotificationCommandService(
         notificationRepository.markAllAsReadByRecipientId(recipientId)
     }
 }
+

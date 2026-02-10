@@ -1,13 +1,20 @@
 package kr.co.wground.notification.application.listener
 
+import java.time.LocalDateTime
 import kr.co.wground.common.event.CommentCreatedEvent
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
+import kr.co.wground.common.event.StudyDeletedEvent
+import kr.co.wground.common.event.StudyRecruitmentEvent
+import kr.co.wground.common.event.StudyRecruitEvent
+import kr.co.wground.notification.application.command.BroadcastNotificationCommandService
 import kr.co.wground.notification.application.command.NotificationCommandService
+import kr.co.wground.notification.application.port.NotificationSender
 import kr.co.wground.notification.domain.enums.NotificationType
-import kr.co.wground.notification.domain.vo.NotificationContent
 import kr.co.wground.notification.domain.vo.NotificationReference
+import kr.co.wground.track.infra.TrackRepository
+import kr.co.wground.user.infra.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -17,14 +24,27 @@ import org.mockito.ArgumentCaptor
 import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito
-import org.mockito.MockitoAnnotations
-import java.time.LocalDateTime
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 
 class NotificationEventListenerTest {
     @Mock
     private lateinit var notificationCommandService: NotificationCommandService
+
+    @Mock
+    private lateinit var broadcastNotificationCommandService: BroadcastNotificationCommandService
+
+    @Mock
+    private lateinit var notificationSender: NotificationSender
+
+    @Mock
+    private lateinit var trackRepository: TrackRepository
+
+    @Mock
+    private lateinit var userRepository: UserRepository
 
     @Captor
     private lateinit var recipientCaptor: ArgumentCaptor<Long>
@@ -36,10 +56,13 @@ class NotificationEventListenerTest {
     private lateinit var typeCaptor: ArgumentCaptor<NotificationType>
 
     @Captor
-    private lateinit var contentCaptor: ArgumentCaptor<NotificationContent>
+    private lateinit var titleCaptor: ArgumentCaptor<String>
 
     @Captor
     private lateinit var referenceCaptor: ArgumentCaptor<NotificationReference?>
+
+    @Captor
+    private lateinit var placeholdersCaptor: ArgumentCaptor<Map<String, String>>
 
     @Captor
     private lateinit var expiresAtCaptor: ArgumentCaptor<LocalDateTime?>
@@ -49,7 +72,14 @@ class NotificationEventListenerTest {
     @BeforeEach
     fun setUp() {
         MockitoAnnotations.openMocks(this)
-        listener = NotificationEventListener(notificationCommandService)
+        listener = NotificationEventListener(
+            notificationCommandService,
+            broadcastNotificationCommandService,
+            notificationSender,
+            trackRepository,
+            userRepository,
+            "http://frontend-url"
+        )
     }
 
     @Nested
@@ -77,8 +107,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -128,8 +159,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -160,8 +192,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -209,8 +242,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
 
@@ -232,6 +266,7 @@ class NotificationEventListenerTest {
                 mentionerId = 100L,
                 mentionUserIds = listOf(200L, 300L)
             )
+            `when`(userRepository.findAllById(listOf(200L, 300L))).thenReturn(emptyList())
 
             // when
             listener.handleMentionCreated(event)
@@ -241,8 +276,9 @@ class NotificationEventListenerTest {
                 capture(recipientCaptor),
                 capture(actorCaptor),
                 capture(typeCaptor),
-                capture(contentCaptor),
+                capture(titleCaptor),
                 capture(referenceCaptor),
+                capture(placeholdersCaptor),
                 capture(expiresAtCaptor)
             )
         }
@@ -263,6 +299,65 @@ class NotificationEventListenerTest {
 
             // then
             verifyNoInteractions(notificationCommandService)
+        }
+    }
+
+    @Nested
+    @DisplayName("스터디 이벤트 처리")
+    inner class HandleStudyEvents {
+
+        @DisplayName("스터디 지원 시 리더에게 알림이 생성된다")
+        @Test
+        fun shouldCreateNotification_whenStudyRecruit() {
+            // given
+            val event = StudyRecruitEvent(
+                studyId = 1L,
+                leaderId = 100L
+            )
+
+            // when
+            listener.handleStudyRecruit(event)
+
+            // then
+            verify(notificationCommandService).create(
+                capture(recipientCaptor),
+                capture(actorCaptor),
+                capture(typeCaptor),
+                capture(titleCaptor),
+                capture(referenceCaptor),
+                capture(placeholdersCaptor),
+                capture(expiresAtCaptor)
+            )
+
+            assertThat(recipientCaptor.value).isEqualTo(100L)
+            assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_APPLICATION)
+        }
+
+        @DisplayName("스터디 삭제(취소) 시 지원자들에게 알림이 생성된다")
+        @Test
+        fun shouldCreateNotificationForEachRecruit_whenStudyDeleted() {
+            // given
+            val event = StudyDeletedEvent(
+                studyId = 1L,
+                studyTitle = "테스트 스터디",
+                userIds = listOf(200L, 300L)
+            )
+
+            // when
+            listener.handleStudyDeleted(event)
+
+            // then
+            verify(notificationCommandService, times(2)).create(
+                capture(recipientCaptor),
+                capture(actorCaptor),
+                capture(typeCaptor),
+                capture(titleCaptor),
+                capture(referenceCaptor),
+                capture(placeholdersCaptor),
+                capture(expiresAtCaptor)
+            )
+
+            assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_DELETED)
         }
     }
 

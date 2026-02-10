@@ -2,6 +2,7 @@ package kr.co.wground.post.application
 
 import java.util.UUID
 import kr.co.wground.comment.infra.CommentRepository
+import kr.co.wground.common.event.AnnouncementCreatedEvent
 import kr.co.wground.common.event.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
@@ -46,6 +47,8 @@ class PostService(
             draftId = dto.draftId,
             content = dto.content
         )
+
+        noticeEventPublish(dto, postId)
 
         return postId
     }
@@ -92,6 +95,17 @@ class PostService(
                 markdown = content,
             )
         )
+    }
+
+    private fun noticeEventPublish(dto: PostCreateDto, postId: PostId) {
+        if (dto.topic == Topic.NOTICE) {
+            eventPublisher.publishEvent(
+                AnnouncementCreatedEvent(
+                    postId = postId,
+                    title = dto.title,
+                )
+            )
+        }
     }
 
     private fun findPostByIdOrThrow(id: PostId): Post {

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.StudyCreateCommand
-import kr.co.wground.study.domain.constant.BudgetType
+import kr.co.wground.study.domain.enums.BudgetType
 
 data class StudyCreateRequest(
     @field:NotBlank(message = "이름은 빈 값일수 없습니다.")
@@ -23,6 +23,9 @@ data class StudyCreateRequest(
     @field:NotNull(message = "지원금 유형은 필수 값입니다.")
     val budget: BudgetType,
 
+    @field:NotBlank(message = "희망 지원 항목 설명은 비어있을 수 없습니다.")
+    val budgetExplain: String,
+
     val chatUrl: String,
 
     val refUrl: String?,
@@ -37,6 +40,7 @@ data class StudyCreateRequest(
             description = description,
             capacity = capacity,
             budget = budget,
+            budgetExplain = budgetExplain,
             chatUrl = chatUrl,
             refUrl = refUrl,
             tags = tags

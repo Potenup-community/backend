@@ -11,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.nio.file.Path
 
 @Configuration
 class WebConfig(
@@ -24,8 +25,7 @@ class WebConfig(
             .addMapping("/api/**")
             .allowedOrigins(
                 "http://localhost:5173",
-                "https://potenup-depth.vercel.app",
-                "https://depth-preview.vercel.app",
+                "http://localhost:3000"
             )
             .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
             .allowedHeaders("*")
@@ -34,13 +34,10 @@ class WebConfig(
     }
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
+        val profileLocation = Path.of(profilePolicy.localDir).toAbsolutePath().normalize().toUri().toString()
 
-        registry.addResourceHandler("${uploadPolicy.publicBasePath}/**")
-            .addResourceLocations("file:${uploadPolicy.localDir}/")
-            .setCachePeriod(uploadPolicy.cachePeriod)
-
-        registry.addResourceHandler("${profilePolicy.webPathPrefix}/**")
-            .addResourceLocations("file:${profilePolicy.localDir}/")
+        registry.addResourceHandler("${profilePolicy.webPathPrefix.trimEnd('/')}/**")
+            .addResourceLocations(profileLocation)
             .setCachePeriod(uploadPolicy.cachePeriod)
     }
 

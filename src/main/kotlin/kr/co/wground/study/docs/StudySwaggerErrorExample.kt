@@ -1,5 +1,7 @@
 package kr.co.wground.study.docs
 
+import kr.co.wground.study.application.RecruitValidator
+
 object StudySwaggerErrorExample {
     object Study {
         const val STUDY_NOT_RECRUITING = """{
@@ -64,7 +66,7 @@ object StudySwaggerErrorExample {
         }"""
         const val STUDY_TAG_COUNT_EXCEEDED = """{
             "code": "SD-0011",
-            "message": "스터디 태그는 최대 5개까지 가질수 있습니다.",
+            "message": "스터디 태그는 최대 ${kr.co.wground.study.domain.Study.MAX_TAG_COUNT}개까지 가질수 있습니다.",
             "status": 400,
             "errors": []
         }"""
@@ -80,7 +82,7 @@ object StudySwaggerErrorExample {
             "status": 400,
             "errors": []
         }"""
-        const val STUDY_MIN_MEMBER_REQUIRED = """{
+        const val LEADER_CANNOT_LEAVE = """{
             "code": "SD-0014",
             "message": "스터디장은 탈퇴 할 수 없습니다.",
             "status": 400,
@@ -100,7 +102,7 @@ object StudySwaggerErrorExample {
         }"""
         const val MAX_STUDY_EXCEEDED = """{
             "code": "SD-0016",
-            "message": "스터디는 최대 2개까지 가입 가능합니다.",
+            "message": "스터디는 최대 ${RecruitValidator.MAX_STUDY_CAN_ENROLLED}개까지 가입 가능합니다.",
             "status": 400,
             "errors": []
         }"""
@@ -113,27 +115,15 @@ object StudySwaggerErrorExample {
     }
 
     object Recruitment {
-        const val RECRUITMENT_APPEAL_TOO_BIG = """{
-            "code": "SR-0001",
-            "message": "자기 소개는 최대 100자까지 작성 할 수 있습니다.",
-            "status": 400,
-            "errors": []
-        }"""
-        const val RECRUITMENT_STATUS_CANT_CHANGE_IN_DETERMINE = """{
+        const val RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING = """{
             "code": "SR-0002",
-            "message": "스터디가 확정되거나 반려된 상태에서는 신청 상태를 변경할 수 없습니다.",
+            "message": "스터디 상태가 PENDING 이 아닌 경우 신청을 취소할 수 없습니다.",
             "status": 400,
             "errors": []
         }"""
         const val RECRUITMENT_INVALID_STATUS_CHANGE = """{
             "code": "SR-0003",
             "message": "유효하지 않은 상태 변경입니다.",
-            "status": 400,
-            "errors": []
-        }"""
-        const val RECRUITMENT_APPEAL_EMPTY = """{
-            "code": "SR-0004",
-            "message": "자기소개가 입력되지 않았습니다.",
             "status": 400,
             "errors": []
         }"""

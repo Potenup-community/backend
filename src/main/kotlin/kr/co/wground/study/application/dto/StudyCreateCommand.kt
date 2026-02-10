@@ -1,7 +1,7 @@
 package kr.co.wground.study.application.dto
 
 import kr.co.wground.global.common.UserId
-import kr.co.wground.study.domain.constant.BudgetType
+import kr.co.wground.study.domain.enums.BudgetType
 
 data class StudyCreateCommand(
     val userId: UserId,
@@ -9,6 +9,7 @@ data class StudyCreateCommand(
     val description: String,
     val capacity: Int,
     val budget: BudgetType,
+    val budgetExplain: String,
     val chatUrl: String,
     val refUrl: String?,
     val tags: List<String> = emptyList()

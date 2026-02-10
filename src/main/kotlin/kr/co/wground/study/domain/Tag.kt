@@ -44,6 +44,8 @@ class Tag protected constructor(
             if (name.isBlank()) {
                 throw BusinessException(StudyDomainErrorCode.TAG_FORMAT_INVALID)
             }
+            println("******* ${name}")
+            println("******* ${name.length}")
             if (name.length !in MIN_LENGTH..MAX_LENGTH) {
                 throw BusinessException(StudyDomainErrorCode.TAG_LENGTH_INVALID_RANGE)
             }

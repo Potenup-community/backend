@@ -12,7 +12,6 @@ enum class NotificationType {
     // 스터디 관련
     STUDY_APPLICATION,
     STUDY_APPROVED,
-    STUDY_REJECTED,
     STUDY_DELETED,
 
     // 멘션
@@ -20,5 +19,9 @@ enum class NotificationType {
 
     // 공지사항
     ANNOUNCEMENT,
+
+    // 스터디 모집
+    STUDY_RECRUIT_START,
+    STUDY_RECRUIT_END,
     ;
 }

@@ -1,7 +1,7 @@
 package kr.co.wground.study.application.dto
 
 import kr.co.wground.global.common.UserId
-import kr.co.wground.study.domain.constant.BudgetType
+import kr.co.wground.study.domain.enums.BudgetType
 
 data class StudyUpdateCommand(
     val studyId: Long,
@@ -10,7 +10,7 @@ data class StudyUpdateCommand(
     val description: String?,
     val capacity: Int?,
     val budget: BudgetType?,
-    val scheduleId: Long,
+    val budgetExplain: String?,
     val chatUrl: String?,
     val refUrl: String?,
     val tags: List<String>? = emptyList()

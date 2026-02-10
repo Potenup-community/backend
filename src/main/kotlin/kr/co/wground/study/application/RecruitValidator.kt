@@ -4,41 +4,28 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
-import kr.co.wground.study.domain.StudySchedule
-import kr.co.wground.study.domain.constant.RecruitStatus
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study_schedule.domain.StudySchedule
 import kr.co.wground.study.infra.StudyRecruitmentRepository
+import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
+import kr.co.wground.track.domain.constant.TrackStatus
 import org.springframework.stereotype.Component
 
 @Component
 class RecruitValidator(
     private val studyRecruitmentRepository: StudyRecruitmentRepository,
 ) {
-    companion object{
+    companion object {
         const val MAX_STUDY_CAN_ENROLLED = 2
     }
 
-    fun validateApply(userTrackId: Long, study: Study) {
+    fun trackExists(userTrackId: Long, study: Study) {
         if (userTrackId != study.trackId) {
             throw BusinessException(StudyServiceErrorCode.TRACK_MISMATCH)
-        }
-        if (study.status != StudyStatus.PENDING) {
-            throw BusinessException(StudyServiceErrorCode.STUDY_NOT_RECRUITING)
-        }
-    }
-
-    fun validateDuplicateRecruit(userId: Long, studyId: Long) {
-        val statusList = listOf(RecruitStatus.PENDING, RecruitStatus.APPROVED, RecruitStatus.REJECTED)
-        if (studyRecruitmentRepository.existsByStudyIdAndUserIdAndRecruitStatusIn(
-                studyId, userId, statusList
-            )
-        ) {
-            throw BusinessException(StudyServiceErrorCode.ALREADY_APPLIED)
         }
     }
 
     fun validateHasMaxStudyLimit(userId: Long, scheduleId: Long) {
-        val count = studyRecruitmentRepository.countActiveEnrolledStudy(userId, scheduleId)
+        val count = studyRecruitmentRepository.countStudyRecruitment(userId, scheduleId)
         if (count >= MAX_STUDY_CAN_ENROLLED) {
             throw BusinessException(StudyServiceErrorCode.MAX_STUDY_EXCEEDED)
         }
@@ -46,7 +33,7 @@ class RecruitValidator(
 
     fun validateSchedule(schedule: StudySchedule) {
         if (schedule.isRecruitmentClosed()) {
-            throw BusinessException(StudyServiceErrorCode.STUDY_NOT_RECRUITING)
+            throw BusinessException(StudyScheduleServiceErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
         }
     }
 
@@ -62,15 +49,19 @@ class RecruitValidator(
         }
     }
 
-    fun validateLeaderCancel(study: Study, userId: UserId) {
-        if (study.isLeader(userId)) {
-            throw BusinessException(StudyServiceErrorCode.LEADER_CANNOT_LEAVE)
-        }
-    }
-
     fun validateDetermineLeader(study: Study, leaderId: Long) {
         if (!study.isLeader(leaderId)) {
             throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
         }
+    }
+
+    fun validateGraduated(trackStatus: TrackStatus) {
+        if(isGraduated(trackStatus)){
+            throw BusinessException(StudyServiceErrorCode.GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY)
+        }
+    }
+
+    fun isGraduated(trackStatus: TrackStatus): Boolean {
+        return trackStatus == TrackStatus.GRADUATED
     }
 }
