@@ -241,7 +241,7 @@ class NotificationEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleStudyRecruitStarted(event: StudyRecruitStartedEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
-        val studyLink = "$frontendUrl/study"
+        val studyLink = "$frontendUrl/studies"
         val placeholders = mapOf(
             "trackName" to track.trackName,
             "months" to "${event.months.month}차",
@@ -270,7 +270,7 @@ class NotificationEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleStudyRecruitEnded(event: StudyRecruitEndedEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
-        val studyLink = "$frontendUrl/study"
+        val studyLink = "$frontendUrl/studies"
         val placeholders = mapOf(
             "trackName" to track.trackName,
             "months" to "${event.months.month}차",
