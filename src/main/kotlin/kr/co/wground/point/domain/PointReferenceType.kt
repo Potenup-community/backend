@@ -1,6 +1,6 @@
 package kr.co.wground.point.domain
 
-enum class ReferenceType(val description: String) {
+enum class PointReferenceType(val description: String) {
     POST("게시글"),
     COMMENT("댓글"),
     POST_REACTION("게시글 리액션"),
