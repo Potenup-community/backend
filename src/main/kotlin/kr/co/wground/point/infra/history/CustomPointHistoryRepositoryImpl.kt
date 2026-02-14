@@ -6,9 +6,10 @@ import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.global.common.UserId
 import kr.co.wground.point.domain.PointType
 import kr.co.wground.point.domain.QPointHistory.pointHistory
-import kr.co.wground.point.infra.dto.PointTypeStatsDto
 import java.time.LocalDateTime
+import kr.co.wground.point.application.query.dto.PointTypeStatsDto
 import kr.co.wground.point.domain.PointHistory
+import kr.co.wground.point.domain.PointReferenceType
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
@@ -18,6 +19,26 @@ import org.springframework.stereotype.Repository
 class CustomPointHistoryRepositoryImpl(
     private val queryFactory: JPAQueryFactory
 ) : CustomPointHistoryRepository {
+
+    override fun findUserIdsWithHistory(
+        userIds: List<UserId>,
+        refType: PointReferenceType,
+        refId: Long,
+        type: PointType
+    ): List<UserId> {
+        if (userIds.isEmpty()) return emptyList()
+
+        return queryFactory
+            .select(pointHistory.userId)
+            .from(pointHistory)
+            .where(
+                pointHistory.userId.`in`(userIds),
+                pointHistory.refType.eq(refType),
+                pointHistory.refId.eq(refId),
+                pointHistory.type.eq(type)
+            )
+            .fetch()
+    }
 
     override fun countByUserIdAndTypeInDay(
         userId: UserId,
@@ -149,6 +170,7 @@ class CustomPointHistoryRepositoryImpl(
             .offset(pageable.offset)
             .limit(pageable.pageSize.toLong() + 1)
             .fetch()
+            .toList()
 
         val hasNext = content.size > pageable.pageSize
 
