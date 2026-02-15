@@ -12,7 +12,7 @@ import kr.co.wground.study.presentation.request.study.StudyUpdateRequest
 import kr.co.wground.study.presentation.response.CustomSliceResponse
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
 import kr.co.wground.study.presentation.response.study.StudyIdResponse
-import kr.co.wground.study.presentation.response.study.StudyQueryResponse
+import kr.co.wground.study.presentation.response.study.StudySearchResponse
 import kr.co.wground.user.domain.constant.UserRole
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -44,15 +44,6 @@ class StudyController(
     ): ResponseEntity<StudyIdResponse> {
         val studyId = studyService.createStudy(request.toCommand(userId.value))
         return ResponseEntity.status(HttpStatus.CREATED).body(StudyIdResponse(studyId))
-    }
-
-    @GetMapping("/{studyId}")
-    override fun getStudy(
-        userId: CurrentUserId,
-        @PathVariable studyId: Long
-    ): ResponseEntity<StudyDetailResponse> {
-        val response = studyService.getStudy(studyId, userId.value)
-        return ResponseEntity.ok(response)
     }
 
     @PatchMapping("/{studyId}")
@@ -89,13 +80,22 @@ class StudyController(
         return ResponseEntity.noContent().build()
     }
 
+    @GetMapping("/{studyId}")
+    override fun getStudy(
+        userId: CurrentUserId,
+        @PathVariable studyId: Long
+    ): ResponseEntity<StudyDetailResponse> {
+        val response = studyService.getStudy(studyId, userId.value)
+        return ResponseEntity.ok(response)
+    }
+
     @GetMapping
     override fun searchStudies(
         @ModelAttribute condition: StudySearchCondition,
         @RequestParam(defaultValue = "DESC") sortType: SortType,
         @PageableDefault(size = 10) pageable: Pageable,
         userId: CurrentUserId
-    ): ResponseEntity<CustomSliceResponse<StudyQueryResponse>> {
+    ): ResponseEntity<CustomSliceResponse<StudySearchResponse>> {
         val response = studyService.searchStudies(StudySearchDto.of(userId.value, condition, sortType, pageable))
         return ResponseEntity.ok(CustomSliceResponse.from(response))
     }

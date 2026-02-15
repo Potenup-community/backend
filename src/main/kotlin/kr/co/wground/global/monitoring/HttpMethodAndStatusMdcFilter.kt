@@ -37,7 +37,9 @@ class HttpMethodAndStatusMdcFilter : OncePerRequestFilter() {
 
             // 응답 이후 로그를 한 번 찍어서 http status 및 요청 처리 시간 기록
             val stackTrace = request.getAttribute(MonitoringConstants.EXCEPTION_FOR_LOG) as? Exception
-            if (HttpStatusCode.valueOf(response.status).is2xxSuccessful) {
+            if (HttpStatusCode.valueOf(response.status).is2xxSuccessful
+                || HttpStatusCode.valueOf(response.status).is3xxRedirection
+            ) {
                 logger.info("[SUCCESS] HTTP_RESPONSE: exactUrl=${exactUrl}")
             } else if (HttpStatusCode.valueOf(response.status).is5xxServerError) {
                 logger.error("[ERROR] HTTP_RESPONSE: exactUrl=${exactUrl}, errCode=${errCode}, errMessage=${errMessage}", stackTrace)

@@ -3,7 +3,7 @@ package kr.co.wground.global.scheduler.study
 import kr.co.wground.common.event.StudyEndedEvent
 import kr.co.wground.common.event.StudyRecruitEndedEvent
 import kr.co.wground.common.event.StudyRecruitStartedEvent
-import kr.co.wground.study.infra.StudyScheduleRepository
+import kr.co.wground.study_schedule.infra.StudyScheduleRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component

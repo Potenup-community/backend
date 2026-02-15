@@ -1,31 +1,60 @@
 package kr.co.wground.study.docs
 
 object StudySwaggerResponseExample {
-    const val STUDY_DETAIL_RESPONSE = """
-          {
-           "id": 1,
-           "scheduleId": 10,
-           "scheduleName": "1차",
-           "leaderId": 100,
-           "name": "코틀린 정복 스터디",
-           "description": "코틀린 기초부터 심화까지 함께 공부합니다.",
-           "capacity": 6,
-           "currentMemberCount": 3,
-           "status": "PENDING",
-           "budget": "MEAL",
-           "budgetExplain": "피자먹을래요",
-           "chatUrl": "https://open.kakao.com/...",
-           "refUrl": "https://github.com/...",
-           "tags": [
-             "KOTLIN",
-             "SPRING",
-             "BACKEND"
-           ],
-           "createdAt": "2026-01-25T14:00:00",
-           "updatedAt": "2026-01-25T14:00:00",
-           "isRecruitmentClosed": false,
-           "isLeader": true
-         }
+    const val STUDY_DETAIL_RESPONSE =
+        """
+        {
+            "id": 1,
+            "name": "코틀린 정복 스터디",
+            "description": "코틀린 기초부터 심화까지 함께 공부합니다.",
+            "capacity": 6,
+            "currentMemberCount": 3,
+            "status": "PENDING",
+            "budget": "MEAL",
+            "budgetExplain": "피자먹을래요",
+            "chatUrl": "https://open.kakao.com/...",
+            "refUrl": "https://github.com/...",
+            "tags": [
+                 "KOTLIN",
+                 "SPRING",
+                 "BACKEND"
+            ],
+            "createdAt": "2026-01-25T14:00:00",
+            "updatedAt": "2026-01-25T14:00:00",
+            "isRecruitmentClosed": false,
+            "isLeader": true,
+            "isParticipant": true,
+            "participants": [
+                {
+                    "id": 1,
+                    "name": "홍길동",
+                    "trackId": 2,
+                    "trackName": "BE 트랙 1기",
+                    "joinedAt": "2026-01-27T15:32:21",
+                    "profileImageUrl": "/..."
+                },
+                {
+                    ...
+                }
+            ],
+            "schedule": {
+                "id": 3,
+                "month": "1",
+                "recruitmentStartDate": "2026-01-24T14:00:00",
+                "recruitEndDate": "2026-01-27T14:00:00",
+                "studyEndDate": "2026-02-25T14:00:00"
+            },
+            "leader": {
+                {
+                    "id": 1,
+                    "name": "홍길동",
+                    "trackId": 2,
+                    "trackName": "BE 트랙 1기",
+                    "joinedAt": "2026-01-27T15:32:21",
+                    "profileImageUrl": "/..."
+                },
+            }
+        }
          """
 
     const val STUDY_SEARCH_RESPONSE = """
@@ -33,13 +62,20 @@ object StudySwaggerResponseExample {
            "content": [
              {
                "id": 1,
-               "schedule": {
-                  "id": 10,
-                  "month": "1차",
-                  "recruitStartDate": "2026-01-20T00:00:00",
-                  "recruitEndDate": "2026-01-27T23:59:59",
-                  "studyEndDate": "2026-02-28T23:59:59"
-               },
+               "name": "코틀린 정복 스터디",
+               "description": "코틀린 기초부터 심화까지 함께 공부합니다.",
+               "capacity": 6,
+               "currentMemberCount": 3,
+               "status": "PENDING",
+               "chatUrl": null,
+               "tags": [
+                 "KOTLIN",
+                 "SPRING"
+               ],
+               "createdAt": "2026-01-25T14:00:00",
+               "updatedAt": "2026-01-25T14:00:00",
+               "isLeader": false,
+               "isParticipant": true,
                "leader": {
                   "id": 100,
                   "name": "홍길동",
@@ -47,23 +83,6 @@ object StudySwaggerResponseExample {
                   "trackName": "백엔드 4기",
                   "profileImageUrl": "https://..."
                },
-               "name": "코틀린 정복 스터디",
-               "description": "코틀린 기초부터 심화까지 함께 공부합니다.",
-               "capacity": 6,
-               "currentMemberCount": 3,
-               "status": "PENDING",
-               "budget": "BOOK",
-               "budgetExplain": "피자먹을래요",
-               "chatUrl": null,
-               "refUrl": "https://github.com/...",
-               "tags": [
-                 "KOTLIN",
-                 "SPRING"
-               ],
-               "createdAt": "2026-01-25T14:00:00",
-               "updatedAt": "2026-01-25T14:00:00",
-               "isRecruitmentClosed": false,
-               "isLeader": false
              }
            ],
            "pageNumber": 0,
@@ -155,4 +174,34 @@ object StudySwaggerResponseExample {
         "studyEndDate": "2028-01-27T10:14:56"
     }
     """
+
+    const val SCHEDULE_OF_TRACK_IDS =
+        """
+        {
+          "2": [
+            {
+              "id": 3,
+              "trackId": 2,
+              "months": "1",
+              "monthName": "First",
+              "recruitStartDate": "2026-02-01T00:00:00",
+              "recruitEndDate": "2026-02-14T23:59:59",
+              "studyEndDate": "2026-03-31T23:59:59"
+            },
+            {
+              "id": 7,
+              "trackId": 2,
+              "months": "2",
+              "monthName": "Second",
+              "recruitStartDate": "2026-03-01T00:00:00",
+              "recruitEndDate": "2026-03-14T23:59:59",
+              "studyEndDate": "2026-04-31T23:59:59"
+            }
+            ...
+          ],
+          "3": [
+            ...
+          ]
+        }
+        """
 }

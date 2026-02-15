@@ -1,7 +1,7 @@
 package kr.co.wground.common.event
 
 import kr.co.wground.global.common.TrackId
-import kr.co.wground.study.domain.constant.Months
+import kr.co.wground.study_schedule.domain.enums.Months
 
 data class StudyRecruitStartedEvent(
     val scheduleId: Long,

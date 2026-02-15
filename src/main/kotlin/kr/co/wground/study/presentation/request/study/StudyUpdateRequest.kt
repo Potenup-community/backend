@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.StudyUpdateCommand
-import kr.co.wground.study.domain.constant.BudgetType
+import kr.co.wground.study.domain.enums.BudgetType
 
 data class StudyUpdateRequest(
     @field:NotBlank(message = "이름은 빈 값일수 없습니다.")
@@ -23,8 +23,6 @@ data class StudyUpdateRequest(
 
     val budgetExplain: String,
 
-    val scheduleId: Long,
-
     val chatUrl: String,
 
     val refUrl: String?,
@@ -41,7 +39,6 @@ data class StudyUpdateRequest(
             capacity = capacity,
             budget = budget,
             budgetExplain = budgetExplain,
-            scheduleId = scheduleId,
             chatUrl = chatUrl,
             refUrl = refUrl,
             tags = tags

@@ -28,6 +28,7 @@ import org.springframework.web.context.request.WebRequest
 import org.springframework.web.method.annotation.HandlerMethodValidationException
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import org.springframework.web.multipart.MaxUploadSizeExceededException
+import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -42,6 +43,17 @@ class GlobalExceptionHandler {
 
         val body = ErrorResponse.of(e)
         return ResponseEntity.status(e.httpStatus).body(body)
+    }
+
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleNoResourceFoundException(request: HttpServletRequest, e: NoResourceFoundException): ResponseEntity<ErrorResponse> {
+
+        request.setAttribute(MonitoringConstants.EXCEPTION_FOR_LOG, e)
+        request.setAttribute(MonitoringConstants.ERROR_CODE_FOR_LOG, CommonErrorCode.RESOURCE_NOT_FOUND.code)
+        request.setAttribute(MonitoringConstants.ERROR_MESSAGE_FOR_LOG, "${CommonErrorCode.RESOURCE_NOT_FOUND.message}: ${e.resourcePath}")
+
+        val body = ErrorResponse.of(CommonErrorCode.RESOURCE_NOT_FOUND)
+        return ResponseEntity.status(CommonErrorCode.RESOURCE_NOT_FOUND.httpStatus).body(body)
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException::class)

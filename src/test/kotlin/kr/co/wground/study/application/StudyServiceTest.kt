@@ -2,21 +2,21 @@ package kr.co.wground.study.application
 
 import jakarta.persistence.EntityManager
 import java.time.LocalDate
-import java.time.LocalDateTime
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.application.dto.StudyCreateCommand
 import kr.co.wground.study.application.dto.StudyUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.StudyRecruitment
-import kr.co.wground.study.domain.StudySchedule
-import kr.co.wground.study.domain.constant.BudgetType
-import kr.co.wground.study.domain.constant.Months
-import kr.co.wground.study.domain.constant.StudyStatus
+import kr.co.wground.study_schedule.domain.StudySchedule
+import kr.co.wground.study.domain.enums.BudgetType
+import kr.co.wground.study_schedule.domain.enums.Months
+import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
-import kr.co.wground.study.infra.StudyScheduleRepository
+import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
+import kr.co.wground.study_schedule.infra.StudyScheduleRepository
 import kr.co.wground.track.domain.Track
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.domain.User
@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.repository.findByIdOrNull
@@ -271,8 +272,7 @@ class StudyServiceTest {
                 budgetExplain = null,
                 chatUrl = null,
                 refUrl = null,
-                tags = updateTags,
-                scheduleId = schedule.id
+                tags = updateTags
             )
             studyService.updateStudy(command)
         }
@@ -281,6 +281,12 @@ class StudyServiceTest {
     }
 
     // ----- 결재 테스트
+
+    // ----- 마감 테스트
+
+    // ----- 참여 테스트
+
+    // To Do: 모집 마김 일자가 지나기 전에 마감 시도한 경우 예외 발생 - BusinessException(RECRUITMENT_NOT_ENDED_YET)
 
     // ----- 삭제 테스트
 
@@ -325,7 +331,7 @@ class StudyServiceTest {
         val savedStudy = studyRepository.findByIdOrNull(studyId)
         assertNotNull(savedStudy)
 
-        val extraRecruitment = StudyRecruitment(
+        val extraRecruitment = StudyRecruitment.apply(
             userId = 2L,
             study = savedStudy!!,
         )
@@ -333,15 +339,17 @@ class StudyServiceTest {
 
         entityManager.flush()
         entityManager.clear()
+
         val recruitmentsBefore = studyRecruitmentRepository.findAllByStudyId(studyId)
         assertEquals(2, recruitmentsBefore.size)
 
         // when: 스터디 삭제
         studyService.deleteStudy(studyId, savedLeader.userId, isAdmin = false)
 
-        // then: 스터디 및 관련 신청건 삭제
         entityManager.flush()
         entityManager.clear()
+
+        // then: 스터디 및 관련 신청건 삭제
         val deletedStudy = studyRepository.findByIdOrNull(studyId)
         val recruitments = studyRecruitmentRepository.findAllByStudyId(studyId)
 
@@ -390,7 +398,7 @@ class StudyServiceTest {
         val savedStudy = studyRepository.findByIdOrNull(studyId)
         assertNotNull(savedStudy)
 
-        val extraRecruitment = StudyRecruitment(
+        val extraRecruitment = StudyRecruitment.apply(
             userId = 2L,
             study = savedStudy!!,
         )
@@ -398,26 +406,21 @@ class StudyServiceTest {
 
         entityManager.flush()
         entityManager.clear()
+
         val recruitmentsBefore = studyRecruitmentRepository.findAllByStudyId(studyId)
         assertEquals(2, recruitmentsBefore.size)
 
         // 모집 마감 + 최소 인원 충족 -> CLOSED
         val managedStudy = studyRepository.findByIdOrNull(studyId)!!
-        managedStudy.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
-        schedule.updateSchedule(
-            newMonths = null,
-            newRecruitStart = today.minusDays(10),
-            newRecruitEnd = today.minusDays(5),
-            newStudyEnd = today.plusDays(10)
-        )
-        managedStudy.close(schedule.recruitEndDate)
+        managedStudy.close()
 
         // when: 스터디 삭제
         studyService.deleteStudy(studyId, savedLeader.userId, isAdmin = false)
 
-        // then: 스터디 및 관련 신청건 삭제
         entityManager.flush()
         entityManager.clear()
+
+        // then: 스터디 및 관련 신청건 삭제
         val deletedStudy = studyRepository.findByIdOrNull(studyId)
         val recruitments = studyRecruitmentRepository.findAllByStudyId(studyId)
 
@@ -449,6 +452,17 @@ class StudyServiceTest {
         )
         val savedLeader = userRepository.save(leader)
 
+        val student = User(
+            trackId = savedTrack.trackId,
+            email = "test2@gmail.com",
+            name = "참가자",
+            phoneNumber = "010-9999-9999",
+            provider = "GOOGLE",
+            role = UserRole.MEMBER,
+            status = UserStatus.ACTIVE
+        )
+        val savedStudent = userRepository.save(student)
+
         val studyId = studyService.createStudy(
             StudyCreateCommand(
                 userId = savedLeader.userId,
@@ -466,14 +480,14 @@ class StudyServiceTest {
         assertNotNull(savedStudy)
 
         // 모집 마감 + 최소 인원 충족 -> CLOSED -> APPROVED
-        savedStudy!!.increaseMemberCount(schedule.recruitEndDate, schedule.isRecruitmentClosed())
+        savedStudy!!.participate(savedStudent.userId)
         schedule.updateSchedule(
             newMonths = null,
             newRecruitStart = today.minusDays(10),
             newRecruitEnd = today.minusDays(5),
             newStudyEnd = today.plusDays(10)
         )
-        savedStudy.close(schedule.recruitEndDate)
+        savedStudy.close()
         savedStudy.approve()
         assertEquals(StudyStatus.APPROVED, savedStudy.status)
 
@@ -533,19 +547,18 @@ class StudyServiceTest {
         val savedStudent = userRepository.save(student)
 
         // 과거 차수 참여 이력
-        val pastStudy = Study(
+        val pastStudy = Study.createNew(
             name = "과거 차수 스터디",
             leaderId = 10L,
             trackId = savedTrack.trackId,
             scheduleId = savedPastSchedule.id,
             description = "과거 차수 참여",
-            status = StudyStatus.PENDING,
             capacity = 5,
             budget = BudgetType.MEAL,
             budgetExplain = "🍕🍕🍕",
         )
         val savedPastStudy = studyRepository.save(pastStudy)
-        val pastRecruitment = StudyRecruitment(
+        val pastRecruitment = StudyRecruitment.apply(
             userId = savedStudent.userId,
             study = savedPastStudy,
         )
@@ -605,11 +618,11 @@ class StudyServiceTest {
         val currentStudy1 = studyRepository.findByIdOrNull(studyId1)!!
         val currentStudy2 = studyRepository.findByIdOrNull(studyId2)!!
 
-        val approvedRecruitment1 = StudyRecruitment(
+        val approvedRecruitment1 = StudyRecruitment.apply(
             userId = savedStudent.userId,
             study = currentStudy1,
         )
-        val approvedRecruitment2 = StudyRecruitment(
+        val approvedRecruitment2 = StudyRecruitment.apply(
             userId = savedStudent.userId,
             study = currentStudy2,
         )

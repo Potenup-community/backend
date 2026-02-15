@@ -7,9 +7,12 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import lombok.AccessLevel
+import lombok.NoArgsConstructor
 
 @Entity
-class StudyTag(
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+class StudyTag private constructor(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
@@ -23,4 +26,11 @@ class StudyTag(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tag_id")
     var tag: Tag = tag
+
+    companion object {
+
+        fun create(study: Study, tag: Tag): StudyTag {
+            return StudyTag(study = study, tag = tag)
+        }
+    }
 }
