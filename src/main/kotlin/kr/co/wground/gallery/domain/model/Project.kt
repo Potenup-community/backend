@@ -58,7 +58,7 @@ class Project private constructor(
     var deletedAt: LocalDateTime? = deletedAt
         protected set
 
-    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "project", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     protected val _members: MutableList<ProjectMember> = ArrayList()
     val members: List<ProjectMember> get() = _members.toList()
 
@@ -107,9 +107,7 @@ class Project private constructor(
         validateAlive()
         validateTechStacks(techStacks)
         validateGithubUrl(githubUrl)
-        if (deployUrl != null) {
-            validateDeployUrl(deployUrl)
-        }
+        deployUrl?.let { validateDeployUrl(it) }
         validateThumbnailImagePath(thumbnailImagePath)
 
         this.content = content
@@ -137,18 +135,15 @@ class Project private constructor(
     }
 
     fun updateMembers(members: List<MemberInfo>) {
-        val newUserIds = members.map { it.userId }.toSet()
+        val memberByUserId = members.associateBy { it.userId }
 
-        val iterator = _members.iterator()
-        while (iterator.hasNext()) {
-            val member = iterator.next()
-            if (member.userId !in newUserIds) {
-                iterator.remove()
-            }
-        }
+        _members.removeAll { it.userId !in memberByUserId }
 
         members.forEach { info ->
-            if (_members.none { it.userId == info.userId }) {
+            val existing = _members.find { it.userId == info.userId }
+            if (existing != null) {
+                existing.updatePosition(info.position)
+            } else {
                 _members.add(ProjectMember.create(project = this, userId = info.userId, position = info.position))
             }
         }

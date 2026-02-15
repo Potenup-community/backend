@@ -26,7 +26,7 @@ data class ProjectContent(
     }
 
     private fun validateTitle() {
-        require(title.isNotBlank() && title.length <= MAX_TITLE_LENGTH) {
+        if (title.isBlank() || title.length > MAX_TITLE_LENGTH) {
             throw BusinessException(ProjectErrorCode.INVALID_PROJECT_TITLE)
         }
     }

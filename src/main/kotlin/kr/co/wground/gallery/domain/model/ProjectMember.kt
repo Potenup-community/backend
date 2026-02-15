@@ -30,9 +30,16 @@ class ProjectMember private constructor(
     @Column(name = "user_id", nullable = false)
     val userId: UserId,
 
-    @Column(nullable = false, length = MAX_POSITION_LENGTH)
-    val position: String,
+    position: String,
 ) {
+
+    @Column(nullable = false, length = MAX_POSITION_LENGTH)
+    var position: String = position
+        protected set
+
+    fun updatePosition(position: String) {
+        this.position = position
+    }
 
     companion object {
         const val MAX_POSITION_LENGTH = 50
