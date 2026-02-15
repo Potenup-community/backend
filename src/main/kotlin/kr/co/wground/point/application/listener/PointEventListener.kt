@@ -1,5 +1,6 @@
 package kr.co.wground.point.application.listener
 
+import kr.co.wground.common.event.AttendanceCheckedEvent
 import kr.co.wground.common.event.CommentCreatedEvent
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.PostCreatedEvent
@@ -86,6 +87,19 @@ class PointEventListener(
         earnSafely("스터디 결재완료 지급 (members: ${memberIds})") {
             if (memberIds.isEmpty()) return@earnSafely
             earnPointUseCase.forStudyJoin(memberIds, event.studyId)
+        }
+    }
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleAttendanceChecked(event: AttendanceCheckedEvent) {
+        earnSafely("출석 포인트 (userId: ${event.userId})") {
+            earnPointUseCase.forAttendance(event.userId, event.attendanceDate)
+        }
+        if (event.streakCount >= 2) {
+            earnSafely("연속 출석 보너스 (userId: ${event.userId}, streak: ${event.streakCount})") {
+                earnPointUseCase.forAttendanceStreak(event.userId, event.attendanceDate)
+            }
         }
     }
 

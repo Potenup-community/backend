@@ -9,8 +9,8 @@ interface EarnPointUseCase {
     fun forReceiveCommentLike(authorId: UserId, reactorId: UserId)
     fun forGivePostLike(reactorId: UserId, postId: Long)
     fun forGiveCommentLike(reactorId: UserId, commentId: Long)
-    fun forAttendance(userId: UserId, attendanceId: Long)
-    fun forAttendanceStreak(userId: UserId, attendanceId: Long)
+    fun forAttendance(userId: UserId, attendanceDate: Long)
+    fun forAttendanceStreak(userId: UserId, attendanceDate: Long)
     fun forStudyCreate(userId: UserId, studyId: Long)
     fun forStudyJoin(userIds: List<UserId>, studyId: Long)
 }

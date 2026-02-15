@@ -1,5 +1,6 @@
 package kr.co.wground.point.application.command
 
+import java.time.LocalDate
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.point.application.command.usecase.AdminPointUseCase
@@ -62,15 +63,15 @@ class PointCommandService(
         }
     }
 
-    override fun forAttendance(userId: UserId, attendanceId: Long) {
+    override fun forAttendance(userId: UserId, attendanceDate: Long) {
         earn(userId, PointType.ATTENDANCE) {
-            PointHistory.forAttendance(userId, attendanceId)
+            PointHistory.forAttendance(userId,attendanceDate)
         }
     }
 
-    override fun forAttendanceStreak(userId: UserId, attendanceId: Long) {
+    override fun forAttendanceStreak(userId: UserId, attendanceDate: Long) {
         earn(userId, PointType.ATTENDANCE_STREAK) {
-            PointHistory.forAttendanceStreak(userId, attendanceId)
+            PointHistory.forAttendanceStreak(userId,attendanceDate)
         }
     }
 
