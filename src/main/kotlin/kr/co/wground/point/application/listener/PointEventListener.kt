@@ -5,10 +5,11 @@ import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.PostCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.common.event.StudyApproveEvent
-import kr.co.wground.point.application.usecase.EarnPointUseCase
-import kr.co.wground.study.infra.StudyRepository
+import kr.co.wground.point.application.command.usecase.CreateWalletUseCase
+import kr.co.wground.point.application.command.usecase.EarnPointUseCase
+import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
+import kr.co.wground.user.domain.constant.UserSignupStatus
 import org.slf4j.LoggerFactory
-import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
@@ -17,9 +18,19 @@ import org.springframework.transaction.event.TransactionalEventListener
 @Component
 class PointEventListener(
     private val earnPointUseCase: EarnPointUseCase,
-    private val studyRepository: StudyRepository,
+    private val createWalletUseCase: CreateWalletUseCase,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleUserApproved(event: DecideUserStatusEvent) {
+        if (!UserSignupStatus.isAccepted(event.decision)) return
+
+        earnSafely("지갑 생성 (userId: ${event.userId})") {
+            createWalletUseCase.createWallets(event.userId)
+        }
+    }
 
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -40,6 +51,8 @@ class PointEventListener(
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handlePostReaction(event: PostReactionCreatedEvent) {
+        if (event.postWriterId == event.reactorId) return
+
         earnSafely("게시글 좋아요 받음 (작성자: ${event.postWriterId})") {
             earnPointUseCase.forReceivePostLike(event.postWriterId, event.reactorId)
         }
@@ -51,6 +64,8 @@ class PointEventListener(
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleCommentReaction(event: CommentReactionCreatedEvent) {
+        if (event.commentWriterId == event.reactorId) return
+
         earnSafely("댓글 좋아요 받음 (작성자: ${event.commentWriterId})") {
             earnPointUseCase.forReceiveCommentLike(event.commentWriterId, event.reactorId)
         }
@@ -62,21 +77,15 @@ class PointEventListener(
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleStudyApproved(event: StudyApproveEvent) {
-        val study = studyRepository.findByIdOrNull(event.studyId) ?: run {
-            log.warn("[Point] 스터디를 찾을 수 없습니다. (studyId: ${event.studyId})")
-            return
-        }
+        val memberIds = event.memberIds
+            .filter { it != event.leaderId }
 
-        val userIds = study.recruitments
-            .map { it.userId }
-            .filter { it != study.leaderId }
-
-        earnSafely("스터디 결재완료 지급 (leaderId: ${study.leaderId})") {
-            earnPointUseCase.forStudyCreate(study.leaderId, event.studyId)
+        earnSafely("스터디 결재완료 지급 (leaderId: ${event.leaderId})") {
+            earnPointUseCase.forStudyCreate(event.leaderId, event.studyId)
         }
-        earnSafely("스터디 결재완료 지급 (members: ${userIds})") {
-            if (userIds.isEmpty()) return@earnSafely
-            earnPointUseCase.forStudyJoin(userIds, event.studyId)
+        earnSafely("스터디 결재완료 지급 (members: ${memberIds})") {
+            if (memberIds.isEmpty()) return@earnSafely
+            earnPointUseCase.forStudyJoin(memberIds, event.studyId)
         }
     }
 
@@ -84,7 +93,7 @@ class PointEventListener(
         try {
             action()
         } catch (e: Exception) {
-            log.warn("[Point] {} 포인트 적립 실패: {}", reason, e.message)
+            log.error("[Point] {} 포인트 적립 실패: {}", reason, e.message)
         }
     }
 }
