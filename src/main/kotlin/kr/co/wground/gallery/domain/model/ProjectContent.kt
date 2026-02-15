@@ -11,18 +11,17 @@ data class ProjectContent(
     @Column(nullable = false, length = MAX_TITLE_LENGTH)
     val title: String,
     @Lob
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT", length = MAX_DESCRIPTION_LENGTH)
     val description: String,
-    @Lob
-    @Column(columnDefinition = "TEXT")
-    val additionalDescription: String? = null,
 ) {
     companion object {
         const val MAX_TITLE_LENGTH = 100
+        const val MAX_DESCRIPTION_LENGTH = 2000
     }
 
     init {
         validateTitle()
+        validateDescription()
     }
 
     private fun validateTitle() {
@@ -31,11 +30,16 @@ data class ProjectContent(
         }
     }
 
-    fun update(title: String?, description: String?, additionalDescription: String?): ProjectContent {
+    private fun validateDescription() {
+        if (description.isBlank() || description.length > MAX_DESCRIPTION_LENGTH) {
+            throw BusinessException(ProjectErrorCode.INVALID_PROJECT_DESCRIPTION)
+        }
+    }
+
+    fun update(title: String?, description: String?): ProjectContent {
         return ProjectContent(
             title = title ?: this.title,
             description = description ?: this.description,
-            additionalDescription = additionalDescription ?: this.additionalDescription,
         )
     }
 }
