@@ -7,21 +7,19 @@ import kr.co.wground.point.application.command.usecase.EarnPointUseCase
 import kr.co.wground.point.application.command.usecase.PurchasePointUseCase
 import kr.co.wground.point.domain.PointHistory
 import kr.co.wground.point.domain.PointType
-import kr.co.wground.point.domain.PointWallet
 import kr.co.wground.point.exception.PointErrorCode
-import kr.co.wground.point.infra.history.PointHistoryRepository
-import kr.co.wground.point.infra.wallet.PointWalletRepository
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDate
-import kr.co.wground.point.domain.PointReferenceType
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 
 @Service
-@Transactional
 class PointCommandService(
-    private val pointHistoryRepository: PointHistoryRepository,
-    private val pointWalletRepository: PointWalletRepository
+    private val executor: PointTransactionExecutor
 ) : EarnPointUseCase, PurchasePointUseCase, AdminPointUseCase {
+
+    companion object {
+        const val MAX_RETRY_ATTEMPTS = 3
+    }
 
     override fun forWritePost(userId: UserId, postId: Long) {
         earn(userId, PointType.WRITE_POST) {
@@ -78,90 +76,53 @@ class PointCommandService(
     }
 
     override fun forStudyJoin(userIds: List<UserId>, studyId: Long) {
-        val alreadyEarned = pointHistoryRepository.findUserIdsWithHistory(
-            userIds, PointReferenceType.STUDY, studyId, PointType.STUDY_JOIN
-        )
+        val distinct = userIds.distinct()
+        if (distinct.isEmpty()) return
 
-        val targetUserIds = userIds - alreadyEarned.toSet()
-        if (targetUserIds.isEmpty()) return
-
-        val wallets = pointWalletRepository.findByUserIdIn(targetUserIds)
-        val joinAmount = PointType.STUDY_JOIN.amount
-        val walletMap = wallets.associateBy { it.userId }
-
-        targetUserIds.forEach { userId ->
-            val wallet = walletMap[userId]
-                ?: pointWalletRepository.save(PointWallet.create(userId))
-
-            wallet.addBalance(joinAmount)
+        retryOptimisticOrSkip {
+            executor.executeStudyJoinBatchEvent(distinct, studyId)
         }
-
-        val histories = targetUserIds.map { userId ->
-            PointHistory.forStudyJoin(userId, studyId)
-        }
-
-        pointHistoryRepository.saveAll(histories)
     }
 
     override fun forPurchase(userId: UserId, amount: Long, itemId: Long) {
-        val wallet = pointWalletRepository.findByUserId(userId)
-            ?: throw BusinessException(PointErrorCode.WALLET_NOT_FOUND)
-
-        wallet.deductBalance(amount)
-
-        pointHistoryRepository.save(
-            PointHistory.forPurchase(userId, amount, itemId)
-        )
+        retryOptimisticOrThrow {
+            executor.executePurchase(userId, amount, itemId)
+        }
     }
 
     override fun givePoint(userId: UserId, amount: Long, adminId: Long) {
-        val wallet = pointWalletRepository.findByUserId(userId)
-            ?: pointWalletRepository.save(PointWallet.create(userId))
-
-        wallet.addBalance(amount)
-
-        pointHistoryRepository.save(
-            PointHistory.forAdminGiven(userId, amount, adminId)
-        )
-    }
-
-    private fun earn(
-        userId: UserId,
-        type: PointType,
-        historyFactory: () -> PointHistory
-    ) {
-        validateDailyLimit(userId, type)
-        val history = historyFactory().also { it.validateNotDuplicate(pointHistoryRepository) }
-
-        pointHistoryRepository.save(history)
-        getOrCreateWallet(userId).addBalance(history.amount)
-    }
-
-    private fun validateDailyLimit(userId: UserId, type: PointType) {
-        val limit = type.dailyLimit ?: return
-
-        val today = LocalDate.now()
-        val start = today.atStartOfDay()
-        val end = today.plusDays(1).atStartOfDay()
-
-        val todayCount = pointHistoryRepository.countDailyByUserIdAndType(userId, type, start, end)
-
-        if (todayCount >= limit) {
-            throw BusinessException(PointErrorCode.DAILY_LIMIT_EXCEEDED)
+        retryOptimisticOrThrow {
+            executor.executeAdminGive(userId, amount, adminId)
         }
     }
 
-    private fun PointHistory.validateNotDuplicate(repo: PointHistoryRepository) {
-        val duplicated = repo.existsByUserIdAndRefTypeAndRefIdAndType(
-            userId, refType, refId, type
-        )
-        if (duplicated) {
-            throw BusinessException(PointErrorCode.DUPLICATE_POINT_HISTORY)
+    private fun earn(userId: UserId, type: PointType, historyFactory: () -> PointHistory) {
+        retryOptimisticOrSkip {
+            executor.executeEarnEvent(userId, type, historyFactory)
         }
     }
 
-    private fun getOrCreateWallet(userId: UserId): PointWallet {
-        return pointWalletRepository.findByUserId(userId)
-            ?: pointWalletRepository.save(PointWallet.create(userId))
+    private inline fun <T> retryOptimisticOrThrow(maxAttempts: Int = MAX_RETRY_ATTEMPTS, block: () -> T): T {
+        repeat(maxAttempts) { _ ->
+            try {
+                return block()
+            } catch (_: ObjectOptimisticLockingFailureException) {
+                // retry
+            }
+        }
+        throw BusinessException(PointErrorCode.POINT_PROCESSING_FAILED)
+    }
+
+    private inline fun retryOptimisticOrSkip(maxAttempts: Int = MAX_RETRY_ATTEMPTS, block: () -> Unit) {
+        repeat(maxAttempts) {
+            try {
+                block()
+                return
+            } catch (_: ObjectOptimisticLockingFailureException) {
+                // retry
+            } catch (_: DataIntegrityViolationException) {
+                return // 이벤트는 중복/경합 스킵
+            }
+        }
     }
 }
