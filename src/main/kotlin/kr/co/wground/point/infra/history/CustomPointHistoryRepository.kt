@@ -2,9 +2,10 @@ package kr.co.wground.point.infra.history
 
 import java.time.LocalDateTime
 import kr.co.wground.global.common.UserId
+import kr.co.wground.point.application.query.dto.PointTypeStatsDto
 import kr.co.wground.point.domain.PointHistory
+import kr.co.wground.point.domain.PointReferenceType
 import kr.co.wground.point.domain.PointType
-import kr.co.wground.point.infra.dto.PointTypeStatsDto
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 
@@ -35,6 +36,14 @@ interface CustomPointHistoryRepository {
         startOfDay: LocalDateTime,
         endOfDay: LocalDateTime
     ): Long
+
+    //스터디 멤버들 조회
+    fun findUserIdsWithHistory(
+        userIds: List<UserId>,
+        refType: PointReferenceType,
+        refId: Long,
+        type: PointType
+    ): List<UserId>
 
     // 내역 조회 (전체)
     fun findByUserId(userId: UserId, pageable: Pageable): Slice<PointHistory>

@@ -26,9 +26,7 @@ enum class PointErrorCode(
     DAILY_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "PT-0009", "일일 포인트 획득 한도를 초과했습니다."),
     ATTENDANCE_ALREADY_CHECKED(HttpStatus.CONFLICT, "PT-0010", "오늘 이미 출석 체크를 완료했습니다."),
 
-    // 배치 처리
-    BATCH_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PT-0011", "포인트 배치 처리 중 오류가 발생했습니다."),
-    BATCH_LOCK_ACQUISITION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "PT-0012", "배치 작업 락 획득에 실패했습니다."),
+    POINT_PROCESSING_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "PT-0011", "포인트 처리 중 오류가 발생했습니다."),
 
     // 권한
     ADMIN_POINT_GRANT_UNAUTHORIZED(HttpStatus.FORBIDDEN, "PT-0013", "관리자 포인트 지급 권한이 없습니다."),

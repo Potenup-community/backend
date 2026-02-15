@@ -1,4 +1,4 @@
-package kr.co.wground.point.application.dto
+package kr.co.wground.point.application.query.dto
 
 import kr.co.wground.global.common.UserId
 import kr.co.wground.point.domain.PointWallet
