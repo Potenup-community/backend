@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.StudyCreateCommand
-import kr.co.wground.study.domain.constant.BudgetType
+import kr.co.wground.study.domain.enums.BudgetType
 
 data class StudyCreateRequest(
     @field:NotBlank(message = "이름은 빈 값일수 없습니다.")

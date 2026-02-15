@@ -1,6 +1,6 @@
 package kr.co.wground.global.scheduler.study
 
-import kr.co.wground.study.application.event.StudyScheduleChangedEvent
+import kr.co.wground.study_schedule.application.event.StudyScheduleChangedEvent
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional

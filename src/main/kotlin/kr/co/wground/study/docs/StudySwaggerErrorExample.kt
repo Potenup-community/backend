@@ -82,7 +82,7 @@ object StudySwaggerErrorExample {
             "status": 400,
             "errors": []
         }"""
-        const val STUDY_MIN_MEMBER_REQUIRED = """{
+        const val LEADER_CANNOT_LEAVE = """{
             "code": "SD-0014",
             "message": "스터디장은 탈퇴 할 수 없습니다.",
             "status": 400,

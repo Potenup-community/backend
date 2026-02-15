@@ -22,7 +22,7 @@ import kr.co.wground.study.presentation.request.study.StudyUpdateRequest
 import kr.co.wground.study.presentation.response.CustomSliceResponse
 import kr.co.wground.study.presentation.response.study.StudyDetailResponse
 import kr.co.wground.study.presentation.response.study.StudyIdResponse
-import kr.co.wground.study.presentation.response.study.StudyQueryResponse
+import kr.co.wground.study.presentation.response.study.StudySearchResponse
 import org.springdoc.core.annotations.ParameterObject
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
@@ -139,39 +139,6 @@ interface StudyApi {
         ) userId: CurrentUserId,
         @RequestBody @Valid request: StudyCreateRequest
     ): ResponseEntity<StudyIdResponse>
-
-    @Operation(summary = "스터디 상세 조회", description = "스터디 ID로 상세 정보를 조회합니다.")
-    @ApiResponses(
-        value = [
-            ApiResponse(
-                responseCode = "200", description = "조회 성공",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = StudyDetailResponse::class),
-                    examples = [ExampleObject(value = StudySwaggerResponseExample.STUDY_DETAIL_RESPONSE)]
-                )]
-            ),
-            ApiResponse(
-                responseCode = "404", description = "자원 찾을 수 없음",
-                content = [Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = ErrorResponse::class),
-                    examples = [
-                        ExampleObject(name = "STUDY_NOT_FOUND", value = StudySwaggerErrorExample.Study.STUDY_NOT_FOUND),
-                    ]
-                )]
-            )
-        ]
-    )
-    fun getStudy(
-        @Parameter(
-            `in` = ParameterIn.COOKIE,
-            name = "accessToken",
-            description = "현재 로그인한 사용자 ID",
-            schema = Schema(type = "string", example = "token_value")
-        ) userId: CurrentUserId,
-        @PathVariable studyId: Long
-    ): ResponseEntity<StudyDetailResponse>
 
     @Operation(summary = "스터디 수정", description = "스터디 정보를 수정합니다.")
     @ApiResponses(
@@ -338,6 +305,39 @@ interface StudyApi {
         @PathVariable studyId: Long
     ): ResponseEntity<Unit>
 
+    @Operation(summary = "스터디 상세 조회", description = "스터디 ID로 상세 정보를 조회합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                responseCode = "200", description = "조회 성공",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = StudyDetailResponse::class),
+                    examples = [ExampleObject(value = StudySwaggerResponseExample.STUDY_DETAIL_RESPONSE)]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404", description = "자원 찾을 수 없음",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(name = "STUDY_NOT_FOUND", value = StudySwaggerErrorExample.Study.STUDY_NOT_FOUND),
+                    ]
+                )]
+            )
+        ]
+    )
+    fun getStudy(
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")
+        ) userId: CurrentUserId,
+        @PathVariable studyId: Long
+    ): ResponseEntity<StudyDetailResponse>
+
     @Operation(summary = "스터디 검색/조회", description = "조건에 따라 스터디를 검색하고 조회합니다.")
     @ApiResponses(
         value = [
@@ -361,5 +361,5 @@ interface StudyApi {
             description = "현재 로그인한 사용자 ID",
             schema = Schema(type = "string", example = "token_value")
         ) userId: CurrentUserId
-    ): ResponseEntity<CustomSliceResponse<StudyQueryResponse>>
+    ): ResponseEntity<CustomSliceResponse<StudySearchResponse>>
 }

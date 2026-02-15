@@ -9,12 +9,17 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import kr.co.wground.global.common.UserId
+import lombok.AccessLevel
+import lombok.Getter
+import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 
 @Entity
-class StudyRecruitment(
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+class StudyRecruitment private constructor(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Getter
     val id: Long = 0,
     @Column(nullable = false)
     val userId: UserId,
@@ -28,13 +33,6 @@ class StudyRecruitment(
 
     companion object {
         fun apply(userId: UserId, study: Study): StudyRecruitment {
-            return StudyRecruitment(
-                userId = userId,
-                study = study,
-            )
-        }
-
-        fun createByLeader(userId: UserId, study: Study): StudyRecruitment {
             return StudyRecruitment(
                 userId = userId,
                 study = study,
