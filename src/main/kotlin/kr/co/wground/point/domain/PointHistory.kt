@@ -179,7 +179,7 @@ class PointHistory private constructor(
         fun forPurchase(userId: UserId, amount: Long, itemId: Long): PointHistory {
             return create(
                 userId = userId,
-                amount = -amount,
+                amount = amount,
                 type = PointType.USE_SHOP,
                 refType = PointReferenceType.SHOP_ITEM,
                 refId = itemId
@@ -200,7 +200,7 @@ class PointHistory private constructor(
             if (userId <= 0) {
                 throw BusinessException(PointErrorCode.INVALID_USER_ID)
             }
-            if (amount == 0L) {
+            if (amount <= 0L) {
                 throw BusinessException(PointErrorCode.INVALID_AMOUNT)
             }
             if (refId <= 0) {

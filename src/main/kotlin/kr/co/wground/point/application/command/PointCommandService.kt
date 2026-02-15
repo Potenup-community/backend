@@ -90,7 +90,7 @@ class PointCommandService(
         }
     }
 
-    override fun givePoint(userId: UserId, amount: Long, adminId: Long) {
+    override fun givePoint(userId: UserId, amount: Long, adminId: UserId) {
         retryOptimisticOrThrow {
             executor.executeAdminGive(userId, amount, adminId)
         }
