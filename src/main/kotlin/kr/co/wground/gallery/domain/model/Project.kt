@@ -127,7 +127,7 @@ class Project private constructor(
         this.viewCount++
     }
 
-    fun addMember(userId: UserId, position: String) {
+    fun addMember(userId: UserId, position: Position) {
         if (_members.any { it.userId == userId }) {
             return
         }
@@ -149,7 +149,7 @@ class Project private constructor(
         }
     }
 
-    data class MemberInfo(val userId: UserId, val position: String)
+    data class MemberInfo(val userId: UserId, val position: Position)
 
     private fun validateAlive() {
         if (isDeleted) {

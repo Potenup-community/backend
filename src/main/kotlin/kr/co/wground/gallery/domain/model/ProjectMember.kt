@@ -2,6 +2,8 @@ package kr.co.wground.gallery.domain.model
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -30,21 +32,20 @@ class ProjectMember private constructor(
     @Column(name = "user_id", nullable = false)
     val userId: UserId,
 
-    position: String,
+    position: Position,
 ) {
 
-    @Column(nullable = false, length = MAX_POSITION_LENGTH)
-    var position: String = position
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    var position: Position = position
         protected set
 
-    fun updatePosition(position: String) {
+    fun updatePosition(position: Position) {
         this.position = position
     }
 
     companion object {
-        const val MAX_POSITION_LENGTH = 50
-
-        fun create(project: Project, userId: UserId, position: String): ProjectMember {
+        fun create(project: Project, userId: UserId, position: Position): ProjectMember {
             return ProjectMember(
                 project = project,
                 userId = userId,
