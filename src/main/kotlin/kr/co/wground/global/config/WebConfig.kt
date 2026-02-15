@@ -12,13 +12,15 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
+import kr.co.wground.attendance.presentation.AttendanceInterceptor
 
 @Configuration
 class WebConfig(
     private val userIdArgumentResolver: UserIdArgumentResolver,
     private val uploadPolicy: UploadPolicy,
     private val profilePolicy: ProfilePolicy,
-    private val httpRouteMdcInterceptor: HttpRouteMdcInterceptor
+    private val httpRouteMdcInterceptor: HttpRouteMdcInterceptor,
+    private val attendanceInterceptor: AttendanceInterceptor
 ) : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         registry
@@ -55,5 +57,8 @@ class WebConfig(
 
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(httpRouteMdcInterceptor)
+        registry.addInterceptor(attendanceInterceptor)
+            .addPathPatterns("/api/**")
+            .excludePathPatterns("/api/auth/**")
     }
 }
