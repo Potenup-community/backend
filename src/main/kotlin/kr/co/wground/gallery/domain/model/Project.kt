@@ -14,11 +14,8 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.gallery.domain.exception.ProjectErrorCode
 import kr.co.wground.global.common.ProjectId
 import kr.co.wground.global.common.UserId
-import lombok.AccessLevel
-import lombok.NoArgsConstructor
 
 @Entity
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 class Project private constructor(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -96,9 +93,7 @@ class Project private constructor(
     init {
         validateTechStacks(techStacks)
         validateGithubUrl(githubUrl)
-        if (deployUrl != null) {
-            validateDeployUrl(deployUrl!!)
-        }
+        deployUrl?.let { validateDeployUrl(it) }
         validateThumbnailImagePath(thumbnailImagePath)
     }
 

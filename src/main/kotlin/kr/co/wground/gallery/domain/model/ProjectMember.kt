@@ -11,8 +11,6 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import kr.co.wground.global.common.UserId
-import lombok.AccessLevel
-import lombok.NoArgsConstructor
 
 @Entity
 @Table(
@@ -20,7 +18,6 @@ import lombok.NoArgsConstructor
         UniqueConstraint(columnNames = ["project_id", "user_id"])
     ]
 )
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 class ProjectMember private constructor(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
