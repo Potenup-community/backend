@@ -12,17 +12,20 @@ class StudySchedulerManager(
     private val studyScheduleEventPublisher: StudyScheduleEventPublisher,
     private val taskScheduler: TaskScheduler
 ) {
+
     private val tasks = ConcurrentHashMap<Long, MutableList<ScheduledFuture<*>>>()
 
     companion object {
         const val STUDY_ALERT_PREVIOUS_DAYS = 3L
     }
+
     fun addTask(
         scheduleId: Long,
         recruitStart: LocalDateTime,
         recruitEnd: LocalDateTime,
         studyEnd: LocalDateTime
     ) {
+
         // scheduleId 에 해당하는 태스크 건이 이미 스케쥴링 되어 있는 경우 제거
         removeTask(scheduleId)
 
@@ -61,6 +64,7 @@ class StudySchedulerManager(
     }
 
     fun removeTask(scheduleId: Long) {
+
         tasks[scheduleId]?.forEach { it.cancel(false) }
         tasks.remove(scheduleId)
     }

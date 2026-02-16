@@ -14,6 +14,7 @@ data class StudyScheduleChangedEvent(
     val studyEndDate: LocalDateTime,
     val type: EventType
 ) {
+
     enum class EventType {
         CREATED,
         UPDATED,
@@ -21,7 +22,9 @@ data class StudyScheduleChangedEvent(
     }
 
     companion object {
+
         fun of(schedule: StudySchedule, studyScheduleEventType: EventType): StudyScheduleChangedEvent {
+
             return StudyScheduleChangedEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,

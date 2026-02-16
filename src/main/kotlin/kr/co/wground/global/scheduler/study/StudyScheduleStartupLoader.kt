@@ -16,9 +16,11 @@ class StudyScheduleStartupLoader(
     @Value("\${spring.jpa.properties.hibernate.jdbc.batch_size:100}")
     private val batchSize: Int
 ) {
+
     @EventListener(ApplicationReadyEvent::class)
     @Transactional(readOnly = true)
     fun loadSchedulerTask(event: ApplicationReadyEvent) {
+
         var pageNumber = 0
         val now = LocalDateTime.now()
         

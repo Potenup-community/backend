@@ -11,9 +11,11 @@ import org.springframework.transaction.event.TransactionalEventListener
 class StudyScheduleEventListener(
     private val studySchedulerManager: StudySchedulerManager
 ) {
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleStudyScheduleChangedEvent(event: StudyScheduleChangedEvent) {
+
         when (event.type) {
             StudyScheduleChangedEvent.EventType.CREATED,
             StudyScheduleChangedEvent.EventType.UPDATED -> {

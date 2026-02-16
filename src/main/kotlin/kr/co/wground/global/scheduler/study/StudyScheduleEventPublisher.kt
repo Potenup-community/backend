@@ -14,8 +14,10 @@ class StudyScheduleEventPublisher(
     private val studyScheduleRepository: StudyScheduleRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) {
+
     @Transactional(readOnly = true)
     fun publishStudyRecruitStartedEvent(scheduleId: Long) {
+
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
             StudyRecruitStartedEvent(
@@ -28,6 +30,7 @@ class StudyScheduleEventPublisher(
 
     @Transactional(readOnly = true)
     fun publishStudyRecruitEndedEvent(scheduleId: Long) {
+
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
             StudyRecruitEndedEvent(
@@ -40,6 +43,7 @@ class StudyScheduleEventPublisher(
 
     @Transactional(readOnly = true)
     fun publishStudyEndedEvent(scheduleId: Long) {
+
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
             StudyEndedEvent(
