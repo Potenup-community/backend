@@ -136,23 +136,23 @@ class PointHistory private constructor(
             )
         }
 
-        fun forAttendance(userId: UserId, attendanceId: Long): PointHistory {
+        fun forAttendance(userId: UserId, attendanceDate: Long): PointHistory {
             return create(
                 userId = userId,
                 amount = PointType.ATTENDANCE.amount,
                 type = PointType.ATTENDANCE,
                 refType = PointReferenceType.ATTENDANCE,
-                refId = attendanceId
+                refId = attendanceDate
             )
         }
 
-        fun forAttendanceStreak(userId: UserId, attendanceId: Long): PointHistory {
+        fun forAttendanceStreak(userId: UserId, attendanceDate: Long): PointHistory {
             return create(
                 userId = userId,
                 amount = PointType.ATTENDANCE_STREAK.amount,
                 type = PointType.ATTENDANCE_STREAK,
                 refType = PointReferenceType.ATTENDANCE,
-                refId = attendanceId
+                refId = attendanceDate
             )
         }
 

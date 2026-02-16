@@ -13,8 +13,7 @@ class Attendance protected constructor(
     @Id
     val userId: UserId,
 
-    @Column(nullable = false)
-    var lastAttendanceDate: LocalDate,
+    var lastAttendanceDate: LocalDate? = null,
 
     @Column(nullable = false)
     var streakCount: Int,
@@ -24,34 +23,35 @@ class Attendance protected constructor(
 ) {
     companion object {
         private const val ONE_DAY = 1
-        fun create(userId: UserId, today: LocalDate): Attendance {
-            return Attendance(
+        private const val INITIAL_STREAK = 0
+
+        fun create(userId: UserId): Attendance =
+            Attendance(
                 userId = userId,
-                lastAttendanceDate = today,
-                streakCount = 1,
-                maxStreakCount = 1
+                lastAttendanceDate = null,
+                streakCount = INITIAL_STREAK,
+                maxStreakCount = INITIAL_STREAK
             )
-        }
     }
 
     fun checkIn(today: LocalDate): CheckInResult {
-        validateAttendanceDate(today)
-
-        if (today.isEqual(this.lastAttendanceDate)) return CheckInResult.AlreadyCheckedIn
-
-        this.streakCount = when {
-            lastAttendanceDate.plusDays(ONE_DAY.toLong()).isEqual(today) -> streakCount + ONE_DAY
-            else -> ONE_DAY
+        lastAttendanceDate?.let { last ->
+            validateAttendanceDate(today, last)
+            if (today.isEqual(last)) return CheckInResult.AlreadyCheckedIn
         }
 
-        this.maxStreakCount = maxOf(this.maxStreakCount, this.streakCount)
-        this.lastAttendanceDate = today
+        val lastOrYesterday = lastAttendanceDate ?: today.minusDays(ONE_DAY.toLong())
+        val isConsecutive = lastOrYesterday.plusDays(ONE_DAY.toLong()).isEqual(today)
+
+        streakCount = if (isConsecutive) streakCount + ONE_DAY else ONE_DAY
+        maxStreakCount = maxOf(maxStreakCount, streakCount)
+        lastAttendanceDate = today
 
         return CheckInResult.CheckedIn
     }
 
-    private fun validateAttendanceDate(today: LocalDate) {
-        if (today < this.lastAttendanceDate) {
+    private fun validateAttendanceDate(today: LocalDate, last: LocalDate) {
+        if (today.isBefore(last)) {
             throw BusinessException(AttendanceErrorCode.ATTENDANCE_DAY_CANT_BEFORE_TODAY)
         }
     }
