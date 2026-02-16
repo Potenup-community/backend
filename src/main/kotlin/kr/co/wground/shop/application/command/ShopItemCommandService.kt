@@ -3,8 +3,7 @@ package kr.co.wground.shop.application.command
 import java.time.LocalDateTime
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
-import kr.co.wground.point.exception.PointErrorCode
-import kr.co.wground.point.infra.wallet.PointWalletRepository
+import kr.co.wground.point.application.command.usecase.PurchasePointUseCase
 import kr.co.wground.shop.application.command.usecase.PurchaseItemUseCase
 import kr.co.wground.shop.domain.ShopItem
 import kr.co.wground.shop.domain.UserInventory
@@ -20,13 +19,10 @@ import org.springframework.transaction.annotation.Transactional
 class ShopItemCommandService(
     private val shopItemRepository: ShopItemRepository,
     private val inventoryRepository: UserInventoryRepository,
-    private val walletRepository: PointWalletRepository
+    private val purchasePointUseCase: PurchasePointUseCase
 ) : PurchaseItemUseCase {
 
     override fun purchase(userId: UserId, itemId: Long) {
-        val wallet = walletRepository.findByIdOrNull(userId)
-            ?: throw BusinessException(PointErrorCode.WALLET_NOT_FOUND)
-
         val shopItem = shopItemRepository.findByIdOrNull(itemId)
             ?: throw BusinessException(ShopErrorCode.ITEM_NOT_FOUND)
 
@@ -35,25 +31,19 @@ class ShopItemCommandService(
         val existing = inventoryRepository.findByUserIdAndShopItemId(userId, shopItem.id)
 
         existing?.let {
-            if(shopItem.consumable){
-                throw BusinessException(ShopErrorCode.ALREADY_OWNED_ITEM)
-            }
-            validateRepurchasable(it, shopItem)
-            wallet.deductBalance(shopItem.price)
+            validateRepurchasable(it)
+            purchasePointUseCase.forUpgradePurchase(userId, shopItem.price, shopItem.id)
             it.upgradeToPermanent(LocalDateTime.now())
         } ?: run {
             val inventory = createInventory(userId, shopItem)
-            wallet.deductBalance(shopItem.price)
+            purchasePointUseCase.forPurchase(userId, shopItem.price, shopItem.id)
             inventoryRepository.save(inventory)
         }
     }
 
 
-    private fun validateRepurchasable(existing: UserInventory, shopItem: ShopItem) {
+    private fun validateRepurchasable(existing: UserInventory) {
         if (existing.isPermanent()) {
-            throw BusinessException(ShopErrorCode.ALREADY_OWNED)
-        }
-        if (shopItem.consumable) {
             throw BusinessException(ShopErrorCode.ALREADY_OWNED)
         }
     }

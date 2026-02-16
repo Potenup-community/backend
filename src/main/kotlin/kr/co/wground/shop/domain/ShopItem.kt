@@ -37,6 +37,9 @@ class ShopItem private constructor(
 
     @Column(nullable = false)
     val imageUrl: String,
+
+    @Column(nullable = false, updatable = false)
+    val createdAt: LocalDateTime = LocalDateTime.now()
 ) {
 
     @Id
@@ -46,10 +49,6 @@ class ShopItem private constructor(
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     var status: ShopItemStatus = ShopItemStatus.ACTIVE
-        protected set
-
-    @Column(nullable = false, updatable = false)
-    var createdAt: LocalDateTime = LocalDateTime.now()
         protected set
 
     fun validatePurchasable() {

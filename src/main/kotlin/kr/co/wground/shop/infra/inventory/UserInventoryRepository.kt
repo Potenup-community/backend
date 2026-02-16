@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface UserInventoryRepository : JpaRepository<UserInventory, Long>, CustomUserInventoryRepository {
     fun findByUserIdAndShopItemId(userId: UserId, shopItemId: Long): UserInventory?
-    fun findAllEquippedByUserIdAndItemType(userId: UserId, itemType: ShopItemType) : List<UserInventory>
+    fun findByUserIdAndItemTypeAndEquippedTrue(userId: UserId, itemType: ShopItemType) : List<UserInventory>
 }

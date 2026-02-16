@@ -186,6 +186,16 @@ class PointHistory private constructor(
             )
         }
 
+        fun forUpgradePurchase(userId: UserId, amount: Long, itemId: Long): PointHistory {
+            return create(
+                userId = userId,
+                amount = amount,
+                type = PointType.USE_SHOP,
+                refType = PointReferenceType.UPGRADE_SHOP_ITEM,
+                refId = itemId
+            )
+        }
+
         fun forAdminGiven(userId: UserId, amount: Long, adminId: UserId): PointHistory {
             return create(
                 userId = userId,

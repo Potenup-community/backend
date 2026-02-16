@@ -1,6 +1,5 @@
 package kr.co.wground.point.application.command
 
-import java.time.LocalDate
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.point.application.command.usecase.AdminPointUseCase
@@ -93,6 +92,12 @@ class PointCommandService(
     override fun forPurchase(userId: UserId, amount: Long, itemId: Long) {
         retryOptimisticOrThrow {
             executor.executePurchase(userId, amount, itemId)
+        }
+    }
+
+    override fun forUpgradePurchase(userId: UserId, amount: Long, itemId: Long) {
+        retryOptimisticOrThrow {
+            executor.executeUpgradePurchase(userId, amount, itemId)
         }
     }
 

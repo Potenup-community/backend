@@ -1,11 +1,9 @@
 package kr.co.wground.shop.application.query
 
-import kotlin.collections.orEmpty
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.shop.application.dto.ShopItemDetailDto
-import kr.co.wground.shop.presentation.response.ShopItemGroupResponse
+import kr.co.wground.shop.application.dto.ShopItemSummaryDto
 import kr.co.wground.shop.domain.constant.ShopItemStatus
-import kr.co.wground.shop.domain.constant.ShopItemType
 import kr.co.wground.shop.exception.ShopErrorCode
 import kr.co.wground.shop.infra.item.ShopItemRepository
 import org.springframework.data.repository.findByIdOrNull
@@ -18,17 +16,8 @@ class ShopQueryService(
     private val shopItemRepository: ShopItemRepository,
 ) : ShopQueryUseCase {
 
-    override fun getActiveItems(): List<ShopItemGroupResponse> {
-        val shopItems =shopItemRepository.findSummariesByStatus(ShopItemStatus.ACTIVE)
-
-        val grouped = shopItems.groupBy { it.itemType }
-
-        return ShopItemType.entries.map { type ->
-            ShopItemGroupResponse(
-                itemType = type,
-                items = grouped[type].orEmpty()
-            )
-        }
+    override fun getActiveItems(): List<ShopItemSummaryDto> {
+        return shopItemRepository.findSummariesByStatus(ShopItemStatus.ACTIVE)
     }
 
     override fun getShopItemDetail(id: Long): ShopItemDetailDto {

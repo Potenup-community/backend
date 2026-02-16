@@ -23,7 +23,7 @@ class InventoryCommandService(
 
         inventory.validateOwner(userId)
         val equippedItems = inventoryRepository
-            .findAllEquippedByUserIdAndItemType(userId, inventory.itemType)
+            .findByUserIdAndItemTypeAndEquippedTrue(userId, inventory.itemType)
 
         equippedItems
             .filter { it.id != inventory.id }

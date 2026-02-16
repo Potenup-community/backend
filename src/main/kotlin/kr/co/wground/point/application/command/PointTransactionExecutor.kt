@@ -66,7 +66,7 @@ class PointTransactionExecutor(
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     fun executePurchase(userId: UserId, amount: Long, itemId: Long) {
         val wallet = pointWalletRepository.findByUserId(userId)
             ?: throw BusinessException(PointErrorCode.WALLET_NOT_FOUND)
@@ -75,6 +75,18 @@ class PointTransactionExecutor(
 
         pointHistoryRepository.save(
             PointHistory.forPurchase(userId, amount, itemId)
+        )
+    }
+
+    @Transactional
+    fun executeUpgradePurchase(userId: UserId, amount: Long, itemId: Long) {
+        val wallet = pointWalletRepository.findByUserId(userId)
+            ?: throw BusinessException(PointErrorCode.WALLET_NOT_FOUND)
+
+        wallet.deductBalance(amount)
+
+        pointHistoryRepository.save(
+            PointHistory.forUpgradePurchase(userId, amount, itemId)
         )
     }
 
