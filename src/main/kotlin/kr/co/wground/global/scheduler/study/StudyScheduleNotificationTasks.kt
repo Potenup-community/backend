@@ -1,7 +1,7 @@
 package kr.co.wground.global.scheduler.study
 
-import kr.co.wground.common.event.StudyEndedEvent
-import kr.co.wground.common.event.StudyRecruitEndedEvent
+import kr.co.wground.common.event.StudyEndedSoonEvent
+import kr.co.wground.common.event.StudyRecruitEndedSoonEvent
 import kr.co.wground.common.event.StudyRecruitStartedEvent
 import kr.co.wground.study_schedule.infra.StudyScheduleRepository
 import org.springframework.context.ApplicationEventPublisher
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
-class StudyScheduleEventPublisher(
+class StudyScheduleNotificationTasks(
     private val studyScheduleRepository: StudyScheduleRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) {
@@ -29,11 +29,11 @@ class StudyScheduleEventPublisher(
     }
 
     @Transactional(readOnly = true)
-    fun publishStudyRecruitEndedEvent(scheduleId: Long) {
+    fun publishStudyRecruitEndedSoonEvent(scheduleId: Long) {
 
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
-            StudyRecruitEndedEvent(
+            StudyRecruitEndedSoonEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
                 months = schedule.months
@@ -42,11 +42,11 @@ class StudyScheduleEventPublisher(
     }
 
     @Transactional(readOnly = true)
-    fun publishStudyEndedEvent(scheduleId: Long) {
+    fun publishStudyEndedSoonEvent(scheduleId: Long) {
 
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
-            StudyEndedEvent(
+            StudyEndedSoonEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
                 months = schedule.months

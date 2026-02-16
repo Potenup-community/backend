@@ -9,7 +9,7 @@ import java.util.concurrent.ScheduledFuture
 
 @Component
 class StudySchedulerManager(
-    private val studyScheduleEventPublisher: StudyScheduleEventPublisher,
+    private val studyScheduleNotificationTasks: StudyScheduleNotificationTasks,
     private val taskScheduler: TaskScheduler
 ) {
 
@@ -32,27 +32,30 @@ class StudySchedulerManager(
         val newTasks = mutableListOf<ScheduledFuture<*>>()
         val now = LocalDateTime.now()
 
+        // 스터디 모집 시작 알림 이벤트 등록
         if (recruitStart.isAfter(now)) {
             val future = taskScheduler.schedule(
-                { studyScheduleEventPublisher.publishStudyRecruitStartedEvent(scheduleId) },
+                { studyScheduleNotificationTasks.publishStudyRecruitStartedEvent(scheduleId) },
                 recruitStart.atZone(ZoneId.systemDefault()).toInstant()
             )
             newTasks.add(future)
         }
 
-        val recruitEndNotifyTime = recruitEnd.minusDays(STUDY_ALERT_PREVIOUS_DAYS)// 3일 전 알림
+        // 스터디 모집 종료 예정 알림 이벤트 등록
+        val recruitEndNotifyTime = recruitEnd.minusDays(STUDY_ALERT_PREVIOUS_DAYS)
         if (recruitEndNotifyTime.isAfter(now)) {
             val future = taskScheduler.schedule(
-                { studyScheduleEventPublisher.publishStudyRecruitEndedEvent(scheduleId) },
+                { studyScheduleNotificationTasks.publishStudyRecruitEndedSoonEvent(scheduleId) },
                 recruitEndNotifyTime.atZone(ZoneId.systemDefault()).toInstant()
             )
             newTasks.add(future)
         }
 
-        val studyEndNotifyTime = studyEnd.minusDays(STUDY_ALERT_PREVIOUS_DAYS) // 3일 전 알림
+        // 스터디 종료 예정 알림 이벤트 등록
+        val studyEndNotifyTime = studyEnd.minusDays(STUDY_ALERT_PREVIOUS_DAYS)
         if (studyEndNotifyTime.isAfter(now)) {
             val future = taskScheduler.schedule(
-                { studyScheduleEventPublisher.publishStudyEndedEvent(scheduleId) },
+                { studyScheduleNotificationTasks.publishStudyEndedSoonEvent(scheduleId) },
                 studyEndNotifyTime.atZone(ZoneId.systemDefault()).toInstant()
             )
             newTasks.add(future)

@@ -9,13 +9,13 @@ data class StudyRecruitStartedEvent(
     val months: Months
 )
 
-data class StudyRecruitEndedEvent(
+data class StudyRecruitEndedSoonEvent(
     val scheduleId: Long,
     val trackId: TrackId,
     val months: Months
 )
 
-data class StudyEndedEvent(
+data class StudyEndedSoonEvent(
     val scheduleId: Long,
     val trackId: TrackId,
     val months: Months
