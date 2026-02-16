@@ -1,6 +1,6 @@
 package kr.co.wground.global.scheduler.study
 
-import kr.co.wground.study_schedule.application.event.StudyScheduleChangedEvent
+import kr.co.wground.study_schedule.application.event.StudyScheduleCreatedOrChangedEvent
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -14,11 +14,11 @@ class StudyScheduleEventListener(
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun handleStudyScheduleChangedEvent(event: StudyScheduleChangedEvent) {
+    fun handleStudyScheduleChangedEvent(event: StudyScheduleCreatedOrChangedEvent) {
 
         when (event.type) {
-            StudyScheduleChangedEvent.EventType.CREATED,
-            StudyScheduleChangedEvent.EventType.UPDATED -> {
+            StudyScheduleCreatedOrChangedEvent.EventType.CREATED,
+            StudyScheduleCreatedOrChangedEvent.EventType.UPDATED -> {
                 studyScheduleTaskManager.addTask(
                     scheduleId = event.scheduleId,
                     recruitStart = event.recruitStartDate,
@@ -27,7 +27,7 @@ class StudyScheduleEventListener(
                 )
             }
 
-            StudyScheduleChangedEvent.EventType.DELETED -> {
+            StudyScheduleCreatedOrChangedEvent.EventType.DELETED -> {
                 studyScheduleTaskManager.removeTask(event.scheduleId)
             }
         }

@@ -5,7 +5,7 @@ import kr.co.wground.study_schedule.domain.enums.Months
 import java.time.LocalDateTime
 import kr.co.wground.study_schedule.domain.StudySchedule
 
-data class StudyScheduleChangedEvent(
+data class StudyScheduleCreatedOrChangedEvent(
     val scheduleId: Long,
     val trackId: TrackId,
     val months: Months,
@@ -23,9 +23,9 @@ data class StudyScheduleChangedEvent(
 
     companion object {
 
-        fun of(schedule: StudySchedule, studyScheduleEventType: EventType): StudyScheduleChangedEvent {
+        fun of(schedule: StudySchedule, studyScheduleEventType: EventType): StudyScheduleCreatedOrChangedEvent {
 
-            return StudyScheduleChangedEvent(
+            return StudyScheduleCreatedOrChangedEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
                 months = schedule.months,
