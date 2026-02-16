@@ -23,7 +23,8 @@ class StudyScheduleNotificationTasks(
             StudyRecruitStartedEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
-                months = schedule.months
+                months = schedule.months,
+                studyRecruitStartedAt = schedule.recruitStartDate
             )
         )
     }
@@ -36,7 +37,8 @@ class StudyScheduleNotificationTasks(
             StudyRecruitEndedSoonEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
-                months = schedule.months
+                months = schedule.months,
+                studyRecruitWillBeEndedAt = schedule.recruitEndDate
             )
         )
     }
@@ -49,7 +51,8 @@ class StudyScheduleNotificationTasks(
             StudyEndedSoonEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
-                months = schedule.months
+                months = schedule.months,
+                studyWillBeEndedAt = schedule.studyEndDate
             )
         )
     }
