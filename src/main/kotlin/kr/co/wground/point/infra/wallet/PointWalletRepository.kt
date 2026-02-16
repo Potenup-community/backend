@@ -8,5 +8,5 @@ interface PointWalletRepository : JpaRepository<PointWallet, UserId> {
 
     fun findByUserId(userId: UserId): PointWallet?
 
-    fun existsByUserId(userId: UserId): Boolean
+    fun findByUserIdIn(userIds: List<UserId>): List<PointWallet>
 }
