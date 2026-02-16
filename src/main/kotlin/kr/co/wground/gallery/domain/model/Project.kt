@@ -70,7 +70,7 @@ class Project private constructor(
         val GITHUB_URL_PATTERN = Regex("^(http|https)://github.com.*$")
         val URL_PATTERN = Regex("^(http|https)://.*$")
 
-        fun createNew(
+        fun create(
             authorId: UserId,
             content: ProjectContent,
             techStacks: String,
