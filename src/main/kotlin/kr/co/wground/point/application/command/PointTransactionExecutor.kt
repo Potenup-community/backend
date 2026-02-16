@@ -22,6 +22,11 @@ class PointTransactionExecutor(
 ) {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    fun createWalletIfNotExists(userId: UserId) {
+        getOrCreateWallet(userId)
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     fun executeEarnEvent(userId: UserId, type: PointType, historyFactory: () -> PointHistory) {
         if (!canEarnToday(userId, type)) return
 

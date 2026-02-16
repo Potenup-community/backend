@@ -3,6 +3,7 @@ package kr.co.wground.point.application.command
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.point.application.command.usecase.AdminPointUseCase
+import kr.co.wground.point.application.command.usecase.CreateWalletUseCase
 import kr.co.wground.point.application.command.usecase.EarnPointUseCase
 import kr.co.wground.point.application.command.usecase.PurchasePointUseCase
 import kr.co.wground.point.domain.PointHistory
@@ -15,10 +16,14 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException
 @Service
 class PointCommandService(
     private val executor: PointTransactionExecutor
-) : EarnPointUseCase, PurchasePointUseCase, AdminPointUseCase {
+) : EarnPointUseCase, PurchasePointUseCase, AdminPointUseCase, CreateWalletUseCase {
 
     companion object {
         const val MAX_RETRY_ATTEMPTS = 3
+    }
+
+    override fun createWallets(userIds: List<UserId>) {
+        userIds.forEach { executor.createWalletIfNotExists(it) }
     }
 
     override fun forWritePost(userId: UserId, postId: Long) {
