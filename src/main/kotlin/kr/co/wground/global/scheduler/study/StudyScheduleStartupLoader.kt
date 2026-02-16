@@ -29,7 +29,7 @@ class StudyScheduleStartupLoader(
             if (schedules.isEmpty()) break
 
             schedules.forEach { schedule ->
-                studySchedulerManager.registerSchedule(
+                studySchedulerManager.addTask(
                     scheduleId = schedule.id,
                     recruitStart = schedule.recruitStartDate,
                     recruitEnd = schedule.recruitEndDate,

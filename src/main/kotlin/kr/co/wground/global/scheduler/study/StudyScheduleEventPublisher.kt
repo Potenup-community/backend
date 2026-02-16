@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
-class StudyTaskExecutor(
+class StudyScheduleEventPublisher(
     private val studyScheduleRepository: StudyScheduleRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) {
     @Transactional(readOnly = true)
-    fun executeRecruitStart(scheduleId: Long) {
+    fun publishStudyRecruitStartedEvent(scheduleId: Long) {
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
             StudyRecruitStartedEvent(
@@ -27,7 +27,7 @@ class StudyTaskExecutor(
     }
 
     @Transactional(readOnly = true)
-    fun executeRecruitEnd(scheduleId: Long) {
+    fun publishStudyRecruitEndedEvent(scheduleId: Long) {
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
             StudyRecruitEndedEvent(
@@ -39,7 +39,7 @@ class StudyTaskExecutor(
     }
 
     @Transactional(readOnly = true)
-    fun executeStudyEnd(scheduleId: Long) {
+    fun publishStudyEndedEvent(scheduleId: Long) {
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
             StudyEndedEvent(

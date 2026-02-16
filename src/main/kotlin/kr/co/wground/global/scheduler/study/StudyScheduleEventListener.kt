@@ -13,11 +13,11 @@ class StudyScheduleEventListener(
 ) {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun handleScheduleChange(event: StudyScheduleChangedEvent) {
+    fun handleStudyScheduleChangedEvent(event: StudyScheduleChangedEvent) {
         when (event.type) {
             StudyScheduleChangedEvent.EventType.CREATED,
             StudyScheduleChangedEvent.EventType.UPDATED -> {
-                studySchedulerManager.registerSchedule(
+                studySchedulerManager.addTask(
                     scheduleId = event.scheduleId,
                     recruitStart = event.recruitStartDate,
                     recruitEnd = event.recruitEndDate,
@@ -26,7 +26,7 @@ class StudyScheduleEventListener(
             }
 
             StudyScheduleChangedEvent.EventType.DELETED -> {
-                studySchedulerManager.cancelSchedule(event.scheduleId)
+                studySchedulerManager.removeTask(event.scheduleId)
             }
         }
     }
