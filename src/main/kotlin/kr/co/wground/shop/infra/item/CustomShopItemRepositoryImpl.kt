@@ -21,7 +21,6 @@ class CustomShopItemRepositoryImpl(
                     ShopItemSummaryDto::class.java,
                     shopItem.id,
                     shopItem.name,
-                    shopItem.description,
                     shopItem.price,
                     shopItem.itemType,
                     shopItem.consumable,

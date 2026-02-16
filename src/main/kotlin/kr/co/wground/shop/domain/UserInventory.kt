@@ -138,7 +138,7 @@ class UserInventory private constructor(
         refreshEquippedState(now)
 
         if (isPermanent()) {
-            throw BusinessException(ShopErrorCode.ALREADY_PERMANENT)
+            throw BusinessException(ShopErrorCode.ALREADY_OWNED_ITEM)
         }
 
         this._expireAt = null

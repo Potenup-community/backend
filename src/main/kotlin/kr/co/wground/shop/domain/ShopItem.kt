@@ -113,4 +113,12 @@ class ShopItem private constructor(
             }
         }
     }
+
+    fun getRequiredDurationDays(): Int {
+        if (!this.consumable) {
+            throw BusinessException(ShopErrorCode.PERMANENT_ITEM_SHOULD_NOT_HAVE_DURATION)
+        }
+        return this.durationDays
+            ?: throw BusinessException(ShopErrorCode.CONSUMABLE_ITEM_NEED_DURATION)
+    }
 }

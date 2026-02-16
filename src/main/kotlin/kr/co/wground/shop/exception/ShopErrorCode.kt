@@ -16,7 +16,7 @@ enum class ShopErrorCode(
     NOT_OWNER(HttpStatus.FORBIDDEN, "SH-0006", "해당 아이템의 소유자가 아닙니다."),
     INVALID_PRICE_TO_CREATE(HttpStatus.BAD_REQUEST,"SH-0007","가격은 0보다 커야 합니다."),
     CONSUMABLE_ITEM_NEED_DURATION(HttpStatus.BAD_REQUEST,"SH-0008","기간제 아이템은 유효 일수가 필요합니다."),
-    ALREADY_PERMANENT(HttpStatus.BAD_REQUEST,"SH-0009","이미 구매한 영구 아이템입니다."),
+    ALREADY_OWNED_ITEM(HttpStatus.BAD_REQUEST,"SH-0009","이미 구매한 아이템입니다."),
     DURATION_DAYS_MUST_POSITIVE(HttpStatus.BAD_REQUEST,"SH-0010","아이템 기간은 0보다 커야 합니다."),
     PERMANENT_ITEM_SHOULD_NOT_HAVE_DURATION(HttpStatus.BAD_REQUEST,"SH-0011", "영구 아이템은 기간을 가질 수 없습니다."),
     INVALID_ITEM_NAME(HttpStatus.BAD_REQUEST,"SH-0012","아이템 이름은 빈 값일수 없습니다."),
