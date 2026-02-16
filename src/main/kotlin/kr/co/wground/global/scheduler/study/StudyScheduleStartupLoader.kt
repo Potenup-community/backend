@@ -12,7 +12,7 @@ import java.time.LocalDateTime
 @Component
 class StudyScheduleStartupLoader(
     private val studyScheduleRepository: StudyScheduleRepository,
-    private val studySchedulerManager: StudySchedulerManager,
+    private val studyScheduleTaskManager: StudyScheduleTaskManager,
     @Value("\${spring.jpa.properties.hibernate.jdbc.batch_size:100}")
     private val batchSize: Int
 ) {
@@ -31,7 +31,7 @@ class StudyScheduleStartupLoader(
             if (schedules.isEmpty()) break
 
             schedules.forEach { schedule ->
-                studySchedulerManager.addTask(
+                studyScheduleTaskManager.addTask(
                     scheduleId = schedule.id,
                     recruitStart = schedule.recruitStartDate,
                     recruitEnd = schedule.recruitEndDate,

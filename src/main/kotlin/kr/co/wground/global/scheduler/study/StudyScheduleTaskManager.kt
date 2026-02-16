@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ScheduledFuture
 
 @Component
-class StudySchedulerManager(
+class StudyScheduleTaskManager(
     private val studyScheduleNotificationTasks: StudyScheduleNotificationTasks,
     private val taskScheduler: TaskScheduler
 ) {

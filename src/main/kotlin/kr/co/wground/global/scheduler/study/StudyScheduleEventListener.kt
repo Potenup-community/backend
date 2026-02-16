@@ -9,7 +9,7 @@ import org.springframework.transaction.event.TransactionalEventListener
 
 @Component
 class StudyScheduleEventListener(
-    private val studySchedulerManager: StudySchedulerManager
+    private val studyScheduleTaskManager: StudyScheduleTaskManager
 ) {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -19,7 +19,7 @@ class StudyScheduleEventListener(
         when (event.type) {
             StudyScheduleChangedEvent.EventType.CREATED,
             StudyScheduleChangedEvent.EventType.UPDATED -> {
-                studySchedulerManager.addTask(
+                studyScheduleTaskManager.addTask(
                     scheduleId = event.scheduleId,
                     recruitStart = event.recruitStartDate,
                     recruitEnd = event.recruitEndDate,
@@ -28,7 +28,7 @@ class StudyScheduleEventListener(
             }
 
             StudyScheduleChangedEvent.EventType.DELETED -> {
-                studySchedulerManager.removeTask(event.scheduleId)
+                studyScheduleTaskManager.removeTask(event.scheduleId)
             }
         }
     }
