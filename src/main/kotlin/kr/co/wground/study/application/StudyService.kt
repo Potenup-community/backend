@@ -135,7 +135,6 @@ class StudyService(
 
         studyRepository.delete(study)
 
-        // 스터디 삭제 이벤트가 필요할까?
         eventPublisher.publishEvent(
             StudyDeletedEvent(
                 studyId = studyId,
