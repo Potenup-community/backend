@@ -68,6 +68,40 @@ class StudyRecruitmentService(
             ?: throw RuntimeException("알 수 없는 이유로 스터디 생성에 실패했습니다.")
     }
 
+    /**
+     * 관리자의 요청에 따른 스터디 강제 참여
+     */
+    fun forceJoin(userId: Long, studyId: Long): Long {
+
+        val user = findUserOrThrows(userId)
+        val track = findTrackByIdOrThrows(user.trackId)
+        recruitValidator.throwsWhenTrackIsGraduated(track.trackStatus)
+
+        val study = findStudyByIdOrThrows(studyId)
+
+        recruitValidator.throwsWhenTracksMismatch(user.trackId, study)
+
+        val schedule = findScheduleByIdOrThrows(study.scheduleId)
+        val requestMonth = scheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId)
+            .firstOrNull { it.isCurrentMonth() } ?: throw BusinessException(StudyScheduleServiceErrorCode.SCHEDULE_NOT_FOUND)
+
+        recruitValidator.throwsWhenScheduleIsNotCurrentMonth(schedule, requestMonth)
+        recruitValidator.throwsWhenStudyLimitExceeded(userId, schedule.id)
+
+        study.participate(userId)
+        val saved = studyRepository.save(study)
+
+        eventPublisher.publishEvent(
+            StudyRecruitEvent(
+                studyId = saved.id,
+                leaderId = saved.leaderId
+            )
+        )
+
+        return saved.recruitments.find { it.userId == userId }?.id
+            ?: throw RuntimeException("알 수 없는 이유로 스터디 생성에 실패했습니다.")
+    }
+
     fun cancelRecruit(userId: Long, recruitmentId: Long) {
 
         val recruitment = findStudyRecruitmentByIdOrThrows(recruitmentId)
