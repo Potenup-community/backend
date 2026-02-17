@@ -48,7 +48,7 @@ class StudyRecruitmentService(
 
         val schedule = findScheduleByIdOrThrows(study.scheduleId)
         val requestMonth = scheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId)
-            .firstOrNull { it.isCurrentRound() } ?: throw BusinessException(StudyScheduleServiceErrorCode.SCHEDULE_NOT_FOUND)
+            .firstOrNull { it.isCurrentMonth() } ?: throw BusinessException(StudyScheduleServiceErrorCode.SCHEDULE_NOT_FOUND)
 
         recruitValidator.throwsWhenRecruitingIsOver(schedule)
         recruitValidator.throwsWhenScheduleIsNotCurrentMonth(schedule, requestMonth)
