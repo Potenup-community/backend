@@ -88,7 +88,7 @@ class StudyRecruitmentService(
         recruitValidator.throwsWhenScheduleIsNotCurrentMonth(schedule, requestMonth)
         recruitValidator.throwsWhenStudyLimitExceeded(userId, schedule.id)
 
-        study.participate(userId)
+        study.forceJoin(userId)
         val saved = studyRepository.save(study)
 
         eventPublisher.publishEvent(
