@@ -76,6 +76,12 @@ app:
     maxBytes: ${PROFILE_MAX_BYTE}
     allowedExts: ${ALLOWED_EXTENSIONS}
     base-url: ${BASE_URL}
+  item:
+    local-dir: ${LOCAL_ITEM_DIR:C:\depth\uploads\item}
+    webPathPrefix: ${PUBLIC_ITEM_PATH:/images/items}
+    maxBytes: ${ITEM_MAX_BYTE}
+    allowedExts: ${ALLOWED_ITEM_EXTENSIONS}
+    base-url: ${BASE_URL}
 
 # 슬랙 알림 웹 훅 설정
 slack:
