@@ -40,19 +40,19 @@ class StudyRecruitmentService(
 
         val user = findUserOrThrows(userId)
         val track = findTrackByIdOrThrows(user.trackId)
-        recruitValidator.validateGraduated(track.trackStatus)
+        recruitValidator.throwsWhenTrackIsGraduated(track.trackStatus)
 
         val study = findStudyByIdOrThrows(studyId)
 
-        recruitValidator.trackExists(user.trackId, study)
+        recruitValidator.throwsWhenTracksMismatch(user.trackId, study)
 
         val schedule = findScheduleByIdOrThrows(study.scheduleId)
         val requestMonth = scheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId)
             .firstOrNull { it.isCurrentRound() } ?: throw BusinessException(StudyScheduleServiceErrorCode.SCHEDULE_NOT_FOUND)
 
-        recruitValidator.validateSchedule(schedule)
-        recruitValidator.validateCurrentMonth(schedule, requestMonth)
-        recruitValidator.validateHasMaxStudyLimit(userId, schedule.id)
+        recruitValidator.throwsWhenRecruitingIsOver(schedule)
+        recruitValidator.throwsWhenScheduleIsNotCurrentMonth(schedule, requestMonth)
+        recruitValidator.throwsWhenStudyLimitExceeded(userId, schedule.id)
 
         study.participate(userId)
         val saved = studyRepository.save(study)
@@ -74,7 +74,7 @@ class StudyRecruitmentService(
 
         findScheduleByIdOrThrows(recruitment.study.scheduleId)
 
-        recruitValidator.validateRecruitUserId(recruitment.userId, userId)
+        recruitValidator.throwsWhenUserIsNotRecruitmentOwner(recruitment, userId)
 
         recruitment.study.withdraw(userId)
 
@@ -101,7 +101,7 @@ class StudyRecruitmentService(
         val study = findStudyByIdOrThrows(studyId)
 
         // To Do: 신청이 아니라 참여니까 스터디장이 아닌 참가자들도 볼 수 있어야 하지 않을까?
-        recruitValidator.validateDetermineLeader(study, userId)
+        recruitValidator.throwsWhenUserIsNotStudyLeader(study, userId)
 
         val recruitments = studyRecruitmentRepository.findAllByStudyId(studyId)
 
