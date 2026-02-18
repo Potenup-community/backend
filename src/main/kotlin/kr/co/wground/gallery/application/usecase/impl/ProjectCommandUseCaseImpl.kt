@@ -10,11 +10,9 @@ import kr.co.wground.gallery.domain.model.Project
 import kr.co.wground.gallery.domain.model.ProjectContent
 import kr.co.wground.global.common.ProjectId
 import kr.co.wground.image.application.ImageStorageService
-import kr.co.wground.image.application.dto.UploadImageDto
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
 import kr.co.wground.global.common.UserId
 
 @Service
@@ -66,12 +64,6 @@ class ProjectCommandUseCaseImpl(
         }
     }
 
-    private fun saveThumbnail(command: CreateProjectCommand): String {
-        val dto = UploadImageDto(
-            draftId = UUID.randomUUID(),
-            ownerId = command.authorId,
-            imageFile = command.thumbnailImage,
-        )
-        return imageStorageService.saveTemp(dto).relativePath
-    }
+    private fun saveThumbnail(command: CreateProjectCommand): String =
+        imageStorageService.saveProjectThumbnail(command.authorId, command.thumbnailImage)
 }
