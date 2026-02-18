@@ -33,10 +33,10 @@ data class PointHistoryResponse(
             )
         }
     }
-    fun Slice<PointHistorySummaryDto>.toResponse(): PointHistoriesResponse {
-        return PointHistoriesResponse(
-            histories = this.content.map { PointHistoryResponse.from(it) },
-            hasNext = this.hasNext(),
-        )
-    }
 }
+
+fun Slice<PointHistorySummaryDto>.toResponse(): PointHistoriesResponse =
+    PointHistoriesResponse(
+        histories = content.map(PointHistoryResponse::from),
+        hasNext = hasNext()
+    )

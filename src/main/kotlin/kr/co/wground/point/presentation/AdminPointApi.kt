@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.global.config.resolver.CurrentUserId
-import kr.co.wground.point.docs.PointSwaggerErrorExample
 import kr.co.wground.point.presentation.request.AdminGivePointRequest
 import org.springframework.http.ResponseEntity
 
