@@ -8,8 +8,10 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.domain.enums.StudyReportApprovalAction
@@ -19,6 +21,15 @@ import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 
 @Entity
+@Table(
+    name = "study_report_approval_history",
+    indexes = [
+        Index(
+            name = "idx_study_report_approval_history_report_id_acted_at",
+            columnList = "study_report_id, acted_at",
+        ),
+    ],
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 class StudyReportApprovalHistory private constructor(
     @Id
@@ -30,7 +41,7 @@ class StudyReportApprovalHistory private constructor(
     val studyReport: StudyReport,
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 32)
     val action: StudyReportApprovalAction,
 
     @Column(nullable = false)

@@ -9,8 +9,11 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.domain.enums.StudyReportApprovalStatus
 import kr.co.wground.study.domain.enums.StudyStatus
@@ -20,6 +23,15 @@ import lombok.NoArgsConstructor
 import java.time.LocalDateTime
 
 @Entity
+@Table(
+    name = "study_report",
+    uniqueConstraints = [
+        UniqueConstraint(name = "uk_study_report_study_id", columnNames = ["study_id"]),
+    ],
+    indexes = [
+        Index(name = "idx_study_report_status", columnList = "status"),
+    ],
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 class StudyReport private constructor(
     @Id
@@ -53,7 +65,7 @@ class StudyReport private constructor(
     * 경향이 있을 것 같아서 ManyToOne 으로 한 것도 있기는 합니다.
     * */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "study_id", nullable = false, unique = true)
+    @JoinColumn(name = "study_id", nullable = false)
     val study: Study = study
 
     @Embedded
@@ -65,7 +77,7 @@ class StudyReport private constructor(
         protected set
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 32)
     var status: StudyReportApprovalStatus = status
         protected set
 
