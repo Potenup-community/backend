@@ -64,7 +64,7 @@ class StudyReportAdminService(
     fun getApprovalHistories(studyId: Long): List<StudyReportApprovalHistoryQueryResult> {
         val report = findReportByStudyIdOrThrows(studyId)
 
-        return studyReportApprovalHistoryRepository.findAllByStudyReportIdOrderByActedAtDesc(report.id)
+        return studyReportApprovalHistoryRepository.findAllByStudyReportIdOrderByTimestampDesc(report.id)
             .map { StudyReportApprovalHistoryQueryResult.of(it) }
     }
 
