@@ -55,6 +55,28 @@ enum class NotificationMessageVariant(
     STUDY_DELETED_JAKYUNG(NotificationType.STUDY_DELETED, "아쉽지만, 다른 스터디에 참여해보시죠 🥲"),
     STUDY_DELETED_KWANGMIN(NotificationType.STUDY_DELETED, "스터디 모집이 취소되었습니다."),
     STUDY_DELETED_EUNHAE(NotificationType.STUDY_DELETED, "🚨스터디 모집 취소 🚨"),
+
+    // To Do: 스터디 결과 보고 및 결재 관련 알림 메시지 좀 다듬어야 함
+
+    // ===== 스터디 결과 보고 상신 알림 =====
+    STUDY_REPORT_SUBMITTED_AREUM(NotificationType.STUDY_REPORT_SUBMITTED, "스터디 결과 보고가 새로 상신되었어요!"),
+    STUDY_REPORT_SUBMITTED_JAKYUNG(NotificationType.STUDY_REPORT_SUBMITTED, "새로운 결과 보고가 도착했어요. 확인 부탁드립니다!"),
+    STUDY_REPORT_SUBMITTED_KWANGMIN(NotificationType.STUDY_REPORT_SUBMITTED, "스터디 결과 보고 결재 요청이 등록되었습니다."),
+
+    // ===== 스터디 결과 보고 재상신 알림 =====
+    STUDY_REPORT_RESUBMITTED_AREUM(NotificationType.STUDY_REPORT_RESUBMITTED, "반려된 결과 보고가 다시 상신되었어요!"),
+    STUDY_REPORT_RESUBMITTED_JAKYUNG(NotificationType.STUDY_REPORT_RESUBMITTED, "수정된 결과 보고가 재상신되었습니다. 다시 확인해주세요!"),
+    STUDY_REPORT_RESUBMITTED_KWANGMIN(NotificationType.STUDY_REPORT_RESUBMITTED, "스터디 결과 보고가 재상신되었습니다."),
+
+    // ===== 스터디 결과 보고 승인 알림 =====
+    STUDY_REPORT_APPROVED_AREUM(NotificationType.STUDY_REPORT_APPROVED, "스터디 결과 보고가 승인되었어요!"),
+    STUDY_REPORT_APPROVED_JAKYUNG(NotificationType.STUDY_REPORT_APPROVED, "결과 보고 결재가 승인 완료되었습니다."),
+    STUDY_REPORT_APPROVED_KWANGMIN(NotificationType.STUDY_REPORT_APPROVED, "스터디 결과 보고가 승인 처리되었습니다."),
+
+    // ===== 스터디 결과 보고 반려 알림 =====
+    STUDY_REPORT_REJECTED_AREUM(NotificationType.STUDY_REPORT_REJECTED, "스터디 결과 보고가 반려되었어요. 내용을 확인해 주세요."),
+    STUDY_REPORT_REJECTED_JAKYUNG(NotificationType.STUDY_REPORT_REJECTED, "결과 보고가 반려되었습니다. 수정 후 다시 상신해주세요!"),
+    STUDY_REPORT_REJECTED_KWANGMIN(NotificationType.STUDY_REPORT_REJECTED, "스터디 결과 보고가 반려 처리되었습니다."),
     ;
 
     companion object {
