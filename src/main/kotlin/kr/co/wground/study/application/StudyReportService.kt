@@ -1,5 +1,7 @@
 package kr.co.wground.study.application
 
+import kr.co.wground.common.event.StudyReportResubmittedEvent
+import kr.co.wground.common.event.StudyReportSubmittedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.StudyReportSubmissionStatusQueryResult
@@ -12,6 +14,7 @@ import kr.co.wground.study.domain.WeeklyActivities
 import kr.co.wground.study.domain.enums.StudyReportApprovalStatus
 import kr.co.wground.study.infra.StudyReportRepository
 import kr.co.wground.study.infra.StudyRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 class StudyReportService(
     private val studyRepository: StudyRepository,
     private val studyReportRepository: StudyReportRepository,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
 
     /**
@@ -45,13 +49,23 @@ class StudyReportService(
 
         val existingReport = studyReportRepository.findByStudyId(study.id)
             // 기존 보고서가 없으면 새로 생성 및 저장 후 id 반환
-            ?: return studyReportRepository.save(
-                StudyReport.create(
-                    study = study,
-                    weeklyActivities = weeklyActivities,
-                    teamRetrospective = teamRetrospective,
+            ?: run {
+                val savedReport = studyReportRepository.save(
+                    StudyReport.create(
+                        study = study,
+                        weeklyActivities = weeklyActivities,
+                        teamRetrospective = teamRetrospective,
+                    )
                 )
-            ).id
+
+                eventPublisher.publishEvent(
+                    StudyReportSubmittedEvent(
+                        studyId = study.id,
+                        leaderId = command.userId,
+                    )
+                )
+                return savedReport.id
+            }
 
         // 기존 보고서가 있으면 수정 후
         existingReport.update(
@@ -61,6 +75,12 @@ class StudyReportService(
 
         if (existingReport.status == StudyReportApprovalStatus.REJECTED) {
             existingReport.markResubmitted()
+            eventPublisher.publishEvent(
+                StudyReportResubmittedEvent(
+                    studyId = study.id,
+                    leaderId = command.userId,
+                )
+            )
         }
 
         return existingReport.id
