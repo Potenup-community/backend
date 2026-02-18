@@ -5,6 +5,10 @@ import kr.co.wground.common.event.CommentCreatedEvent
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
+import kr.co.wground.common.event.StudyReportApprovedEvent
+import kr.co.wground.common.event.StudyReportRejectedEvent
+import kr.co.wground.common.event.StudyReportResubmittedEvent
+import kr.co.wground.common.event.StudyReportSubmittedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.common.event.StudyRecruitmentEvent
 import kr.co.wground.common.event.StudyRecruitEvent
@@ -14,6 +18,9 @@ import kr.co.wground.notification.application.port.NotificationSender
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.vo.NotificationReference
 import kr.co.wground.track.infra.TrackRepository
+import kr.co.wground.user.domain.User
+import kr.co.wground.user.domain.constant.UserRole
+import kr.co.wground.user.domain.constant.UserStatus
 import kr.co.wground.user.infra.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -359,6 +366,182 @@ class NotificationEventListenerTest {
 
             assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_DELETED)
         }
+
+        @DisplayName("스터디 결과 보고 상신 시 관리자들에게 알림이 생성된다")
+        @Test
+        fun shouldCreateNotificationForAdmins_whenStudyReportSubmitted() {
+            // given
+            val leaderId = 100L
+            val event = StudyReportSubmittedEvent(
+                studyId = 1L,
+                leaderId = leaderId,
+            )
+            `when`(userRepository.findAllByRole()).thenReturn(
+                listOf(
+                    createUser(userId = 1L, role = UserRole.ADMIN),
+                    createUser(userId = 2L, role = UserRole.ADMIN),
+                    createUser(userId = leaderId, role = UserRole.ADMIN),
+                )
+            )
+
+            // when
+            listener.handleStudyReportSubmitted(event)
+
+            // then
+            verify(notificationCommandService, times(2)).create(
+                capture(recipientCaptor),
+                capture(actorCaptor),
+                capture(typeCaptor),
+                capture(titleCaptor),
+                capture(referenceCaptor),
+                capture(placeholdersCaptor),
+                capture(expiresAtCaptor)
+            )
+
+            assertThat(recipientCaptor.allValues).containsExactlyInAnyOrder(1L, 2L)
+            assertThat(actorCaptor.allValues).containsOnly(leaderId)
+            assertThat(typeCaptor.allValues).containsOnly(NotificationType.STUDY_REPORT_SUBMITTED)
+        }
+
+        @DisplayName("스터디 결과 보고 재상신 시 관리자들에게 알림이 생성된다")
+        @Test
+        fun shouldCreateNotificationForAdmins_whenStudyReportResubmitted() {
+            // given
+            val leaderId = 100L
+            val event = StudyReportResubmittedEvent(
+                studyId = 1L,
+                leaderId = leaderId,
+            )
+            `when`(userRepository.findAllByRole()).thenReturn(
+                listOf(
+                    createUser(userId = 9L, role = UserRole.ADMIN),
+                    createUser(userId = leaderId, role = UserRole.ADMIN),
+                )
+            )
+
+            // when
+            listener.handleStudyReportResubmitted(event)
+
+            // then
+            verify(notificationCommandService).create(
+                capture(recipientCaptor),
+                capture(actorCaptor),
+                capture(typeCaptor),
+                capture(titleCaptor),
+                capture(referenceCaptor),
+                capture(placeholdersCaptor),
+                capture(expiresAtCaptor)
+            )
+
+            assertThat(recipientCaptor.value).isEqualTo(9L)
+            assertThat(actorCaptor.value).isEqualTo(leaderId)
+            assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_REPORT_RESUBMITTED)
+        }
+
+        @DisplayName("스터디 결과 보고 승인 시 스터디장에게 알림이 생성된다")
+        @Test
+        fun shouldCreateNotificationForLeader_whenStudyReportApproved() {
+            // given
+            val event = StudyReportApprovedEvent(
+                studyId = 1L,
+                leaderId = 100L,
+                adminId = 1L,
+            )
+
+            // when
+            listener.handleStudyReportApproved(event)
+
+            // then
+            verify(notificationCommandService).create(
+                capture(recipientCaptor),
+                capture(actorCaptor),
+                capture(typeCaptor),
+                capture(titleCaptor),
+                capture(referenceCaptor),
+                capture(placeholdersCaptor),
+                capture(expiresAtCaptor)
+            )
+
+            assertThat(recipientCaptor.value).isEqualTo(100L)
+            assertThat(actorCaptor.value).isEqualTo(1L)
+            assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_REPORT_APPROVED)
+        }
+
+        @DisplayName("승인자와 스터디장이 같은 경우 승인 알림이 생성되지 않는다")
+        @Test
+        fun shouldNotCreateNotification_whenLeaderAndAdminAreSameOnApprove() {
+            // given
+            val event = StudyReportApprovedEvent(
+                studyId = 1L,
+                leaderId = 1L,
+                adminId = 1L,
+            )
+
+            // when
+            listener.handleStudyReportApproved(event)
+
+            // then
+            verifyNoInteractions(notificationCommandService)
+        }
+
+        @DisplayName("스터디 결과 보고 반려 시 스터디장에게 알림이 생성된다")
+        @Test
+        fun shouldCreateNotificationForLeader_whenStudyReportRejected() {
+            // given
+            val event = StudyReportRejectedEvent(
+                studyId = 1L,
+                leaderId = 100L,
+                adminId = 1L,
+            )
+
+            // when
+            listener.handleStudyReportRejected(event)
+
+            // then
+            verify(notificationCommandService).create(
+                capture(recipientCaptor),
+                capture(actorCaptor),
+                capture(typeCaptor),
+                capture(titleCaptor),
+                capture(referenceCaptor),
+                capture(placeholdersCaptor),
+                capture(expiresAtCaptor)
+            )
+
+            assertThat(recipientCaptor.value).isEqualTo(100L)
+            assertThat(actorCaptor.value).isEqualTo(1L)
+            assertThat(typeCaptor.value).isEqualTo(NotificationType.STUDY_REPORT_REJECTED)
+        }
+
+        @DisplayName("승인자와 스터디장이 같은 경우 반려 알림이 생성되지 않는다")
+        @Test
+        fun shouldNotCreateNotification_whenLeaderAndAdminAreSameOnReject() {
+            // given
+            val event = StudyReportRejectedEvent(
+                studyId = 1L,
+                leaderId = 1L,
+                adminId = 1L,
+            )
+
+            // when
+            listener.handleStudyReportRejected(event)
+
+            // then
+            verifyNoInteractions(notificationCommandService)
+        }
+    }
+
+    private fun createUser(userId: Long, role: UserRole): User {
+        return User(
+            userId = userId,
+            trackId = 1L,
+            email = "user-$userId@test.com",
+            name = "유저$userId",
+            phoneNumber = "010-0000-${userId.toString().padStart(4, '0').takeLast(4)}",
+            provider = "GOOGLE",
+            role = role,
+            status = UserStatus.ACTIVE,
+        )
     }
 
     private fun <T> capture(captor: ArgumentCaptor<T>): T = captor.capture()
