@@ -21,7 +21,7 @@ class StudyScheduleStartupLoader(
 ) {
 
     @EventListener(ApplicationReadyEvent::class)
-    @Transactional(readOnly = true)
+    @Transactional
     fun loadSchedulerTask(event: ApplicationReadyEvent) {
 
         var pageNumber = 0
