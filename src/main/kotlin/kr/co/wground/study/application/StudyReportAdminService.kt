@@ -1,5 +1,7 @@
 package kr.co.wground.study.application
 
+import kr.co.wground.common.event.StudyReportApprovedEvent
+import kr.co.wground.common.event.StudyReportRejectedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.dto.StudyReportApprovalHistoryQueryResult
@@ -9,6 +11,7 @@ import kr.co.wground.study.domain.StudyReportApprovalHistory
 import kr.co.wground.study.domain.enums.StudyReportApprovalAction
 import kr.co.wground.study.infra.StudyReportApprovalHistoryRepository
 import kr.co.wground.study.infra.StudyReportRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -17,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional
 class StudyReportAdminService(
     private val studyReportRepository: StudyReportRepository,
     private val studyReportApprovalHistoryRepository: StudyReportApprovalHistoryRepository,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
 
     fun approve(studyId: Long, adminId: UserId) {
@@ -28,6 +32,14 @@ class StudyReportAdminService(
                 studyReport = report,
                 action = StudyReportApprovalAction.APPROVE,
                 actorId = adminId,
+            )
+        )
+
+        eventPublisher.publishEvent(
+            StudyReportApprovedEvent(
+                studyId = report.study.id,
+                leaderId = report.study.leaderId,
+                adminId = adminId,
             )
         )
     }
@@ -42,6 +54,14 @@ class StudyReportAdminService(
                 action = StudyReportApprovalAction.REJECT,
                 actorId = adminId,
                 reason = reason,
+            )
+        )
+
+        eventPublisher.publishEvent(
+            StudyReportRejectedEvent(
+                studyId = report.study.id,
+                leaderId = report.study.leaderId,
+                adminId = adminId,
             )
         )
     }
