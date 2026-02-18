@@ -6,43 +6,28 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 
 @Embeddable
-class WeeklyPlans(
-    week1Plan: String = "",
-    week2Plan: String = "",
-    week3Plan: String = "",
-    week4Plan: String = "",
+class WeeklyPlans private constructor(
+    week1Plan: String,
+    week2Plan: String,
+    week3Plan: String,
+    week4Plan: String,
 ) {
+
     @Column(name = "week_1_plan", nullable = false, length = MAX_PLAN_LENGTH)
-    var week1Plan: String = validateAndNormalize(week1Plan)
+    var week1Plan: String = week1Plan
         protected set
 
     @Column(name = "week_2_plan", nullable = false, length = MAX_PLAN_LENGTH)
-    var week2Plan: String = validateAndNormalize(week2Plan)
+    var week2Plan: String = week2Plan
         protected set
 
     @Column(name = "week_3_plan", nullable = false, length = MAX_PLAN_LENGTH)
-    var week3Plan: String = validateAndNormalize(week3Plan)
+    var week3Plan: String = week3Plan
         protected set
 
     @Column(name = "week_4_plan", nullable = false, length = MAX_PLAN_LENGTH)
-    var week4Plan: String = validateAndNormalize(week4Plan)
+    var week4Plan: String = week4Plan
         protected set
-
-    fun overwrite(
-        week1Plan: String,
-        week2Plan: String,
-        week3Plan: String,
-        week4Plan: String,
-    ) {
-        this.week1Plan = validateAndNormalize(week1Plan)
-        this.week2Plan = validateAndNormalize(week2Plan)
-        this.week3Plan = validateAndNormalize(week3Plan)
-        this.week4Plan = validateAndNormalize(week4Plan)
-    }
-
-    fun toList(): List<String> {
-        return listOf(week1Plan, week2Plan, week3Plan, week4Plan)
-    }
 
     companion object {
         const val MIN_PLAN_LENGTH = 2
@@ -55,10 +40,10 @@ class WeeklyPlans(
             week4Plan: String,
         ): WeeklyPlans {
             return WeeklyPlans(
-                week1Plan = week1Plan,
-                week2Plan = week2Plan,
-                week3Plan = week3Plan,
-                week4Plan = week4Plan,
+                week1Plan = validateAndNormalize(week1Plan),
+                week2Plan = validateAndNormalize(week2Plan),
+                week3Plan = validateAndNormalize(week3Plan),
+                week4Plan = validateAndNormalize(week4Plan),
             )
         }
 
@@ -69,5 +54,21 @@ class WeeklyPlans(
             }
             return normalized
         }
+    }
+
+    fun toList(): List<String> {
+        return listOf(week1Plan, week2Plan, week3Plan, week4Plan)
+    }
+
+    fun overwrite(
+        week1Plan: String,
+        week2Plan: String,
+        week3Plan: String,
+        week4Plan: String,
+    ) {
+        this.week1Plan = validateAndNormalize(week1Plan)
+        this.week2Plan = validateAndNormalize(week2Plan)
+        this.week3Plan = validateAndNormalize(week3Plan)
+        this.week4Plan = validateAndNormalize(week4Plan)
     }
 }
