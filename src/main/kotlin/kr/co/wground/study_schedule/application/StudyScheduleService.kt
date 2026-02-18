@@ -189,7 +189,12 @@ class StudyScheduleService(
     private fun refreshAffectedStudies(schedule: StudySchedule) {
         val affectedStudies = studyRepository.findAllByScheduleId(schedule.id)
         if (LocalDateTime.now().isAfter(schedule.studyEndDate)) {
-            affectedStudies.forEach { it.complete() }
+            affectedStudies.forEach {
+                // RECRUITING -> RECRUITING_CLOSED
+                it.closeRecruitment()
+                // IN_PROGRESS -> COMPLETED
+                it.complete()
+            }
         } else if (LocalDateTime.now().isAfter(schedule.recruitEndDate)) {
             affectedStudies.forEach { it.closeRecruitment() }
         }
