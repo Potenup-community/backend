@@ -27,6 +27,12 @@
           connectiontimeout: 1000
           timeout: 1000
           writetimeout: 1000
+  spring:
+    task:
+      scheduling:
+        pool:
+          size: 5
+        thread-name-prefix: sched-
 
 jwt:
   secret: test-secret

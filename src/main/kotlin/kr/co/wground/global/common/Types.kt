@@ -8,3 +8,4 @@ typealias TrackId = Long
 typealias OwnerId = Long
 typealias NotificationId = Long
 typealias RecipientId = Long
+typealias ProjectId = Long
