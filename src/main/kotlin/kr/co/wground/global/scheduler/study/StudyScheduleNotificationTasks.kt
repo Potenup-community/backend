@@ -1,7 +1,7 @@
 package kr.co.wground.global.scheduler.study
 
-import kr.co.wground.common.event.StudyEndedEvent
-import kr.co.wground.common.event.StudyRecruitEndedEvent
+import kr.co.wground.common.event.StudyEndedSoonEvent
+import kr.co.wground.common.event.StudyRecruitEndedSoonEvent
 import kr.co.wground.common.event.StudyRecruitStartedEvent
 import kr.co.wground.study_schedule.infra.StudyScheduleRepository
 import org.springframework.context.ApplicationEventPublisher
@@ -10,42 +10,49 @@ import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
-class StudyTaskExecutor(
+class StudyScheduleNotificationTasks(
     private val studyScheduleRepository: StudyScheduleRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) {
+
     @Transactional(readOnly = true)
-    fun executeRecruitStart(scheduleId: Long) {
+    fun publishStudyRecruitStartedEvent(scheduleId: Long) {
+
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
             StudyRecruitStartedEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
-                months = schedule.months
+                months = schedule.months,
+                studyRecruitStartedAt = schedule.recruitStartDate
             )
         )
     }
 
     @Transactional(readOnly = true)
-    fun executeRecruitEnd(scheduleId: Long) {
+    fun publishStudyRecruitEndedSoonEvent(scheduleId: Long) {
+
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
-            StudyRecruitEndedEvent(
+            StudyRecruitEndedSoonEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
-                months = schedule.months
+                months = schedule.months,
+                studyRecruitWillBeEndedAt = schedule.recruitEndDate
             )
         )
     }
 
     @Transactional(readOnly = true)
-    fun executeStudyEnd(scheduleId: Long) {
+    fun publishStudyEndedSoonEvent(scheduleId: Long) {
+
         val schedule = studyScheduleRepository.findByIdOrNull(scheduleId) ?: return
         eventPublisher.publishEvent(
-            StudyEndedEvent(
+            StudyEndedSoonEvent(
                 scheduleId = schedule.id,
                 trackId = schedule.trackId,
-                months = schedule.months
+                months = schedule.months,
+                studyWillBeEndedAt = schedule.studyEndDate
             )
         )
     }

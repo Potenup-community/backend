@@ -2,6 +2,7 @@ package kr.co.wground.point.infra.history
 
 import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.Projections
+import com.querydsl.core.types.dsl.BooleanExpression
 import com.querydsl.core.types.dsl.ComparableExpressionBase
 import com.querydsl.jpa.impl.JPAQuery
 import com.querydsl.jpa.impl.JPAQueryFactory
@@ -9,6 +10,7 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.point.domain.PointType
 import kr.co.wground.point.domain.QPointHistory.pointHistory
 import java.time.LocalDateTime
+import kr.co.wground.point.application.query.dto.PointHistoryFilter
 import kr.co.wground.point.application.query.dto.PointHistoryQueryCondition
 import kr.co.wground.point.application.query.dto.PointTypeStatsDto
 import kr.co.wground.point.domain.PointHistory
@@ -16,12 +18,9 @@ import kr.co.wground.point.domain.PointReferenceType
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
-import org.springframework.stereotype.Repository
 
-@Repository
 class CustomPointHistoryRepositoryImpl(
     private val queryFactory: JPAQueryFactory,
-    private val historyConditionExpression: HistoryExpression
 ) : CustomPointHistoryRepository {
 
     override fun findUserIdsWithHistory(
@@ -117,7 +116,7 @@ class CustomPointHistoryRepositoryImpl(
     }
 
     override fun findHistoryByUserId(condition: PointHistoryQueryCondition): Slice<PointHistory> {
-        val resolveCondition = historyConditionExpression.resolveCondition(condition)
+        val resolveCondition = resolveCondition(condition)
         val orderSpecifiers = resolveOrderSpecifiers(condition.pageable)
 
         return fetchSlice(condition.pageable) {
@@ -165,5 +164,13 @@ class CustomPointHistoryRepositoryImpl(
                 if (order.isAscending) path.asc() else path.desc()
             }.toList()
             .toTypedArray()
+    }
+
+    fun resolveCondition(condition: PointHistoryQueryCondition): BooleanExpression? {
+        return when (condition.filter) {
+            PointHistoryFilter.ALL -> null
+            PointHistoryFilter.USED -> pointHistory.type.eq(PointType.USE_SHOP)
+            PointHistoryFilter.EARNED -> pointHistory.type.ne(PointType.USE_SHOP)
+        }
     }
 }

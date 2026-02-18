@@ -12,13 +12,15 @@ import java.time.LocalDateTime
 @Component
 class StudyScheduleStartupLoader(
     private val studyScheduleRepository: StudyScheduleRepository,
-    private val studySchedulerManager: StudySchedulerManager,
+    private val studyScheduleTaskManager: StudyScheduleTaskManager,
     @Value("\${spring.jpa.properties.hibernate.jdbc.batch_size:100}")
     private val batchSize: Int
 ) {
+
     @EventListener(ApplicationReadyEvent::class)
     @Transactional(readOnly = true)
     fun loadSchedulerTask(event: ApplicationReadyEvent) {
+
         var pageNumber = 0
         val now = LocalDateTime.now()
         
@@ -29,7 +31,7 @@ class StudyScheduleStartupLoader(
             if (schedules.isEmpty()) break
 
             schedules.forEach { schedule ->
-                studySchedulerManager.registerSchedule(
+                studyScheduleTaskManager.addTask(
                     scheduleId = schedule.id,
                     recruitStart = schedule.recruitStartDate,
                     recruitEnd = schedule.recruitEndDate,

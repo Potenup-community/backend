@@ -7,7 +7,7 @@ import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.common.event.StudyRecruitmentEvent
-import kr.co.wground.common.event.StudyRecruitEndedEvent
+import kr.co.wground.common.event.StudyRecruitEndedSoonEvent
 import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.common.event.StudyRecruitStartedEvent
 import kr.co.wground.exception.BusinessException
@@ -268,7 +268,7 @@ class NotificationEventListener(
 
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun handleStudyRecruitEnded(event: StudyRecruitEndedEvent) {
+    fun handleStudyRecruitEnded(event: StudyRecruitEndedSoonEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
         val studyLink = "$frontendUrl/studies"
         val placeholders = mapOf(
