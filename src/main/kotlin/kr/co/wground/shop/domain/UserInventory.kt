@@ -9,7 +9,6 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
-import jakarta.persistence.Version
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.shop.domain.constant.ShopItemType
@@ -55,10 +54,6 @@ class UserInventory private constructor(
 
     @Column(nullable = false, updatable = false)
     var acquiredAt: LocalDateTime = LocalDateTime.now()
-        protected set
-
-    @Version
-    var version: Long = 0L
         protected set
 
     companion object {
@@ -138,7 +133,7 @@ class UserInventory private constructor(
         refreshEquippedState(now)
 
         if (isPermanent()) {
-            throw BusinessException(ShopErrorCode.ALREADY_PERMANENT)
+            throw BusinessException(ShopErrorCode.ALREADY_OWNED_ITEM)
         }
 
         this._expireAt = null

@@ -9,4 +9,5 @@ enum class PointReferenceType(val description: String) {
     ATTENDANCE("출석"),
     EVENT("이벤트"),
     SHOP_ITEM("상점 아이템"),
+    UPGRADE_SHOP_ITEM("영구제 업그레이드"),
 }
