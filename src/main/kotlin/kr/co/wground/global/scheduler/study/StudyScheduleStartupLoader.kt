@@ -29,19 +29,21 @@ class StudyScheduleStartupLoader(
         
         while (true) {
             val pageRequest = PageRequest.of(pageNumber, batchSize)
-            val allSchedules = studyScheduleRepository.findAll()
+            val schedules = studyScheduleRepository.findAll(pageRequest)
 
-            if (allSchedules.isEmpty()) break
+            if (schedules.isEmpty()) break
 
-            allSchedules.forEach { schedule ->
+            schedules.forEach { schedule ->
 
                 // 이미 스터디 종료 시점이 지났으나, IN_PROGRESS 상태로 유지되고 있는 스터디의 상태를 COMPLETED 상태로 변경하거나
                 // 또는 이미 모집 마감 시점이 지났으나, RECRUITING 상태로 유지되고 있는 스터디의 상태를 RECRUITING_CLOSED 로 변경한다.
-                if (LocalDateTime.now().isAfter(schedule.studyEndDate)) {
-                    studyRepository.findAllByScheduleId(schedule.id)
+                if (now.isAfter(schedule.studyEndDate)) {
+                    val studies = studyRepository.findAllByScheduleId(schedule.id)
+                    studies
                         .filter { it.status == StudyStatus.IN_PROGRESS }
                         .forEach { it.complete() }
                 } else if (LocalDateTime.now().isAfter(schedule.recruitEndDate)) {
+                } else if (now.isAfter(schedule.recruitEndDate)) {
                     studyRepository.findAllByScheduleId(schedule.id)
                         .filter { it.status == StudyStatus.RECRUITING }
                         .forEach { it.closeRecruitment() }
