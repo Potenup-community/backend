@@ -12,8 +12,6 @@ import kr.co.wground.gallery.domain.exception.ProjectErrorCode
 import kr.co.wground.gallery.domain.model.Position
 import kr.co.wground.gallery.domain.model.Project
 import kr.co.wground.image.application.ImageStorageService
-import kr.co.wground.image.application.dto.LocalStoredDto
-import kr.co.wground.image.application.dto.UploadImageDto
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserStatus
@@ -25,6 +23,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.ArgumentMatchers.any
 import org.springframework.mock.web.MockMultipartFile
 
 @ExtendWith(MockKExtension::class)
@@ -132,11 +131,7 @@ class ProjectCommandUseCaseImplTest {
         projectSlot: io.mockk.CapturingSlot<Project>? = null,
     ) {
         every { userRepository.findByUserIdIn(any()) } returns memberUserIds.map { createUser(it) }
-        every { imageStorageService.saveTemp(any<UploadImageDto>()) } returns LocalStoredDto(
-            imageId = "img-1",
-            relativePath = "/images/thumb.png",
-            url = "http://localhost/images/thumb.png",
-        )
+        every { imageStorageService.saveProjectThumbnail(any(), any()) } returns "projects/1/thumb.png"
         if (projectSlot != null) {
             every { projectRepository.save(capture(projectSlot)) } answers { projectSlot.captured }
         } else {
