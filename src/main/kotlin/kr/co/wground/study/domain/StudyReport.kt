@@ -11,7 +11,10 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.domain.enums.StudyReportApprovalStatus
+import kr.co.wground.study.domain.enums.StudyStatus
+import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import lombok.AccessLevel
 import lombok.NoArgsConstructor
 import java.time.LocalDateTime
@@ -81,6 +84,8 @@ class StudyReport private constructor(
             teamRetrospective: TeamRetrospective,
             now: LocalDateTime = LocalDateTime.now(),
         ): StudyReport {
+            throwsWhenUpdateNotAllowed(study.status)
+
             return StudyReport(
                 study = study,
                 weeklyActivities = weeklyActivities,
@@ -90,42 +95,97 @@ class StudyReport private constructor(
                 lastModifiedAt = now,
             )
         }
+
+        private fun throwsWhenUpdateNotAllowed(studyStatus: StudyStatus) {
+            if (studyStatus != StudyStatus.IN_PROGRESS && studyStatus != StudyStatus.COMPLETED) {
+                throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_UPDATE_NOT_ALLOWED_FOR_STUDY_STATUS)
+            }
+        }
     }
 
-    fun revise(
+    fun update(
         weeklyActivities: WeeklyActivities,
         teamRetrospective: TeamRetrospective,
         now: LocalDateTime = LocalDateTime.now(),
     ) {
+        throwsWhenUpdateNotAllowed()
+        if (this.status == StudyReportApprovalStatus.APPROVED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_CANNOT_UPDATE_AFTER_APPROVED)
+        }
+
         this.weeklyActivities = weeklyActivities
         this.teamRetrospective = teamRetrospective
         this.lastModifiedAt = now
     }
 
-    fun markSubmitted(now: LocalDateTime = LocalDateTime.now()) {
-        this.status = StudyReportApprovalStatus.SUBMITTED
-        this.submittedAt = now
-        this.lastModifiedAt = now
-    }
-
     fun markResubmitted(now: LocalDateTime = LocalDateTime.now()) {
+        throwsWhenUpdateNotAllowed()
+        throwsWhenResubmitNotAllowed()
+
         this.status = StudyReportApprovalStatus.RESUBMITTED
         this.submittedAt = now
         this.lastModifiedAt = now
     }
 
     fun markApproved(now: LocalDateTime = LocalDateTime.now()) {
+        throwsWhenApproveNotAllowed()
+
         this.status = StudyReportApprovalStatus.APPROVED
         this.lastModifiedAt = now
     }
 
-    fun markRejected(now: LocalDateTime = LocalDateTime.now()) {
+    fun markRejected(reason: String, now: LocalDateTime = LocalDateTime.now()) {
+        throwsWhenRejectNotAllowed()
+        validateReason(reason)
+
         this.status = StudyReportApprovalStatus.REJECTED
         this.lastModifiedAt = now
     }
 
-    fun cancelApproval(now: LocalDateTime = LocalDateTime.now()) {
+    fun cancelApprovalOrRejection(now: LocalDateTime = LocalDateTime.now()) {
+        throwsWhenCancelNotAllowed()
+
         this.status = StudyReportApprovalStatus.SUBMITTED
         this.lastModifiedAt = now
+    }
+
+    private fun throwsWhenUpdateNotAllowed() {
+        if (this.study.status != StudyStatus.IN_PROGRESS && this.study.status != StudyStatus.COMPLETED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_UPDATE_NOT_ALLOWED_FOR_STUDY_STATUS)
+        }
+    }
+
+    private fun throwsWhenResubmitNotAllowed() {
+        if (this.status != StudyReportApprovalStatus.REJECTED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_STATUS_TRANSITION_INVALID)
+        }
+    }
+
+    private fun throwsWhenApproveNotAllowed() {
+        if (this.status != StudyReportApprovalStatus.SUBMITTED && this.status != StudyReportApprovalStatus.RESUBMITTED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_STATUS_TRANSITION_INVALID)
+        }
+    }
+
+    private fun throwsWhenRejectNotAllowed() {
+        if (this.status != StudyReportApprovalStatus.SUBMITTED && this.status != StudyReportApprovalStatus.RESUBMITTED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_STATUS_TRANSITION_INVALID)
+        }
+    }
+
+    private fun throwsWhenCancelNotAllowed() {
+        if (this.status != StudyReportApprovalStatus.APPROVED && this.status != StudyReportApprovalStatus.REJECTED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_STATUS_TRANSITION_INVALID)
+        }
+    }
+
+    private fun validateReason(reason: String) {
+        val normalized = reason.trim()
+        if (normalized.isEmpty()) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_REJECT_REASON_REQUIRED)
+        }
+        if (normalized.length > StudyReportApprovalHistory.MAX_REASON_LENGTH) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_REASON_TOO_LONG)
+        }
     }
 }

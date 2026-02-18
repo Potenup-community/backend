@@ -10,8 +10,10 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.domain.enums.StudyReportApprovalAction
+import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import lombok.AccessLevel
 import lombok.NoArgsConstructor
 import java.time.LocalDateTime
@@ -50,14 +52,22 @@ class StudyReportApprovalHistory private constructor(
             reason: String? = null,
             actedAt: LocalDateTime = LocalDateTime.now(),
         ): StudyReportApprovalHistory {
-            
-            // To Do: 현재 반려 건에 대해 reason 이 필수라는 점이 반영되어 있지 않음
-            
+            val normalizedReason = reason?.trim()
+            val isReasonNullOrEmpty = normalizedReason == null || normalizedReason.isEmpty()
+
+            if (action == StudyReportApprovalAction.REJECT && isReasonNullOrEmpty) {
+                throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_REJECT_REASON_REQUIRED)
+            }
+
+            if (normalizedReason != null && normalizedReason.length > MAX_REASON_LENGTH) {
+                throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_REASON_TOO_LONG)
+            }
+
             return StudyReportApprovalHistory(
                 studyReport = studyReport,
                 action = action,
                 actorId = actorId,
-                reason = reason?.trim(),
+                reason = normalizedReason,
                 actedAt = actedAt,
             )
         }
