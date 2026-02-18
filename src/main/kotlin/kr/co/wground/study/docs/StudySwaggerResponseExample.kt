@@ -31,7 +31,21 @@ object StudySwaggerResponseExample {
                     "trackId": 2,
                     "trackName": "BE 트랙 1기",
                     "joinedAt": "2026-01-27T15:32:21",
-                    "profileImageUrl": "/..."
+                    "profileImageUrl": "/...",
+                    "items": [
+                        {
+                          "itemType": "PET",
+                          "imageUrl": "/api/v1/shop/items/2/image"
+                        },
+                        {
+                          "itemType": "FRAME",
+                          "imageUrl": "/api/v1/shop/items/3/image"
+                        },
+                        {
+                          "itemType": "BADGE",
+                          "imageUrl": "/api/v1/shop/items/5/image"
+                        }
+                    ]
                 },
                 {
                     ...
@@ -81,7 +95,17 @@ object StudySwaggerResponseExample {
                   "name": "홍길동",
                   "trackId": 3,
                   "trackName": "백엔드 4기",
-                  "profileImageUrl": "https://..."
+                  "profileImageUrl": "https://...",
+                  "items": [
+                    {
+                      "itemType": "FRAME",
+                      "imageUrl": "/api/v1/shop/items/3/image"
+                    },
+                    {
+                      "itemType": "BADGE",
+                      "imageUrl": "/api/v1/shop/items/5/image"
+                    }
+                  ]
                },
              }
            ],
@@ -107,6 +131,7 @@ object StudySwaggerResponseExample {
              "userId": 101,
              "userName": "이순신",
              "createdAt": "2026-01-26T09:00:00",
+             "items": []
            },
            {
              "id": 6,
@@ -116,6 +141,20 @@ object StudySwaggerResponseExample {
              "userId": 102,
              "userName": "장보고",
              "createdAt": "2026-01-26T10:00:00",
+             "items": [
+                    {
+                      "itemType": "PET",
+                      "imageUrl": "/api/v1/shop/items/2/image"
+                    },
+                    {
+                      "itemType": "FRAME",
+                      "imageUrl": "/api/v1/shop/items/3/image"
+                    },
+                    {
+                      "itemType": "BADGE",
+                      "imageUrl": "/api/v1/shop/items/5/image"
+                    }
+                  ]
           }
         ]
         """

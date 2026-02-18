@@ -40,6 +40,7 @@ class ItemImageValidator(
     }
 
     private fun validateAllowedExtension(ext: String) {
+        println("ext=$ext, allowed=${itemPolicy.allowedExts}")
         if (ext !in itemPolicy.allowedExts) {
             throw BusinessException(UploadErrorCode.UNSUPPORTED_MIME_EXCEPTION)
         }
