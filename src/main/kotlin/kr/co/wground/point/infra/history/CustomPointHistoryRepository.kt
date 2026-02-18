@@ -2,6 +2,7 @@ package kr.co.wground.point.infra.history
 
 import java.time.LocalDateTime
 import kr.co.wground.global.common.UserId
+import kr.co.wground.point.application.query.dto.PointHistoryQueryCondition
 import kr.co.wground.point.application.query.dto.PointTypeStatsDto
 import kr.co.wground.point.domain.PointHistory
 import kr.co.wground.point.domain.PointReferenceType
@@ -45,15 +46,5 @@ interface CustomPointHistoryRepository {
         type: PointType
     ): List<UserId>
 
-    // 내역 조회 (전체)
-    fun findByUserId(userId: UserId, pageable: Pageable): Slice<PointHistory>
-
-    // 내역 조회 (타입 필터)
-    fun findByUserIdAndType(userId: UserId, type: PointType, pageable: Pageable): Slice<PointHistory>
-
-    // 적립 내역만 (amount > 0)
-    fun findEarnedByUserId(userId: UserId, pageable: Pageable): Slice<PointHistory>
-
-    // 사용 내역만 (amount < 0)
-    fun findUsedByUserId(userId: UserId, pageable: Pageable): Slice<PointHistory>
+    fun findHistoryByUserId(condition: PointHistoryQueryCondition): Slice<PointHistory>
 }
