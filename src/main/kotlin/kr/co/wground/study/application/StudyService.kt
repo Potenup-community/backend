@@ -3,7 +3,6 @@ package kr.co.wground.study.application
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.application.dto.ParticipantInfo
-import kr.co.wground.study_schedule.application.dto.ScheduleDto
 import kr.co.wground.study.application.dto.StudyCreateCommand
 import kr.co.wground.study.application.dto.StudySearchDto
 import kr.co.wground.study.application.dto.StudyUpdateCommand
@@ -157,9 +156,9 @@ class StudyService(
         )
     }
 
-    fun approveStudy(studyId: Long) {
+    fun approveStart(studyId: Long) {
         val study = findStudyEntityOrThrows(studyId)
-        study.approve()
+        study.start()
     }
 
     @Transactional(readOnly = true)
