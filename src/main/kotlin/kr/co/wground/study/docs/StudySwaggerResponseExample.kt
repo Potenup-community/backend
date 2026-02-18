@@ -121,6 +121,38 @@ object StudySwaggerResponseExample {
          }
          """
 
+    const val STUDY_REPORT_ID_RESPONSE = """
+         {
+             "reportId": 12
+         }
+         """
+
+    const val STUDY_REPORT_SUBMISSION_STATUS_RESPONSE = """
+         {
+             "hasReport": true,
+             "status": "RESUBMITTED",
+             "submittedAt": "2026-02-18T15:00:00",
+             "lastModifiedAt": "2026-02-18T15:10:00"
+         }
+         """
+
+    const val STUDY_REPORT_APPROVAL_HISTORY_RESPONSE = """
+         [
+             {
+                 "action": "RESUBMIT",
+                 "actorId": 101,
+                 "reason": null,
+                 "timestamp": "2026-02-18T15:10:00"
+             },
+             {
+                 "action": "REJECT",
+                 "actorId": 1,
+                 "reason": "주차별 활동 근거를 조금 더 구체적으로 작성해 주세요.",
+                 "timestamp": "2026-02-18T14:30:00"
+             }
+         ]
+         """
+
     const val RECRUITMENT_LIST_RESPONSE = """
          [
            {
