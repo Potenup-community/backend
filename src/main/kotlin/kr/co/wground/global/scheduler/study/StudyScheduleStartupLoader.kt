@@ -42,7 +42,9 @@ class StudyScheduleStartupLoader(
                     studies
                         .filter { it.status == StudyStatus.IN_PROGRESS }
                         .forEach { it.complete() }
-                } else if (LocalDateTime.now().isAfter(schedule.recruitEndDate)) {
+                    studies
+                        .filter { it.status == StudyStatus.RECRUITING }
+                        .forEach { it.closeRecruitment() }
                 } else if (now.isAfter(schedule.recruitEndDate)) {
                     studyRepository.findAllByScheduleId(schedule.id)
                         .filter { it.status == StudyStatus.RECRUITING }
