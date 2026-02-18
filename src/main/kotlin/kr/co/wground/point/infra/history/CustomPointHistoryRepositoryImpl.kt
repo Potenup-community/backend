@@ -1,12 +1,15 @@
 package kr.co.wground.point.infra.history
 
+import com.querydsl.core.types.OrderSpecifier
 import com.querydsl.core.types.Projections
+import com.querydsl.core.types.dsl.ComparableExpressionBase
 import com.querydsl.jpa.impl.JPAQuery
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.global.common.UserId
 import kr.co.wground.point.domain.PointType
 import kr.co.wground.point.domain.QPointHistory.pointHistory
 import java.time.LocalDateTime
+import kr.co.wground.point.application.query.dto.PointHistoryQueryCondition
 import kr.co.wground.point.application.query.dto.PointTypeStatsDto
 import kr.co.wground.point.domain.PointHistory
 import kr.co.wground.point.domain.PointReferenceType
@@ -17,7 +20,8 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class CustomPointHistoryRepositoryImpl(
-    private val queryFactory: JPAQueryFactory
+    private val queryFactory: JPAQueryFactory,
+    private val historyConditionExpression: HistoryExpression
 ) : CustomPointHistoryRepository {
 
     override fun findUserIdsWithHistory(
@@ -112,55 +116,21 @@ class CustomPointHistoryRepositoryImpl(
             .fetchOne() ?: 0L
     }
 
-    override fun findByUserId(userId: UserId, pageable: Pageable): Slice<PointHistory> {
-        return fetchSlice(pageable) {
-            queryFactory
-                .selectFrom(pointHistory)
-                .where(pointHistory.userId.eq(userId))
-                .orderBy(pointHistory.createdAt.desc())
-        }
-    }
+    override fun findHistoryByUserId(condition: PointHistoryQueryCondition): Slice<PointHistory> {
+        val resolveCondition = historyConditionExpression.resolveCondition(condition)
+        val orderSpecifiers = resolveOrderSpecifiers(condition.pageable)
 
-    override fun findByUserIdAndType(
-        userId: UserId,
-        type: PointType,
-        pageable: Pageable
-    ): Slice<PointHistory> {
-        return fetchSlice(pageable) {
+        return fetchSlice(condition.pageable) {
             queryFactory
                 .selectFrom(pointHistory)
                 .where(
-                    pointHistory.userId.eq(userId),
-                    pointHistory.type.eq(type)
+                    pointHistory.userId.eq(condition.userId),
+                    condition.type?.let { pointHistory.type.eq(it) },
+                    resolveCondition
                 )
-                .orderBy(pointHistory.createdAt.desc())
+                .orderBy(*orderSpecifiers)
         }
     }
-
-    override fun findEarnedByUserId(userId: UserId, pageable: Pageable): Slice<PointHistory> {
-        return fetchSlice(pageable) {
-            queryFactory
-                .selectFrom(pointHistory)
-                .where(
-                    pointHistory.userId.eq(userId),
-                    pointHistory.type.ne(PointType.USE_SHOP)
-                )
-                .orderBy(pointHistory.createdAt.desc())
-        }
-    }
-
-    override fun findUsedByUserId(userId: UserId, pageable: Pageable): Slice<PointHistory> {
-        return fetchSlice(pageable) {
-            queryFactory
-                .selectFrom(pointHistory)
-                .where(
-                    pointHistory.userId.eq(userId),
-                    pointHistory.type.eq(PointType.USE_SHOP)
-                )
-                .orderBy(pointHistory.createdAt.desc())
-        }
-    }
-
 
     private fun fetchSlice(
         pageable: Pageable,
@@ -179,5 +149,21 @@ class CustomPointHistoryRepositoryImpl(
             pageable,
             hasNext
         )
+    }
+
+    private fun resolveOrderSpecifiers(pageable: Pageable):  Array<OrderSpecifier<*>> {
+        if (pageable.sort.isUnsorted) {
+            return arrayOf(pointHistory.createdAt.desc())
+        }
+        return pageable.sort
+            .map { order ->
+                val path: ComparableExpressionBase<*> = when (order.property) {
+                    "createdAt" -> pointHistory.createdAt
+                    "amount"    -> pointHistory.amount
+                    else        -> pointHistory.createdAt
+                }
+                if (order.isAscending) path.asc() else path.desc()
+            }.toList()
+            .toTypedArray()
     }
 }
