@@ -73,7 +73,7 @@ class StudyController(
 
     @PatchMapping("/{studyId}/approve-to-start")
     @PreAuthorize("hasRole('ADMIN')")
-    override fun approveStudy(
+    override fun approveToStartStudy(
         @PathVariable studyId: Long
     ): ResponseEntity<Unit> {
         studyService.approveStart(studyId)
