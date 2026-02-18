@@ -3,9 +3,7 @@ package kr.co.wground.study.domain
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.domain.enums.BudgetType
 import kr.co.wground.study_schedule.domain.enums.Months
-import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
-import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
 import kr.co.wground.study_schedule.domain.StudySchedule
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
@@ -16,9 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.stream.Stream
-import kotlin.repeat
 
 @DisplayName("스터디(Study) 테스트")
 class StudyTest {
@@ -352,6 +348,7 @@ class StudyTest {
             newBudgetExplain = newBudgetExplain,
             newChatUrl = newChatUrl,
             newRefUrl = newRefUrl,
+            newWeeklyPlans = created.weeklyPlans,
             newTags = newTags
         )
 
@@ -400,6 +397,12 @@ class StudyTest {
             name = "스터디 제목",
             description = "스터디 소개글",
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -412,6 +415,12 @@ class StudyTest {
             name = name,
             description = "스터디 소개글",
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -424,6 +433,12 @@ class StudyTest {
             name = "유효한 제목",
             description = description,
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -436,6 +451,12 @@ class StudyTest {
             name = "유효한 제목",
             description = "스터디 소개글",
             budgetExplain = budgetExplain,
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -448,6 +469,12 @@ class StudyTest {
             name = "유효한 제목",
             description = "유효한 소개글",
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -461,6 +488,12 @@ class StudyTest {
             name = "유효한 제목",
             description = "유효한 소개글",
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -479,6 +512,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -492,6 +526,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -505,6 +540,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -518,6 +554,7 @@ class StudyTest {
             newBudgetExplain = budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -531,6 +568,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -544,6 +582,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
