@@ -14,4 +14,10 @@ class StudyScheduleStatusChangeTasks(
         val studies = studyRepository.findAllByScheduleId(scheduleId)
         studies.forEach { it.closeRecruitment() }
     }
+
+    @Transactional
+    fun completeStudy(scheduleId: Long) {
+        val studies = studyRepository.findAllByScheduleId(scheduleId)
+        studies.forEach { it.complete() }
+    }
 }
