@@ -5,6 +5,10 @@ import kr.co.wground.common.event.CommentCreatedEvent
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
+import kr.co.wground.common.event.StudyReportApprovedEvent
+import kr.co.wground.common.event.StudyReportRejectedEvent
+import kr.co.wground.common.event.StudyReportResubmittedEvent
+import kr.co.wground.common.event.StudyReportSubmittedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.common.event.StudyRecruitmentEvent
 import kr.co.wground.common.event.StudyRecruitEndedSoonEvent
@@ -192,6 +196,90 @@ class NotificationEventListener(
                 actorId = null,
                 type = NotificationType.STUDY_APPLICATION,
                 title = "스터디 지원",
+                reference = NotificationReference(
+                    referenceType = ReferenceType.STUDY,
+                    referenceId = event.studyId,
+                ),
+            )
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyReportSubmitted(event: StudyReportSubmittedEvent) {
+        val adminIds = userRepository.findAllByRole()
+            .map { it.userId }
+            .filter { it != event.leaderId }
+
+        adminIds.forEach { adminId ->
+            createNotificationSafely {
+                notificationCommandService.create(
+                    recipientId = adminId,
+                    actorId = event.leaderId,
+                    type = NotificationType.STUDY_REPORT_SUBMITTED,
+                    title = "스터디 결과 보고 상신",
+                    reference = NotificationReference(
+                        referenceType = ReferenceType.STUDY,
+                        referenceId = event.studyId,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyReportResubmitted(event: StudyReportResubmittedEvent) {
+        val adminIds = userRepository.findAllByRole()
+            .map { it.userId }
+            .filter { it != event.leaderId }
+
+        adminIds.forEach { adminId ->
+            createNotificationSafely {
+                notificationCommandService.create(
+                    recipientId = adminId,
+                    actorId = event.leaderId,
+                    type = NotificationType.STUDY_REPORT_RESUBMITTED,
+                    title = "스터디 결과 보고 재상신",
+                    reference = NotificationReference(
+                        referenceType = ReferenceType.STUDY,
+                        referenceId = event.studyId,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyReportApproved(event: StudyReportApprovedEvent) {
+        if (event.leaderId == event.adminId) return
+
+        createNotificationSafely {
+            notificationCommandService.create(
+                recipientId = event.leaderId,
+                actorId = event.adminId,
+                type = NotificationType.STUDY_REPORT_APPROVED,
+                title = "스터디 결과 보고 승인",
+                reference = NotificationReference(
+                    referenceType = ReferenceType.STUDY,
+                    referenceId = event.studyId,
+                ),
+            )
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyReportRejected(event: StudyReportRejectedEvent) {
+        if (event.leaderId == event.adminId) return
+
+        createNotificationSafely {
+            notificationCommandService.create(
+                recipientId = event.leaderId,
+                actorId = event.adminId,
+                type = NotificationType.STUDY_REPORT_REJECTED,
+                title = "스터디 결과 보고 반려",
                 reference = NotificationReference(
                     referenceType = ReferenceType.STUDY,
                     referenceId = event.studyId,
