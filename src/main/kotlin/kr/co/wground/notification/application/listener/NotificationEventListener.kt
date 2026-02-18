@@ -207,7 +207,7 @@ class NotificationEventListener(
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleStudyReportSubmitted(event: StudyReportSubmittedEvent) {
-        val adminIds = userRepository.findAllByRole()
+        val adminIds = userRepository.findAllAdmins()
             .map { it.userId }
             .filter { it != event.leaderId }
 
@@ -230,7 +230,7 @@ class NotificationEventListener(
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleStudyReportResubmitted(event: StudyReportResubmittedEvent) {
-        val adminIds = userRepository.findAllByRole()
+        val adminIds = userRepository.findAllAdmins()
             .map { it.userId }
             .filter { it != event.leaderId }
 

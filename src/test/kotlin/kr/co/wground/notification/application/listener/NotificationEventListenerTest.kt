@@ -10,7 +10,6 @@ import kr.co.wground.common.event.StudyReportRejectedEvent
 import kr.co.wground.common.event.StudyReportResubmittedEvent
 import kr.co.wground.common.event.StudyReportSubmittedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
-import kr.co.wground.common.event.StudyRecruitmentEvent
 import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.notification.application.command.BroadcastNotificationCommandService
 import kr.co.wground.notification.application.command.NotificationCommandService
@@ -376,7 +375,7 @@ class NotificationEventListenerTest {
                 studyId = 1L,
                 leaderId = leaderId,
             )
-            `when`(userRepository.findAllByRole()).thenReturn(
+            `when`(userRepository.findAllAdmins()).thenReturn(
                 listOf(
                     createUser(userId = 1L, role = UserRole.ADMIN),
                     createUser(userId = 2L, role = UserRole.ADMIN),
@@ -412,7 +411,7 @@ class NotificationEventListenerTest {
                 studyId = 1L,
                 leaderId = leaderId,
             )
-            `when`(userRepository.findAllByRole()).thenReturn(
+            `when`(userRepository.findAllAdmins()).thenReturn(
                 listOf(
                     createUser(userId = 9L, role = UserRole.ADMIN),
                     createUser(userId = leaderId, role = UserRole.ADMIN),
