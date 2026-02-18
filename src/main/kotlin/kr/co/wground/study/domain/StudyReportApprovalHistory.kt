@@ -25,8 +25,8 @@ import java.time.LocalDateTime
     name = "study_report_approval_history",
     indexes = [
         Index(
-            name = "idx_study_report_approval_history_report_id_acted_at",
-            columnList = "study_report_id, acted_at",
+            name = "idx_study_report_approval_history_report_id_timestamp",
+            columnList = "study_report_id, timestamp",
         ),
     ],
 )
@@ -51,7 +51,7 @@ class StudyReportApprovalHistory private constructor(
     val reason: String? = null,
 
     @Column(nullable = false)
-    val actedAt: LocalDateTime = LocalDateTime.now(),
+    val timestamp: LocalDateTime = LocalDateTime.now(),
 ) {
     companion object {
         const val MAX_REASON_LENGTH = 1000
@@ -61,7 +61,7 @@ class StudyReportApprovalHistory private constructor(
             action: StudyReportApprovalAction,
             actorId: UserId,
             reason: String? = null,
-            actedAt: LocalDateTime = LocalDateTime.now(),
+            timestamp: LocalDateTime = LocalDateTime.now(),
         ): StudyReportApprovalHistory {
             val normalizedReason = reason?.trim()
             val isReasonNullOrEmpty = normalizedReason == null || normalizedReason.isEmpty()
@@ -79,7 +79,7 @@ class StudyReportApprovalHistory private constructor(
                 action = action,
                 actorId = actorId,
                 reason = normalizedReason,
-                actedAt = actedAt,
+                timestamp = timestamp,
             )
         }
     }

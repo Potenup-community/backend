@@ -9,7 +9,7 @@ data class StudyReportApprovalHistoryQueryResult(
     val action: StudyReportApprovalAction,
     val actorId: UserId,
     val reason: String?,
-    val actedAt: LocalDateTime,
+    val timestamp: LocalDateTime,
 ) {
     companion object {
         fun of(history: StudyReportApprovalHistory): StudyReportApprovalHistoryQueryResult {
@@ -17,7 +17,7 @@ data class StudyReportApprovalHistoryQueryResult(
                 action = history.action,
                 actorId = history.actorId,
                 reason = history.reason,
-                actedAt = history.actedAt,
+                timestamp = history.timestamp,
             )
         }
     }

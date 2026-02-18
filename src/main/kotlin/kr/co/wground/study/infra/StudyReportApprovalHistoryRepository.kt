@@ -4,5 +4,5 @@ import kr.co.wground.study.domain.StudyReportApprovalHistory
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface StudyReportApprovalHistoryRepository : JpaRepository<StudyReportApprovalHistory, Long> {
-    fun findAllByStudyReportIdOrderByActedAtDesc(studyReportId: Long): List<StudyReportApprovalHistory>
+    fun findAllByStudyReportIdOrderByTimestampDesc(studyReportId: Long): List<StudyReportApprovalHistory>
 }
