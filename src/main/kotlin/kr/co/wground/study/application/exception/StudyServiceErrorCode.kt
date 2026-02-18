@@ -30,4 +30,7 @@ enum class StudyServiceErrorCode(
     RECRUITMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"SD-0004","해당 스터디 참여 건을 찾을 수 없습니다."),
     STUDY_MONTH_IS_NOT_CURRENT_MONTH(HttpStatus.BAD_REQUEST,"SR-0005","신청한 차수는 현재 진행되는 차수에 해당하지 않습니다."),
     GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY(HttpStatus.FORBIDDEN,"SR-0006","수료생은 지원할 수 없는 스터디입니다."),
+
+    //StudyReport
+    STUDY_REPORT_NOT_FOUND(HttpStatus.NOT_FOUND, "SRP-0001", "해당 스터디 결과 보고를 찾을 수 없습니다."),
 }
