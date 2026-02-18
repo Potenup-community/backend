@@ -281,4 +281,55 @@ object StudySwaggerErrorExample {
             "errors": []
         }"""
     }
+
+    object Report {
+        const val STUDY_REPORT_WEEKLY_ACTIVITIES_INVALID = """{
+            "code": "SD-0020",
+            "message": "주차 별 활동 내역 형식이 유효하지 않습니다. 주차 별 활동 내역은 각각 2 자 이상 500 자 이하의 비어있지 않은 문자열이어야 합니다.",
+            "status": 400,
+            "errors": []
+        }"""
+        const val STUDY_REPORT_TEAM_RETROSPECTIVE_INVALID = """{
+            "code": "SD-0021",
+            "message": "팀 회고 형식이 유효하지 않습니다. 팀 회고 항목은 각각 2 자 이상 1000 자 이하의 비어있지 않은 문자열이어야 합니다.",
+            "status": 400,
+            "errors": []
+        }"""
+        const val STUDY_REPORT_STATUS_TRANSITION_INVALID = """{
+            "code": "SD-0022",
+            "message": "스터디 결과 보고 결재 상태 전이가 유효하지 않습니다.",
+            "status": 400,
+            "errors": []
+        }"""
+        const val STUDY_REPORT_REJECT_REASON_REQUIRED = """{
+            "code": "SD-0023",
+            "message": "반려 사유는 필수 입력입니다.",
+            "status": 400,
+            "errors": []
+        }"""
+        const val STUDY_REPORT_REASON_TOO_LONG = """{
+            "code": "SD-0024",
+            "message": "사유는 최대 1000자까지 입력할 수 있습니다.",
+            "status": 400,
+            "errors": []
+        }"""
+        const val STUDY_REPORT_UPDATE_NOT_ALLOWED_FOR_STUDY_STATUS = """{
+            "code": "SD-0025",
+            "message": "스터디 결과 보고는 진행 중 또는 완료 상태의 스터디에서만 작성할 수 있습니다.",
+            "status": 409,
+            "errors": []
+        }"""
+        const val STUDY_REPORT_CANNOT_UPDATE_AFTER_APPROVED = """{
+            "code": "SD-0026",
+            "message": "결재 완료된 결과 보고는 수정할 수 없습니다. 취소 후 수정해 주세요.",
+            "status": 409,
+            "errors": []
+        }"""
+        const val STUDY_REPORT_NOT_FOUND = """{
+            "code": "SRP-0001",
+            "message": "해당 스터디 결과 보고를 찾을 수 없습니다.",
+            "status": 404,
+            "errors": []
+        }"""
+    }
 }
