@@ -15,6 +15,7 @@ import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.reaction.application.dto.LikedCommentDto
+import kr.co.wground.shop.application.query.InventoryQueryPort
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserStatus
@@ -41,12 +42,13 @@ class CommentServiceTest {
     private val userRepository = mock(UserRepository::class.java)
     private val reactionQueryService = mock(ReactionQueryService::class.java)
     private val eventPublisher = mock(ApplicationEventPublisher::class.java)
+    private val inventoryQueryPort = mock(InventoryQueryPort::class.java)
     private lateinit var commentService: CommentService
 
     @BeforeEach
     fun setUp() {
         commentService =
-            CommentService(commentRepository, postRepository, userRepository, reactionQueryService, eventPublisher)
+            CommentService(commentRepository, postRepository, userRepository, reactionQueryService, eventPublisher, inventoryQueryPort)
     }
 
     @DisplayName("내가 좋아요한 댓글을 조회한다 (삭제 댓글은 [삭제된 댓글]로 반환)")
