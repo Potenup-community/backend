@@ -140,6 +140,56 @@ object StudySwaggerResponseExample {
          }
          """
 
+    const val STUDY_REPORT_DETAIL_RESPONSE = """
+         {
+             "reportId": 12,
+             "studyId": 1,
+             "studyName": "코틀린 정복 스터디",
+             "leaderId": 101,
+             "leaderName": "홍길동",
+             "status": "RESUBMITTED",
+             "week1Activity": "코틀린 기본 문법 학습 및 실습",
+             "week2Activity": "컬렉션/함수형 API 적용",
+             "week3Activity": "Spring + Kotlin 프로젝트 적용",
+             "week4Activity": "최종 회고 및 발표",
+             "retrospectiveGood": "매주 과제를 성실히 수행했습니다.",
+             "retrospectiveImprove": "테스트 코드 커버리지를 더 높일 필요가 있습니다.",
+             "retrospectiveNextAction": "다음 스터디에서 TDD를 적극 적용합니다.",
+             "submittedAt": "2026-02-18T15:00:00",
+             "lastModifiedAt": "2026-02-18T15:10:00"
+         }
+         """
+
+    const val STUDY_REPORT_LIST_RESPONSE = """
+         {
+             "content": [
+                 {
+                     "reportId": 14,
+                     "studyId": 3,
+                     "studyName": "스프링 심화 스터디",
+                     "leaderId": 222,
+                     "leaderName": "이순신",
+                     "status": "SUBMITTED",
+                     "submittedAt": "2026-02-18T12:00:00",
+                     "lastModifiedAt": "2026-02-18T12:00:00"
+                 },
+                 {
+                     "reportId": 12,
+                     "studyId": 1,
+                     "studyName": "코틀린 정복 스터디",
+                     "leaderId": 101,
+                     "leaderName": "홍길동",
+                     "status": "RESUBMITTED",
+                     "submittedAt": "2026-02-18T15:00:00",
+                     "lastModifiedAt": "2026-02-18T15:10:00"
+                 }
+             ],
+             "pageNumber": 0,
+             "pageSize": 20,
+             "hasNext": true
+         }
+         """
+
     const val STUDY_REPORT_APPROVAL_HISTORY_RESPONSE = """
          [
              {

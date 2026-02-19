@@ -2,18 +2,27 @@ package kr.co.wground.study.presentation
 
 import jakarta.validation.Valid
 import kr.co.wground.global.config.resolver.CurrentUserId
+import kr.co.wground.study.application.StudyReportQueryService
+import kr.co.wground.study.application.dto.StudyReportSearchCondition
 import kr.co.wground.study.application.StudyReportAdminService
 import kr.co.wground.study.application.StudyReportService
+import kr.co.wground.study.presentation.response.CustomSliceResponse
 import kr.co.wground.study.presentation.request.study_report.StudyReportCancelRequest
 import kr.co.wground.study.presentation.request.study_report.StudyReportRejectRequest
 import kr.co.wground.study.presentation.request.study_report.StudyReportUpsertRequest
 import kr.co.wground.study.presentation.response.study_report.StudyReportApprovalHistoryResponse
+import kr.co.wground.study.presentation.response.study_report.StudyReportDetailResponse
 import kr.co.wground.study.presentation.response.study_report.StudyReportIdResponse
+import kr.co.wground.study.presentation.response.study_report.StudyReportSummaryResponse
 import kr.co.wground.study.presentation.response.study_report.StudyReportSubmissionStatusResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController
 class StudyReportController(
     private val studyReportService: StudyReportService,
     private val studyReportAdminService: StudyReportAdminService,
+    private val studyReportQueryService: StudyReportQueryService,
 ) : StudyReportApi {
 
     @PostMapping("/studies/{studyId}/report")
@@ -45,6 +55,27 @@ class StudyReportController(
     ): ResponseEntity<StudyReportSubmissionStatusResponse> {
         val queryResult = studyReportService.getMySubmissionStatus(studyId, userId.value)
         return ResponseEntity.ok(StudyReportSubmissionStatusResponse.from(queryResult))
+    }
+
+    @GetMapping("/studies/{studyId}/report")
+    override fun getStudyReportDetail(
+        userId: CurrentUserId,
+        @PathVariable studyId: Long,
+    ): ResponseEntity<StudyReportDetailResponse> {
+        val queryResult = studyReportQueryService.getReportDetail(studyId, userId.value)
+        return ResponseEntity.ok(StudyReportDetailResponse.from(queryResult))
+    }
+
+    @GetMapping("/studies/reports")
+    @PreAuthorize("hasRole('ADMIN')")
+    override fun searchStudyReports(
+        @ModelAttribute condition: StudyReportSearchCondition,
+        @PageableDefault(size = 20, sort = ["submittedAt"], direction = Sort.Direction.DESC) pageable: Pageable,
+        userId: CurrentUserId,
+    ): ResponseEntity<CustomSliceResponse<StudyReportSummaryResponse>> {
+        val response = studyReportQueryService.searchReports(userId.value, condition, pageable)
+            .map { StudyReportSummaryResponse.from(it) }
+        return ResponseEntity.ok(CustomSliceResponse.from(response))
     }
 
     @PatchMapping("/studies/{studyId}/report/approve")
