@@ -2,6 +2,7 @@ package kr.co.wground.study.domain.exception
 
 import kr.co.wground.exception.ErrorCode
 import kr.co.wground.study.domain.Study
+import kr.co.wground.study.domain.WeeklyPlans
 import org.springframework.http.HttpStatus
 
 enum class StudyDomainErrorCode(
@@ -32,5 +33,7 @@ enum class StudyDomainErrorCode(
     STUDY_BUDGET_EXPLAIN_INVALID(HttpStatus.BAD_REQUEST, "SD-0015", "지원 항목 설명이 유효하지 않습니다."),
     ALREADY_APPLIED(HttpStatus.BAD_REQUEST,"SD-0016","이미 참여 중인 스터디입니다."),
     NOT_PARTICIPATED_THAT_STUDY(HttpStatus.BAD_REQUEST, "SD-0017", "해당 스터디에 참여 중이지 않습니다."),
-    RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING(HttpStatus.CONFLICT,"SD-0018","스터디 상태가 PENDING 이 아닌 경우 신청을 취소할 수 없습니다.")
+    RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING(HttpStatus.CONFLICT,"SD-0018","스터디 상태가 PENDING 이 아닌 경우 신청을 취소할 수 없습니다."),
+    CANNOT_FORCE_JOIN_AFTER_APPROVAL(HttpStatus.CONFLICT, "SD-0018", "결재 이후에는 강제가 참여 불가능합니다."),
+    WEEKLY_STUDY_PLANS_INVALID(HttpStatus.BAD_REQUEST, "SD-0019", "주차 별 스터디 계획 형식이 유효하지 않습니다. 주차 별 스터디 계획은 각각 ${WeeklyPlans.MIN_PLAN_LENGTH} 자 이상 ${WeeklyPlans.MAX_PLAN_LENGTH} 자 이하의 비어있지 않은 문자열이어야 합니다.")
 }

@@ -10,6 +10,7 @@ import java.util.concurrent.ScheduledFuture
 @Component
 class StudyScheduleTaskManager(
     private val studyScheduleNotificationTasks: StudyScheduleNotificationTasks,
+    private val studyScheduleStatusChangeTasks: StudyScheduleStatusChangeTasks,
     private val taskScheduler: TaskScheduler
 ) {
 
@@ -32,7 +33,7 @@ class StudyScheduleTaskManager(
         val newTasks = mutableListOf<ScheduledFuture<*>>()
         val now = LocalDateTime.now()
 
-        // 스터디 모집 시작 알림 이벤트 등록
+        // 스터디 모집 시작 알림 작업 등록
         if (recruitStart.isAfter(now)) {
             val future = taskScheduler.schedule(
                 { studyScheduleNotificationTasks.publishStudyRecruitStartedEvent(scheduleId) },
@@ -41,24 +42,37 @@ class StudyScheduleTaskManager(
             newTasks.add(future)
         }
 
-        // 스터디 모집 종료 예정 알림 이벤트 등록
-        val recruitEndNotifyTime = recruitEnd.minusDays(STUDY_ALERT_PREVIOUS_DAYS)
-        if (recruitEndNotifyTime.isAfter(now)) {
+        // 스터디 모집 종료 작업 등록
+        if (recruitEnd.isAfter(now)) {
             val future = taskScheduler.schedule(
-                { studyScheduleNotificationTasks.publishStudyRecruitEndedSoonEvent(scheduleId) },
-                recruitEndNotifyTime.atZone(ZoneId.systemDefault()).toInstant()
+                { studyScheduleStatusChangeTasks.closeStudyRecruitment(scheduleId) },
+                recruitEnd.atZone(ZoneId.systemDefault()).toInstant()
             )
             newTasks.add(future)
         }
 
-        // 스터디 종료 예정 알림 이벤트 등록
-        val studyEndNotifyTime = studyEnd.minusDays(STUDY_ALERT_PREVIOUS_DAYS)
-        if (studyEndNotifyTime.isAfter(now)) {
-            val future = taskScheduler.schedule(
-                { studyScheduleNotificationTasks.publishStudyEndedSoonEvent(scheduleId) },
-                studyEndNotifyTime.atZone(ZoneId.systemDefault()).toInstant()
-            )
-            newTasks.add(future)
+        // 스터디 모집 종료 예정 알림 작업 등록
+        for (d in STUDY_ALERT_PREVIOUS_DAYS..1) {
+            val recruitEndNotifyTime = recruitEnd.minusDays(d)
+            if (recruitEndNotifyTime.isAfter(now)) {
+                val future = taskScheduler.schedule(
+                    { studyScheduleNotificationTasks.publishStudyRecruitEndedSoonEvent(scheduleId) },
+                    recruitEndNotifyTime.atZone(ZoneId.systemDefault()).toInstant()
+                )
+                newTasks.add(future)
+            }
+        }
+
+        // 스터디 종료 예정 알림 작업 등록
+        for (d in STUDY_ALERT_PREVIOUS_DAYS..1) {
+            val studyEndNotifyTime = studyEnd.minusDays(d)
+            if (studyEndNotifyTime.isAfter(now)) {
+                val future = taskScheduler.schedule(
+                    { studyScheduleNotificationTasks.publishStudyEndedSoonEvent(scheduleId) },
+                    studyEndNotifyTime.atZone(ZoneId.systemDefault()).toInstant()
+                )
+                newTasks.add(future)
+            }
         }
 
         if (newTasks.isNotEmpty()) {

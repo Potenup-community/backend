@@ -12,7 +12,6 @@ import jakarta.persistence.UniqueConstraint
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.study_schedule.domain.enums.Months
-import kr.co.wground.study.domain.exception.StudyDomainErrorCode
 import kr.co.wground.study_schedule.domain.exception.StudyScheduleDomainErrorCode
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -128,7 +127,7 @@ class StudySchedule(
         return now.isAfter(this.recruitEndDate)
     }
 
-    fun isCurrentRound(now: LocalDateTime = LocalDateTime.now()): Boolean {
+    fun isCurrentMonth(now: LocalDateTime = LocalDateTime.now()): Boolean {
         return now.isAfter(this.recruitStartDate) && now.isBefore(this.studyEndDate)
     }
 
