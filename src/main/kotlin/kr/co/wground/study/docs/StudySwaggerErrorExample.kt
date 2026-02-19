@@ -113,13 +113,13 @@ object StudySwaggerErrorExample {
             "errors": []
         }"""
         const val NOT_STUDY_LEADER_NOR_ADMIN = """{
-            "code": "SD-0023,
+            "code": "SD-0023",
             "message": "스터디장 또는 관리자만 사용할 수 있습니다.",
             "status": 403,
             "errors": []
         }"""
         const val NOT_ADMIN = """{
-            "code": "SD-0024,
+            "code": "SD-0024",
             "message": "관리자만 사용할 수 있습니다.",
             "status": 403,
             "errors": []
