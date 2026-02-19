@@ -9,6 +9,8 @@ import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.infra.querydsl.CustomPostReactionRepositoryImpl.PostReactionStatsRow
+import kr.co.wground.shop.application.dto.EquippedItem
+import kr.co.wground.shop.application.dto.EquippedItemWithUserDto
 import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
 import kr.co.wground.user.application.operations.constant.UNKNOWN_USER_NAME_TAG
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
@@ -26,6 +28,7 @@ data class PostSummaryDto(
     val commentsCount: Int,
     val trackName: String,
     val profileImageUrl: String,
+    val items: List<EquippedItem>,
     val reactions: List<PostReactionSummaryDto> = emptyList(),
 ) {
     data class PostReactionSummaryDto(
@@ -44,10 +47,13 @@ fun PostReactionStatsRow.toDto() = PostReactionSummaryDto(
 fun Slice<Post>.toDtos(
     writersById: Map<UserId, UserDisplayInfoDto>,
     commentsCountById: List<CommentCount>,
-    postReactionStats: List<PostReactionStatsRow>
+    postReactionStats: List<PostReactionStatsRow>,
+    equippedItems: List<EquippedItemWithUserDto>
 ): Slice<PostSummaryDto> {
     val commentsCountByPostId = commentsCountById.associate { id -> id.postId to id.count }
     val reactionStatsByPostId = postReactionStats.groupBy { it.postId }
+    val equippedItemsGroupedByWriterId = equippedItems.groupBy { it.userId }
+        .mapValues { (_, rows) -> rows.map(EquippedItem::from) }
 
     val dtoContent = this.content.map { post ->
         PostSummaryDto(
@@ -61,7 +67,8 @@ fun Slice<Post>.toDtos(
             commentsCount = commentsCountByPostId[post.id] ?: 0,
             trackName = writersById[post.writerId]?.trackName ?: NOT_ASSOCIATE,
             profileImageUrl = writersById[post.writerId]?.profileImageUrl ?: "",
-            reactions = reactionStatsByPostId[post.id]?.map { it.toDto() } ?: emptyList()
+            reactions = reactionStatsByPostId[post.id]?.map { it.toDto() } ?: emptyList(),
+            items = equippedItemsGroupedByWriterId[post.writerId] ?: emptyList(),
         )
     }
 

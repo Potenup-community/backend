@@ -85,7 +85,7 @@ app:
   item:
     local-dir: ${LOCAL_ITEM_DIR:C:\depth\uploads\item}
     webPathPrefix: ${PUBLIC_ITEM_PATH:/images/items}
-    maxBytes: ${ITEM_MAX_BYTE}
+    maxBytes: ${ITEM_MAX_BYTE:5242880}
     allowedExts: ${ALLOWED_ITEM_EXTENSIONS}
     base-url: ${BASE_URL}
 

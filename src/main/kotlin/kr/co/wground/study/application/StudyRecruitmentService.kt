@@ -4,6 +4,9 @@ import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.shop.application.dto.EquippedItem
+import kr.co.wground.shop.application.dto.EquippedItem.Companion.from
+import kr.co.wground.shop.application.query.InventoryQueryPort
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.StudyRecruitment
@@ -33,7 +36,8 @@ class StudyRecruitmentService(
     private val trackRepository: TrackRepository,
     private val scheduleRepository: StudyScheduleRepository,
     private val recruitValidator: RecruitValidator,
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: ApplicationEventPublisher,
+    private val inventoryQueryPort: InventoryQueryPort
 ) {
 
     fun participate(userId: Long, studyId: Long): Long {
@@ -48,7 +52,8 @@ class StudyRecruitmentService(
 
         val schedule = findScheduleByIdOrThrows(study.scheduleId)
         val requestMonth = scheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId)
-            .firstOrNull { it.isCurrentRound() } ?: throw BusinessException(StudyScheduleServiceErrorCode.SCHEDULE_NOT_FOUND)
+            .firstOrNull { it.isCurrentRound() }
+            ?: throw BusinessException(StudyScheduleServiceErrorCode.SCHEDULE_NOT_FOUND)
 
         recruitValidator.validateSchedule(schedule)
         recruitValidator.validateCurrentMonth(schedule, requestMonth)
@@ -88,11 +93,12 @@ class StudyRecruitmentService(
         if (recruitments.isEmpty()) {
             throw BusinessException(StudyServiceErrorCode.RECRUITMENT_NOT_FOUND)
         }
-
+        val equippedItems = inventoryQueryPort.getEquipItems(listOf(userId)).groupBy { it.userId }
+            .mapValues { (_, rows) -> rows.map(EquippedItem::from) }
         val user = findUserOrThrows(userId)
         val track = findTrackByIdOrThrows(user.trackId)
         return recruitments.map { recruitment ->
-            StudyRecruitmentResponse.of(recruitment, user.name, track.trackName)
+            StudyRecruitmentResponse.of(recruitment, user.name, track.trackName, equippedItems[userId] ?: emptyList())
         }
     }
 
@@ -108,12 +114,19 @@ class StudyRecruitmentService(
         val userIds = recruitments.map { it.userId }.toSet()
         val users = userRepository.findAllById(userIds).associateBy { it.userId }
         val track = findTrackByIdOrThrows(study.trackId)
+        val equippedItems = inventoryQueryPort.getEquipItems(userIds.toList()).groupBy { it.userId }
+            .mapValues { (_, rows) -> rows.map(EquippedItem::from) }
 
         return recruitments.map { recruitment ->
             val applicant = users[recruitment.userId]
                 ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-            StudyRecruitmentResponse.of(recruitment, applicant.name, track.trackName)
+            StudyRecruitmentResponse.of(
+                recruitment,
+                applicant.name,
+                track.trackName,
+                equippedItems[recruitment.userId] ?: emptyList()
+            )
         }
     }
 

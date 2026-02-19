@@ -56,9 +56,8 @@ class ItemImageStore(
     }
 
     private fun buildUrl(fileName: String): String {
-        val base = itemPolicy.baseUrl.trimEnd('/')
         val prefix = itemPolicy.webPathPrefix.trimEnd('/')
-        return if (base.isBlank()) "$prefix/$fileName" else "$base$prefix/$fileName"
+        return "$prefix/$fileName"
     }
 
     private fun extractFileName(imageUrl: String): String? {

@@ -7,6 +7,11 @@ object ShopSwaggerErrorExample {
               "message": "아이템을 찾을 수 없습니다.",
               "errors": []
           }"""
+        const val INVENTORY_NOT_FOUND = """{
+              "code": "SH-0004",
+              "message": "인벤토리 항목을 찾을 수 없습니다.",
+              "errors": []
+          }"""
     }
 
     object BadRequest {
@@ -75,5 +80,38 @@ object ShopSwaggerErrorExample {
               "message": "요청 값이 올바르지 않습니다.",
               "errors": []
           }"""
+        const val ITEM_NOT_AVAILABLE = """{
+              "code": "SH-0002",
+              "message": "현재 판매 중이 아닌 아이템입니다.",
+              "errors": []
+          }"""
+
+        const val ITEM_EXPIRED = """{
+              "code": "SH-0005",
+              "message": "만료된 아이템입니다.",
+              "errors": []
+          }"""
+
+        const val ALREADY_OWNED_ITEM = """{
+              "code": "SH-0009",
+              "message": "이미 구매한 아이템입니다.",
+              "errors": []
+          }"""
+    }
+
+    object Conflict {
+        const val ALREADY_OWNED = """{
+          "code": "SH-0003",
+          "message": "이미 보유 중인 영구 아이템입니다.",
+          "errors": []
+      }"""
+    }
+
+    object Forbidden {
+        const val NOT_OWNER = """{
+          "code": "SH-0006",
+          "message": "해당 아이템의 소유자가 아닙니다.",
+          "errors": []
+      }"""
     }
 }

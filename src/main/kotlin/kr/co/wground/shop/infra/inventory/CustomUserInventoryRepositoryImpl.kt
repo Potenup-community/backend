@@ -7,6 +7,7 @@ import kr.co.wground.shop.domain.QShopItem.shopItem
 import kr.co.wground.shop.domain.QUserInventory.userInventory
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
+import kr.co.wground.shop.application.dto.EquippedItemWithUserDto
 import kr.co.wground.shop.application.dto.InventoryItemDto
 import kr.co.wground.shop.infra.dto.InventoryItemInfra
 
@@ -42,5 +43,26 @@ class CustomUserInventoryRepositoryImpl(
             .fetch()
 
         return result.map { InventoryItemDto.from(it, now) }
+    }
+
+    override fun findEquippedItemsByUserIds(userIds: List<UserId>): List<EquippedItemWithUserDto> {
+        if (userIds.isEmpty()) return emptyList()
+
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    EquippedItemWithUserDto::class.java,
+                    userInventory.userId,
+                    userInventory.itemType,
+                    shopItem.imageUrl
+                )
+            )
+            .from(userInventory)
+            .join(shopItem).on(userInventory.shopItemId.eq(shopItem.id))
+            .where(
+                userInventory.userId.`in`(userIds),
+                userInventory.equipped.isTrue
+            )
+            .fetch()
     }
 }

@@ -29,6 +29,11 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.mapValues
+import kr.co.wground.shop.application.dto.EquippedItem
+import kr.co.wground.shop.application.query.InventoryQueryPort
 
 @Service
 @Transactional
@@ -40,6 +45,7 @@ class StudyService(
     private val tagRepository: TagRepository,
     private val userRepository: UserRepository,
     private val eventPublisher: ApplicationEventPublisher,
+    private val inventoryQueryPort: InventoryQueryPort
 ) {
     companion object {
         const val MAX_ENROLLED_STUDY = 2
@@ -155,6 +161,8 @@ class StudyService(
     ): Slice<StudySearchResponse> {
         val userId = condition.userId
         val result = studyRepository.searchStudies(condition.condition, condition.pageable, condition.sortType)
+        val equippedItems = inventoryQueryPort.getEquipItems(result.map { it.study.leaderId }.toList())
+            .map { EquippedItem.from(it) }
 
         return result.map { result ->
             val leaderInfo = ParticipantInfo(
@@ -163,7 +171,8 @@ class StudyService(
                 result.track.trackId,
                 result.track.trackName,
                 result.study.recruitments.first{ it.userId == result.leader.userId }.createdAt,
-                result.leader.accessProfile()
+                result.leader.accessProfile(),
+                equippedItems
             )
 
             StudySearchResponse.of(
@@ -182,6 +191,9 @@ class StudyService(
             ?: throw BusinessException(StudyServiceErrorCode.TRACK_NOT_FOUND)
 
         val participants = userRepository.findByUserIdIn(study.recruitments.map { it.userId })
+        val equippedItems = inventoryQueryPort.getEquipItems(study.recruitments.map { it.userId }).groupBy { it.userId }
+            .mapValues { (_, rows) -> rows.map(EquippedItem::from) }
+
         val participantInfoList = participants.map {
                 ParticipantInfo(
                     id = it.userId,
@@ -189,7 +201,8 @@ class StudyService(
                     trackId = track.trackId,
                     trackName = track.trackName,
                     joinedAt = study.recruitments.first{ it.userId == it.userId }.createdAt,
-                    profileImageUrl = it.accessProfile()
+                    profileImageUrl = it.accessProfile(),
+                    items = equippedItems[it.userId] ?: emptyList()
                 )
             }
 

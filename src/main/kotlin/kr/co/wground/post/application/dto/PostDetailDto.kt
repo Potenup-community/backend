@@ -9,6 +9,8 @@ import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.reaction.domain.PostReaction
 import kr.co.wground.reaction.domain.enums.ReactionType
 import java.time.LocalDateTime
+import kr.co.wground.shop.application.dto.EquippedItem
+import kr.co.wground.shop.application.dto.EquippedItemWithUserDto
 
 data class PostDetailDto(
     val postId: PostId,
@@ -27,6 +29,7 @@ data class PostDetailDto(
     val previousPostId: PostId?,
     val previousPostTitle: String?,
     val reactions: List<PostReactionDetailDto> = emptyList(),
+    val equippedItems:  List<EquippedItem>
 ) {
     data class PostReactionDetailDto(
         val reactionType: ReactionType,
@@ -44,7 +47,9 @@ fun Post.toDto(
     nextPostTitle: String?,
     previousPostId: PostId?,
     previousPostTitle: String?,
+    equippedItemsWithUser: List<EquippedItemWithUserDto>
 ): PostDetailDto {
+    val equippedItems = equippedItemsWithUser.map { EquippedItem.from(it) }
     return PostDetailDto(
         postId = id,
         writerId = writerId,
@@ -67,6 +72,7 @@ fun Post.toDto(
                     reactionType = type,
                     count = count
                 )
-            }
+            },
+        equippedItems = equippedItems
     )
 }
