@@ -89,7 +89,7 @@ class StudyReportQueryServiceTest {
             studyReportQueryService.getReportDetail(fixture.firstStudy.id, fixture.member.userId)
         }
 
-        assertEquals(StudyServiceErrorCode.NOT_STUDY_LEADER.code, thrown.code)
+        assertEquals(StudyServiceErrorCode.NOT_STUDY_LEADER_NOR_ADMIN.code, thrown.code)
     }
 
     @Test
@@ -123,7 +123,7 @@ class StudyReportQueryServiceTest {
             )
         }
 
-        assertEquals(StudyServiceErrorCode.NOT_STUDY_LEADER.code, thrown.code)
+        assertEquals(StudyServiceErrorCode.NOT_ADMIN.code, thrown.code)
     }
 
     private fun createFixtureWithTwoReports(): QueryFixture {

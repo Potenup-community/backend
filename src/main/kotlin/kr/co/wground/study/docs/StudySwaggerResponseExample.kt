@@ -120,9 +120,6 @@ object StudySwaggerResponseExample {
          {
              "reportId": 12,
              "studyId": 1,
-             "studyName": "코틀린 정복 스터디",
-             "leaderId": 101,
-             "leaderName": "홍길동",
              "status": "RESUBMITTED",
              "week1Activity": "코틀린 기본 문법 학습 및 실습",
              "week2Activity": "컬렉션/함수형 API 적용",
@@ -136,7 +133,7 @@ object StudySwaggerResponseExample {
          }
          """
 
-    const val STUDY_REPORT_LIST_RESPONSE = """
+    const val STUDY_REPORT_SUMMARY_RESPONSE = """
          {
              "content": [
                  {
