@@ -112,6 +112,12 @@ object StudySwaggerErrorExample {
             "status": 403,
             "errors": []
         }"""
+        const val WEEKLY_STUDY_PLANS_INVALID = """{
+            "code": "SD-0019",
+            "message": "주차 별 스터디 계획 형식이 유효하지 않습니다. 주차 별 스터디 계획은 각각 2 자 이상 300 자 이하의 비어있지 않은 문자열이어야 합니다.",
+            "status": 400,
+            "errors": []
+        }"""
     }
 
     object Recruitment {
@@ -169,6 +175,12 @@ object StudySwaggerErrorExample {
             "status": 400,
             "errors": []
         }"""
+        const val CANNOT_FORCE_JOIN_AFTER_APPROVAL = """
+            "code": "SR-0018",
+            "message": "결재 이후에는 강제가 참여 불가능합니다.",
+            "status": 409,
+            "errors": []
+        """
     }
 
     object Schedule {
