@@ -1,7 +1,6 @@
 package kr.co.wground.gallery.application.usecase.command
 
 import kr.co.wground.gallery.domain.model.Position
-import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
 import org.springframework.web.multipart.MultipartFile
 
@@ -16,8 +15,7 @@ data class CreateProjectCommand(
     val thumbnailImage: MultipartFile,
 ) {
     data class MemberAssignment(
-        val name: String,
-        val trackId: TrackId,
-        val position: Position
+        val userId: UserId,
+        val position: Position,
     )
 }

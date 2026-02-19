@@ -11,7 +11,6 @@ import kr.co.wground.gallery.application.usecase.impl.ProjectCommandUseCaseImpl
 import kr.co.wground.gallery.domain.exception.ProjectErrorCode
 import kr.co.wground.gallery.domain.model.Position
 import kr.co.wground.gallery.domain.model.Project
-import kr.co.wground.global.common.TrackId
 import kr.co.wground.image.application.ImageStorageService
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
@@ -56,8 +55,8 @@ class ProjectCommandUseCaseImplTest {
             val command = createValidCommand()
             stubDependencies(
                 users = listOf(
-                    createUser(10L, "김철수", 2L),
-                    createUser(20L, "홍길동", 1L),
+                    createUser(10L),
+                    createUser(20L),
                 ),
             )
 
@@ -75,12 +74,12 @@ class ProjectCommandUseCaseImplTest {
             val command = createValidCommand(
                 authorId = 1L,
                 members = listOf(
-                    CreateProjectCommand.MemberAssignment("홍길동", 1L, Position.FRONTEND),
+                    CreateProjectCommand.MemberAssignment(userId = 10L, position = Position.FRONTEND),
                 ),
             )
             val projectSlot = slot<Project>()
             stubDependencies(
-                users = listOf(createUser(10L, "홍길동", 1L)),
+                users = listOf(createUser(10L)),
                 projectSlot = projectSlot,
             )
 
@@ -100,15 +99,15 @@ class ProjectCommandUseCaseImplTest {
             val command = createValidCommand(
                 authorId = 1L,
                 members = listOf(
-                    CreateProjectCommand.MemberAssignment("홍길동", 1L, Position.BACKEND),
-                    CreateProjectCommand.MemberAssignment("김철수", 2L, Position.FRONTEND),
+                    CreateProjectCommand.MemberAssignment(userId = 1L, position = Position.BACKEND),
+                    CreateProjectCommand.MemberAssignment(userId = 10L, position = Position.FRONTEND),
                 ),
             )
             val projectSlot = slot<Project>()
             stubDependencies(
                 users = listOf(
-                    createUser(1L, "홍길동", 1L),  // authorId와 동일한 userId → 중복 추가 안 됨
-                    createUser(10L, "김철수", 2L),
+                    createUser(1L),   // authorId와 동일 → 중복 추가 안 됨
+                    createUser(10L),
                 ),
                 projectSlot = projectSlot,
             )
@@ -126,13 +125,11 @@ class ProjectCommandUseCaseImplTest {
             // given
             val command = createValidCommand(
                 members = listOf(
-                    CreateProjectCommand.MemberAssignment("김철수", 10L, Position.BACKEND),
-                    CreateProjectCommand.MemberAssignment("존재하지않는유저", 999L, Position.FRONTEND),
+                    CreateProjectCommand.MemberAssignment(userId = 10L, position = Position.BACKEND),
+                    CreateProjectCommand.MemberAssignment(userId = 999L, position = Position.FRONTEND),
                 ),
             )
-            every { userRepository.findByNameInAndTrackIdIn(any(), any()) } returns listOf(
-                createUser(10L, "김철수", 10L),
-            )
+            every { userRepository.findByUserIdIn(any()) } returns listOf(createUser(10L))
 
             // when & then
             assertThatThrownBy { useCase.create(command) }
@@ -146,7 +143,7 @@ class ProjectCommandUseCaseImplTest {
         users: List<User>,
         projectSlot: io.mockk.CapturingSlot<Project>? = null,
     ) {
-        every { userRepository.findByNameInAndTrackIdIn(any(), any()) } returns users
+        every { userRepository.findByUserIdIn(any()) } returns users
         every { imageStorageService.saveProjectThumbnail(any(), any()) } returns "projects/1/thumb.png"
         if (projectSlot != null) {
             every { projectRepository.save(capture(projectSlot)) } answers { projectSlot.captured }
@@ -158,8 +155,8 @@ class ProjectCommandUseCaseImplTest {
     private fun createValidCommand(
         authorId: Long = 1L,
         members: List<CreateProjectCommand.MemberAssignment> = listOf(
-            CreateProjectCommand.MemberAssignment("김철수", 2L, Position.BACKEND),
-            CreateProjectCommand.MemberAssignment("홍길동", 1L, Position.FRONTEND),
+            CreateProjectCommand.MemberAssignment(userId = 10L, position = Position.BACKEND),
+            CreateProjectCommand.MemberAssignment(userId = 20L, position = Position.FRONTEND),
         ),
     ): CreateProjectCommand = CreateProjectCommand(
         authorId = authorId,
@@ -172,11 +169,11 @@ class ProjectCommandUseCaseImplTest {
         thumbnailImage = MockMultipartFile("thumbnail", "thumb.png", "image/png", "fake-image".toByteArray()),
     )
 
-    private fun createUser(userId: Long, name: String, trackId: TrackId): User = User(
+    private fun createUser(userId: Long): User = User(
         userId = userId,
-        trackId = trackId,
+        trackId = 1L,
         email = "user$userId@test.com",
-        name = name,
+        name = "user$userId",
         phoneNumber = "010-0000-${userId.toString().padStart(4, '0')}",
         provider = "google",
         role = UserRole.MEMBER,
