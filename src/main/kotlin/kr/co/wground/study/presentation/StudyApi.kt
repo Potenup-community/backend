@@ -99,6 +99,10 @@ interface StudyApi {
                             name = "MAX_STUDY_EXCEEDED",
                             value = StudySwaggerErrorExample.Study.MAX_STUDY_EXCEEDED
                         ),
+                        ExampleObject(
+                            name = "WEEKLY_STUDY_PLANS_INVALID",
+                            value = StudySwaggerErrorExample.Study.WEEKLY_STUDY_PLANS_INVALID
+                        ),
                     ]
                 )]
             ),
@@ -185,6 +189,10 @@ interface StudyApi {
                         ExampleObject(
                             name = "STUDY_CANNOT_MODIFY_AFTER_DEADLINE",
                             value = StudySwaggerErrorExample.Study.STUDY_CANNOT_MODIFY_AFTER_DEADLINE
+                        ),
+                        ExampleObject(
+                            name = "WEEKLY_STUDY_PLANS_INVALID",
+                            value = StudySwaggerErrorExample.Study.WEEKLY_STUDY_PLANS_INVALID
                         ),
                     ]
                 )]

@@ -2,6 +2,7 @@ package kr.co.wground.study.domain
 
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -37,6 +38,7 @@ class Study private constructor(
     capacity: Int = RECOMMENDED_MAX_CAPACITY,
     budget: BudgetType,
     budgetExplain: String,
+    weeklyPlans: WeeklyPlans,
     externalChatUrl: String = DEFAULT_CHAT_URL,
     referenceUrl: String? = null,
     @Column(nullable = false)
@@ -70,6 +72,11 @@ class Study private constructor(
 
     @Column(nullable = false)
     var budgetExplain: String = budgetExplain
+        protected set
+
+    @Embedded
+    var weeklyPlans: WeeklyPlans = weeklyPlans
+        protected set
 
     @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     protected val _recruitments: MutableList<StudyRecruitment> = ArrayList()
@@ -114,6 +121,7 @@ class Study private constructor(
             capacity: Int = RECOMMENDED_MAX_CAPACITY,
             budget: BudgetType,
             budgetExplain: String,
+            weeklyPlans: WeeklyPlans,
             externalChatUrl: String = DEFAULT_CHAT_URL,
             referenceUrl: String? = null,
             tags: List<Tag>? = emptyList()
@@ -128,6 +136,7 @@ class Study private constructor(
                 capacity = capacity,
                 budget = budget,
                 budgetExplain = budgetExplain,
+                weeklyPlans = weeklyPlans,
                 externalChatUrl = externalChatUrl,
                 referenceUrl = referenceUrl
             )
@@ -152,6 +161,7 @@ class Study private constructor(
             capacity: Int = RECOMMENDED_MAX_CAPACITY,
             budget: BudgetType,
             budgetExplain: String,
+            weeklyPlans: WeeklyPlans,
             externalChatUrl: String = DEFAULT_CHAT_URL,
             referenceUrl: String? = null,
             createdAt: LocalDateTime,
@@ -169,6 +179,7 @@ class Study private constructor(
                 capacity = capacity,
                 budget = budget,
                 budgetExplain = budgetExplain,
+                weeklyPlans = weeklyPlans,
                 externalChatUrl = externalChatUrl,
                 referenceUrl = referenceUrl,
                 createdAt = createdAt,
@@ -251,6 +262,7 @@ class Study private constructor(
         newBudgetExplain: String,
         newChatUrl: String,
         newRefUrl: String?,
+        newWeeklyPlans: WeeklyPlans,
         newTags: List<Tag>?
     ) {
         validateCanUpdate()
@@ -265,6 +277,7 @@ class Study private constructor(
         this.budgetExplain = newBudgetExplain
         this.externalChatUrl = newChatUrl
         this.referenceUrl = newRefUrl
+        this.weeklyPlans = newWeeklyPlans
         this.name = newName
         this.description = newDescription
         this.capacity = newCapacity

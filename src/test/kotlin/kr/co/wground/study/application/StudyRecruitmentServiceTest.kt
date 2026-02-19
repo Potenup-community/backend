@@ -6,6 +6,7 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.application.dto.StudyCreateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
+import kr.co.wground.study.domain.WeeklyPlans
 import kr.co.wground.study.domain.StudyRecruitment
 import kr.co.wground.study_schedule.domain.StudySchedule
 import kr.co.wground.study.domain.enums.BudgetType
@@ -120,6 +121,12 @@ class StudyRecruitmentServiceTest {
             capacity = 5,
             budget = BudgetType.MEAL,
             budgetExplain = "🍕🍕🍕",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
         )
         val savedStudy = studyRepository.save(study)
 
@@ -202,6 +209,12 @@ class StudyRecruitmentServiceTest {
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
+                weeklyPlans = WeeklyPlans.of(
+                    week1Plan = "1주차 계획",
+                    week2Plan = "2주차 계획",
+                    week3Plan = "3주차 계획",
+                    week4Plan = "4주차 계획",
+                ),
             )
         )
 
@@ -268,6 +281,12 @@ class StudyRecruitmentServiceTest {
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
+                weeklyPlans = WeeklyPlans.of(
+                    week1Plan = "1주차 계획",
+                    week2Plan = "2주차 계획",
+                    week3Plan = "3주차 계획",
+                    week4Plan = "4주차 계획",
+                ),
             )
         )
 
@@ -357,6 +376,12 @@ class StudyRecruitmentServiceTest {
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
+                weeklyPlans = WeeklyPlans.of(
+                    week1Plan = "1주차 계획",
+                    week2Plan = "2주차 계획",
+                    week3Plan = "3주차 계획",
+                    week4Plan = "4주차 계획",
+                ),
             )
         )
 
@@ -457,6 +482,10 @@ class StudyRecruitmentServiceTest {
                 budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
                 tags = emptyList()
             )
         )
@@ -545,6 +574,12 @@ class StudyRecruitmentServiceTest {
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
+                weeklyPlans = WeeklyPlans.of(
+                    week1Plan = "1주차 계획",
+                    week2Plan = "2주차 계획",
+                    week3Plan = "3주차 계획",
+                    week4Plan = "4주차 계획",
+                ),
                 externalChatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 referenceUrl = null,
             )
@@ -637,6 +672,12 @@ class StudyRecruitmentServiceTest {
             capacity = 5,
             budget = BudgetType.MEAL,
             budgetExplain = "🍕🍕🍕",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             externalChatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
             referenceUrl = null,
         )
@@ -704,6 +745,12 @@ class StudyRecruitmentServiceTest {
             capacity = 5,
             budget = BudgetType.MEAL,
             budgetExplain = "🍕🍕🍕",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
         )
         val savedStudy = studyRepository.save(study)
 
@@ -779,6 +826,12 @@ class StudyRecruitmentServiceTest {
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
+                weeklyPlans = WeeklyPlans.of(
+                    week1Plan = "1주차 계획",
+                    week2Plan = "2주차 계획",
+                    week3Plan = "3주차 계획",
+                    week4Plan = "4주차 계획",
+                ),
             )
         )
 
@@ -838,6 +891,12 @@ class StudyRecruitmentServiceTest {
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
+                weeklyPlans = WeeklyPlans.of(
+                    week1Plan = "1주차 계획",
+                    week2Plan = "2주차 계획",
+                    week3Plan = "3주차 계획",
+                    week4Plan = "4주차 계획",
+                ),
             )
         )
 
@@ -932,6 +991,10 @@ class StudyRecruitmentServiceTest {
                 budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
                 tags = emptyList()
             )
         )
@@ -1027,6 +1090,12 @@ class StudyRecruitmentServiceTest {
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
+                weeklyPlans = WeeklyPlans.of(
+                    week1Plan = "1주차 계획",
+                    week2Plan = "2주차 계획",
+                    week3Plan = "3주차 계획",
+                    week4Plan = "4주차 계획",
+                ),
             )
         )
         studyRecruitmentRepository.save(
@@ -1080,6 +1149,10 @@ class StudyRecruitmentServiceTest {
                 budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
                 tags = emptyList()
             )
         )
@@ -1093,6 +1166,10 @@ class StudyRecruitmentServiceTest {
                 budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
                 tags = emptyList(),
             )
         )
@@ -1106,6 +1183,10 @@ class StudyRecruitmentServiceTest {
                 budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
                 tags = emptyList()
             )
         )
@@ -1177,6 +1258,12 @@ class StudyRecruitmentServiceTest {
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
+                weeklyPlans = WeeklyPlans.of(
+                    week1Plan = "1주차 계획",
+                    week2Plan = "2주차 계획",
+                    week3Plan = "3주차 계획",
+                    week4Plan = "4주차 계획",
+                ),
             )
         )
 
@@ -1258,6 +1345,10 @@ class StudyRecruitmentServiceTest {
                 budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
                 tags = emptyList()
             )
         )
@@ -1344,6 +1435,10 @@ class StudyRecruitmentServiceTest {
                 budgetExplain = "🍕🍕🍕",
                 chatUrl = "https://www.kakaocorp.com/page/service/service/openchat",
                 refUrl = null,
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
                 tags = emptyList()
             )
         )

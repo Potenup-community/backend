@@ -10,6 +10,7 @@ import kr.co.wground.study.application.dto.StudyUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.Tag
+import kr.co.wground.study.domain.WeeklyPlans
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.TagRepository
@@ -83,6 +84,12 @@ class StudyService(
             capacity = command.capacity,
             budget = command.budget,
             budgetExplain = command.budgetExplain,
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = command.week1Plan,
+                week2Plan = command.week2Plan,
+                week3Plan = command.week3Plan,
+                week4Plan = command.week4Plan,
+            ),
             externalChatUrl = command.chatUrl,
             referenceUrl = command.refUrl
         )
@@ -115,6 +122,12 @@ class StudyService(
             newBudgetExplain = command.budgetExplain ?: study.budgetExplain,
             newChatUrl = command.chatUrl ?: study.externalChatUrl,
             newRefUrl = command.refUrl ?: study.referenceUrl,
+            newWeeklyPlans = WeeklyPlans.of(
+                week1Plan = command.week1Plan,
+                week2Plan = command.week2Plan,
+                week3Plan = command.week3Plan,
+                week4Plan = command.week4Plan,
+            ),
             newTags = newTags,
         )
         return study.id
