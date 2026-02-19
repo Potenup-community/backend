@@ -17,14 +17,9 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "shop_item")
 class ShopItem private constructor(
-    @Column(nullable = false, length = 50)
-    val name: String,
-
-    @Column(nullable = false, length = 300)
-    val description: String,
-
-    @Column(nullable = false)
-    val price: Long,
+    name: String,
+    description: String,
+    price: Long,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -35,8 +30,7 @@ class ShopItem private constructor(
 
     val durationDays: Int?,
 
-    @Column(nullable = false)
-    val imageUrl: String,
+    imageUrl: String,
 
     @Column(nullable = false, updatable = false)
     val createdAt: LocalDateTime = LocalDateTime.now()
@@ -46,20 +40,26 @@ class ShopItem private constructor(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0
 
+    @Column(nullable = false, length = 50)
+    var name: String = name
+        protected set
+
+    @Column(nullable = false, length = 300)
+    var description: String = description
+        protected set
+
+    @Column(nullable = false)
+    var price: Long = price
+        protected set
+
+    @Column(nullable = false)
+    var imageUrl: String = imageUrl
+        protected set
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     var status: ShopItemStatus = ShopItemStatus.ACTIVE
         protected set
-
-    fun validatePurchasable() {
-        if (status != ShopItemStatus.ACTIVE) {
-            throw BusinessException(ShopErrorCode.ITEM_NOT_AVAILABLE)
-        }
-    }
-
-    fun hide() {
-        status = ShopItemStatus.HIDDEN
-    }
 
     companion object {
 
@@ -72,11 +72,9 @@ class ShopItem private constructor(
             durationDays: Int?,
             imageUrl: String,
         ): ShopItem {
-
             validateNotBlank(name, ShopErrorCode.INVALID_ITEM_NAME)
             validateNotBlank(description, ShopErrorCode.INVALID_ITEM_DESCRIPTION)
             validateNotBlank(imageUrl, ShopErrorCode.INVALID_ITEM_IMAGE_URL)
-
             validatePositivePrice(price)
             validateItemTypeWithDuration(consumable, durationDays)
 
@@ -113,11 +111,38 @@ class ShopItem private constructor(
         }
     }
 
+    fun update(name: String, description: String, price: Long, imageUrl: String) {
+        validateNotBlank(name, ShopErrorCode.INVALID_ITEM_NAME)
+        validateNotBlank(description, ShopErrorCode.INVALID_ITEM_DESCRIPTION)
+        validateNotBlank(imageUrl, ShopErrorCode.INVALID_ITEM_IMAGE_URL)
+        validatePositivePrice(price)
+
+        this.name = name
+        this.description = description
+        this.price = price
+        this.imageUrl = imageUrl
+    }
+
+
+    fun hide() {
+        status = ShopItemStatus.HIDDEN
+    }
+
+    fun activate() {
+        status = ShopItemStatus.ACTIVE
+    }
+
     fun getRequiredDurationDays(): Int {
         if (!this.consumable) {
             throw BusinessException(ShopErrorCode.PERMANENT_ITEM_SHOULD_NOT_HAVE_DURATION)
         }
         return this.durationDays
             ?: throw BusinessException(ShopErrorCode.CONSUMABLE_ITEM_NEED_DURATION)
+    }
+
+    fun validatePurchasable() {
+        if (status != ShopItemStatus.ACTIVE) {
+            throw BusinessException(ShopErrorCode.ITEM_NOT_AVAILABLE)
+        }
     }
 }
