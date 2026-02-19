@@ -19,6 +19,8 @@ enum class StudyServiceErrorCode(
     MAX_STUDY_EXCEEDED(HttpStatus.BAD_REQUEST,"SD-0020","스터디는 최대 ${RecruitValidator.MAX_STUDY_CAN_ENROLLED}개까지 가입 가능합니다."),
     NOT_STUDY_LEADER(HttpStatus.FORBIDDEN,"SD-0021","스터디장만 사용할 수 있습니다."),
     ONLY_ADMIN_AND_LEADER_COULD_DELETE_STUDY(HttpStatus.UNAUTHORIZED, "SD-0022", "삭제 권한이 없습니다."),
+    NOT_STUDY_LEADER_NOR_ADMIN(HttpStatus.FORBIDDEN, "SD-0023", "스터디장 또는 관리자만 사용할 수 있습니다."),
+    NOT_ADMIN(HttpStatus.FORBIDDEN, "SD-0024", "관리자만 사용할 수 있습니다."),
 
     //Tag
     TAG_CREATION_FAIL(HttpStatus.CONFLICT,"TG-0001","태그 생성 및 조회에 실패했습니다."),

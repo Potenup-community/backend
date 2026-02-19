@@ -188,7 +188,7 @@ interface StudyReportApi {
                     examples = [
                         ExampleObject(
                             name = "NOT_STUDY_LEADER",
-                            value = StudySwaggerErrorExample.Study.NOT_STUDY_LEADER
+                            value = StudySwaggerErrorExample.Study.NOT_STUDY_LEADER_NOR_ADMIN
                         ),
                     ]
                 )]
@@ -226,7 +226,7 @@ interface StudyReportApi {
                 content = [Content(
                     mediaType = "application/json",
                     schema = Schema(implementation = CustomSliceResponse::class),
-                    examples = [ExampleObject(value = StudySwaggerResponseExample.STUDY_REPORT_LIST_RESPONSE)]
+                    examples = [ExampleObject(value = StudySwaggerResponseExample.STUDY_REPORT_SUMMARY_RESPONSE)]
                 )]
             ),
             ApiResponse(
@@ -237,7 +237,7 @@ interface StudyReportApi {
                     examples = [
                         ExampleObject(
                             name = "NOT_STUDY_LEADER",
-                            value = StudySwaggerErrorExample.Study.NOT_STUDY_LEADER
+                            value = StudySwaggerErrorExample.Study.NOT_ADMIN
                         ),
                     ]
                 )]

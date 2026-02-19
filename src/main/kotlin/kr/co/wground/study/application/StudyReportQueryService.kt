@@ -31,7 +31,7 @@ class StudyReportQueryService(
 
         val isAdmin = requester.role == UserRole.ADMIN
         if (!isAdmin && !report.study.isLeader(userId)) {
-            throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
+            throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER_NOR_ADMIN)
         }
 
         return StudyReportDetailQueryResult.of(report)
@@ -42,7 +42,7 @@ class StudyReportQueryService(
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
         if (requester.role != UserRole.ADMIN) {
-            throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
+            throw BusinessException(StudyServiceErrorCode.NOT_ADMIN)
         }
 
         val reportPage = if (condition.status == null) {
