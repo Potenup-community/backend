@@ -133,7 +133,7 @@ class StudyScheduleService(
     fun getCurrentSchedule(trackId: Long): ScheduleQueryResponse {
         val now = LocalDateTime.now()
         return studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(trackId)
-            .firstOrNull { it.isCurrentRound(now) }
+            .firstOrNull { it.isCurrentMonth(now) }
             ?.let {
                 ScheduleQueryResponse(
                     id = it.id,

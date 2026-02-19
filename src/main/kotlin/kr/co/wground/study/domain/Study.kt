@@ -208,6 +208,23 @@ class Study private constructor(
         _recruitments.add(StudyRecruitment.apply(userId = userId, this))
     }
 
+    fun forceJoin(userId: UserId) {
+
+        if (_recruitments.size >= this.capacity) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_FULL)
+        }
+
+        if (this.status == StudyStatus.APPROVED) {
+            throw BusinessException(StudyDomainErrorCode.CANNOT_FORCE_JOIN_AFTER_APPROVAL)
+        }
+
+        if (_recruitments.any { it.userId == userId }) {
+            throw BusinessException(StudyDomainErrorCode.ALREADY_APPLIED)
+        }
+
+        _recruitments.add(StudyRecruitment.apply(userId = userId, this))
+    }
+
     fun withdraw(userId: UserId) {
 
         if (userId == leaderId) {

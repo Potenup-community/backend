@@ -169,6 +169,12 @@ object StudySwaggerErrorExample {
             "status": 400,
             "errors": []
         }"""
+        const val CANNOT_FORCE_JOIN_AFTER_APPROVAL = """
+            "code": "SR-0018",
+            "message": "결재 이후에는 강제가 참여 불가능합니다.",
+            "status": 409,
+            "errors": []
+        """
     }
 
     object Schedule {
