@@ -44,6 +44,8 @@ class PointEventListener(
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleCommentCreated(event: CommentCreatedEvent) {
+        if(event.commentWriterId == event.postWriterId) return
+
         earnSafely("댓글 작성 (userId: ${event.commentWriterId})") {
             earnPointUseCase.forWriteComment(event.commentWriterId, event.commentId)
         }

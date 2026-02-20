@@ -27,6 +27,20 @@ object SwaggerResponseExample {
           ]
         }
       ],
+      "items": [
+            {
+              "itemType": "PET",
+              "imageUrl": "/api/v1/shop/items/2/image"
+            },
+            {
+              "itemType": "FRAME",
+              "imageUrl": "/api/v1/shop/items/3/image"
+            },
+            {
+              "itemType": "BADGE",
+              "imageUrl": "/api/v1/shop/items/5/image"
+            }
+          ]
       "hasNext": true,
       "nextPage": 2
     }
@@ -60,7 +74,21 @@ object SwaggerResponseExample {
           "reactionType": "HEART",
           "count": 1
         }
-      ]
+      ],
+      "items": [
+            {
+              "itemType": "PET",
+              "imageUrl": "/api/v1/shop/items/2/image"
+            },
+            {
+              "itemType": "FRAME",
+              "imageUrl": "/api/v1/shop/items/3/image"
+            },
+            {
+              "itemType": "BADGE",
+              "imageUrl": "/api/v1/shop/items/5/image"
+            }
+          ]
     }
     """
 }

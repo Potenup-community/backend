@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class InventoryQueryService(
     private val inventoryRepository: UserInventoryRepository
-) : InventoryQueryUseCase {
+) : InventoryQueryUseCase{
 
     override fun getMyInventory(userId: UserId): List<InventoryItemDto> {
         val now = LocalDateTime.now()

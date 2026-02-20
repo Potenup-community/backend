@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RestController
 class InventoryController(
     private val inventoryQueryUseCase: InventoryQueryUseCase,
     private val equipItemUseCase: EquipItemUseCase
-) {
+): InventoryApi {
 
     @GetMapping("/me")
-    fun getMyInventory(userId: CurrentUserId): ResponseEntity<List<InventoryItemGroupResponse>> {
+    override fun getMyInventory(userId: CurrentUserId): ResponseEntity<List<InventoryItemGroupResponse>> {
         val inventory = inventoryQueryUseCase.getMyInventory(userId.value)
         val grouped = inventory.groupBy { it.itemType }
 
@@ -35,7 +35,7 @@ class InventoryController(
     }
 
     @PatchMapping("/{inventoryId}/equip")
-    fun equipItem(
+    override fun equipItem(
         userId: CurrentUserId,
         @PathVariable inventoryId: Long,
     ): ResponseEntity<Unit> {
@@ -44,7 +44,7 @@ class InventoryController(
     }
 
     @PatchMapping("/{inventoryId}/unequip")
-    fun unequipItem(
+    override fun unequipItem(
         userId: CurrentUserId,
         @PathVariable inventoryId: Long,
     ): ResponseEntity<Unit> {

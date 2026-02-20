@@ -131,20 +131,19 @@ class PostService(
     }
 
     fun getPostDetail(id: PostId): PostDetailDto {
-        val foundCourse = findPostByIdOrThrow(id)
-        val writer = findUserDisplayInfoByIdOrThrow(foundCourse.writerId)
-
+        val findPost = findPostByIdOrThrow(id)
+        val writer = findUserDisplayInfoByIdOrThrow(findPost.writerId)
         val reactionsByPostId = postReactionRepository.findPostReactionsByPostId(id)
 
         val commentsCount = commentRepository.countByPostIds(listOf(id))
             .firstOrNull()?.count ?: 0
 
         val postNavigationDto = postRepository.findIdsOfPreviousAndNext(
-            foundCourse.id,
-            foundCourse.createdAt
+            findPost.id,
+            findPost.createdAt
         )
 
-        return foundCourse.toDto(
+        return findPost.toDto(
             writerName = writer.name,
             trackName = writer.trackName,
             profileImageUrl = writer.profileImageUrl,
@@ -153,7 +152,8 @@ class PostService(
             previousPostId = postNavigationDto.previousPostId,
             reactions = reactionsByPostId,
             nextPostTitle = postNavigationDto.nextPostTitle,
-            previousPostTitle = postNavigationDto.previousPostTitle
+            previousPostTitle = postNavigationDto.previousPostTitle,
+            items = writer.items
         )
     }
 
@@ -176,8 +176,9 @@ class PostService(
     ): Slice<PostSummaryDto> {
         val postIds = posts.map { it.id }.toSet()
         val writerIds = posts.map { it.writerId }.toSet()
+        val writerList = writerIds.toList()
 
-        val writersById = userRepository.findUserDisplayInfos(writerIds.toList())
+        val writersById = userRepository.findUserDisplayInfos(writerList)
         val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
         val commentsCountById = commentRepository.countByPostIds(postIds.toList())
 

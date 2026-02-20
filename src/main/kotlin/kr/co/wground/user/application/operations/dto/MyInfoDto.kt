@@ -2,6 +2,7 @@ package kr.co.wground.user.application.operations.dto
 
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.shop.application.dto.EquippedItem
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.infra.dto.MyPageDto
 
@@ -13,9 +14,10 @@ data class MyInfoDto(
     val trackName: String,
     val profileImageUrl: String,
     val role: UserRole,
+    val items: List<EquippedItem>
 ){
     companion object{
-        fun from(user: MyPageDto): MyInfoDto{
+        fun from(user: MyPageDto, items: List<EquippedItem>): MyInfoDto{
             return MyInfoDto(
                 userId = user.userId,
                 name = user.name,
@@ -24,6 +26,7 @@ data class MyInfoDto(
                 trackName = user.trackName,
                 profileImageUrl = user.userProfile.getAccessUrl(),
                 role = user.role,
+                items = items
             )
         }
     }

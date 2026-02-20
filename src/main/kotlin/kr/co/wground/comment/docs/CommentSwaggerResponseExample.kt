@@ -45,7 +45,21 @@ object CommentSwaggerResponseExample {
                   "isDeleted": false,
                   "replies": []
                 }
-              ]
+              ],
+              "items": [
+            {
+              "itemType": "PET",
+              "imageUrl": "/api/v1/shop/items/2/image"
+            },
+            {
+              "itemType": "FRAME",
+              "imageUrl": "/api/v1/shop/items/3/image"
+            },
+            {
+              "itemType": "BADGE",
+              "imageUrl": "/api/v1/shop/items/5/image"
+            }
+          ]
             }
           ]
         }
