@@ -23,17 +23,22 @@ class ProjectQueryUseCaseImpl(
 ) : ProjectQueryUseCase {
 
     @Transactional(readOnly = true)
-    override fun getList(query: GetProjectListQuery): Page<ProjectSummaryResult> =
-        projectRepository
-            .findPagedSummaries(query.trackId, query.keyword, query.toPageRequest())
-            .map { it.toResult() }
+    override fun getList(query: GetProjectListQuery): Page<ProjectSummaryResult> {
+        val page = projectRepository.findPagedSummaries(query.trackId, query.keyword, query.toPageRequest())
+        val likeStats = projectRepository.findReactStats(
+            projectIds = page.content.map { it.projectId }.toSet(),
+            userId = query.userId,
+        )
+        return page.map { it.toResult(likeStats[it.projectId] ?: ProjectRepository.ProjectReaction.EMPTY) }
+    }
 
     @Transactional
     override fun getDetail(query: GetProjectDetailQuery): ProjectDetailResult {
         val row = projectRepository.findDetailById(query.projectId)
             ?: throw BusinessException(ProjectErrorCode.PROJECT_NOT_FOUND)
         projectRepository.incrementViewCount(query.projectId)
-        return row.toResult()
+        val reactStat = projectRepository.findReactStats(setOf(query.projectId), query.userId)
+        return row.toResult(reactStat[query.projectId] ?: ProjectRepository.ProjectReaction.EMPTY)
     }
 
     @Transactional(readOnly = true)
@@ -42,7 +47,7 @@ class ProjectQueryUseCaseImpl(
 
     // ── 매핑
 
-    private fun SummaryRow.toResult() = ProjectSummaryResult(
+    private fun SummaryRow.toResult(reactStats: ProjectRepository.ProjectReaction) = ProjectSummaryResult(
         projectId = projectId,
         title = title,
         thumbnailImageUrl = imageStorageService.toUrl(thumbnailImagePath),
@@ -50,10 +55,12 @@ class ProjectQueryUseCaseImpl(
         techStacks = techStacks.splitToTechStackList(),
         memberCount = memberCount,
         viewCount = viewCount,
+        reactionCount = reactStats.reactionCount,
+        reactedByMe = reactStats.reactedByMe,
         createdAt = createdAt,
     )
 
-    private fun DetailRow.toResult() = ProjectDetailResult(
+    private fun DetailRow.toResult(reactStats: ProjectRepository.ProjectReaction) = ProjectDetailResult(
         projectId = projectId,
         title = title,
         description = description,
@@ -70,7 +77,9 @@ class ProjectQueryUseCaseImpl(
                 position = m.position,
             )
         },
-        viewCount = viewCount + 1,  // incrementViewCount 반영
+        viewCount = viewCount + 1,
+        reactionCount = reactStats.reactionCount,
+        reactedByMe = reactStats.reactedByMe,
         author = ProjectDetailResult.AuthorInfo(userId = authorId, name = authorName),
         createdAt = createdAt,
         modifiedAt = modifiedAt,

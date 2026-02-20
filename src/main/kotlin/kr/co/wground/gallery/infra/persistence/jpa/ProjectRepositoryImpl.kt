@@ -3,6 +3,7 @@ package kr.co.wground.gallery.infra.persistence.jpa
 import com.querydsl.core.BooleanBuilder
 import com.querydsl.core.types.Order
 import com.querydsl.core.types.OrderSpecifier
+import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.gallery.application.repository.ProjectRepository
 import kr.co.wground.gallery.domain.model.Project
@@ -10,6 +11,9 @@ import kr.co.wground.gallery.domain.model.QProject
 import kr.co.wground.gallery.domain.model.QProjectMember
 import kr.co.wground.global.common.ProjectId
 import kr.co.wground.global.common.TrackId
+import kr.co.wground.global.common.UserId
+import kr.co.wground.reaction.domain.QProjectReaction
+import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.track.domain.QTrack
 import kr.co.wground.user.domain.QUser
 import org.springframework.data.domain.Page
@@ -27,6 +31,7 @@ class ProjectRepositoryImpl(
     private val qMember = QProjectMember.projectMember
     private val qUser = QUser.user
     private val qTrack = QTrack.track
+    private val qProjectReaction = QProjectReaction.projectReaction
 
     override fun save(project: Project): Project = jpaRepository.save(project)
     override fun findById(id: ProjectId): Project? = jpaRepository.findByIdOrNull(id)
@@ -167,6 +172,38 @@ class ProjectRepositoryImpl(
                     trackName = requireNotNull(it.get(qTrack.trackName)),
                 )
             }
+
+    override fun findReactStats(
+        projectIds: Set<ProjectId>,
+        userId: UserId
+    ): Map<ProjectId, ProjectRepository.ProjectReaction> {
+        if (projectIds.isEmpty()) return emptyMap()
+
+        val countExpr = qProjectReaction.id.count()
+        val reactedByMeMax = CaseBuilder()
+            .`when`(qProjectReaction.userId.eq(userId)).then(1)
+            .otherwise(0)
+            .max()
+
+        return queryFactory
+            .select(qProjectReaction.projectId, countExpr, reactedByMeMax)
+            .from(qProjectReaction)
+            .where(
+                qProjectReaction.projectId.`in`(projectIds),
+                qProjectReaction.reactionType.eq(ReactionType.LIKE),
+            )
+            .groupBy(qProjectReaction.projectId)
+            .fetch()
+            .associate { tuple ->
+                val projectId = requireNotNull(tuple.get(qProjectReaction.projectId))
+                val reactionCount = requireNotNull(tuple.get(countExpr))
+                val reactedByMe = requireNotNull(tuple.get(reactedByMeMax))
+                projectId to ProjectRepository.ProjectReaction(
+                    reactionCount = reactionCount.toInt(),
+                    reactedByMe = reactedByMe > 0,
+                )
+            }
+    }
 
     // ── 헬퍼
 

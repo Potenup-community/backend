@@ -16,6 +16,7 @@ interface ProjectRepository {
     fun findDetailById(projectId: ProjectId): DetailRow?
     fun incrementViewCount(projectId: ProjectId)
     fun findUsedTrackFilters(): List<TrackItem>
+    fun findReactStats(projectIds: Set<ProjectId>, userId: UserId): Map<ProjectId, ProjectReaction>
 
     data class SummaryRow(
         val projectId: ProjectId,
@@ -56,4 +57,13 @@ interface ProjectRepository {
         val trackId: TrackId,
         val trackName: String,
     )
+
+    data class ProjectReaction(
+        val reactionCount: Int,
+        val reactedByMe: Boolean,
+    ) {
+        companion object {
+            val EMPTY = ProjectReaction(0, false)
+        }
+    }
 }
