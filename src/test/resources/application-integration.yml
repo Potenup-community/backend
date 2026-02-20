@@ -61,11 +61,11 @@ app:
     allowedExts: [ jpg, jpeg, png, gif ]
     base-url: http://localhost
   item:
-    local-dir: ${LOCAL_ITEM_DIR}
-    webPathPrefix: ${PUBLIC_ITEM_PATH}
-    maxBytes: ${ITEM_MAX_BYTE}
-    allowedExts: ${ALLOWED_ITEM_EXTENSIONS}
-    base-url: ${BASE_URL}
+    local-dir: ${LOCAL_ITEM_DIR:/uploads/items}
+    webPathPrefix: ${PUBLIC_ITEM_PATH:/images/items}
+    maxBytes: ${ITEM_MAX_BYTE:532095}
+    allowedExts: ${ALLOWED_ITEM_EXTENSIONS:png,gif,webp}
+    base-url: ${BASE_URL:http://localhost}
 
 # 슬랙 알림 웹 훅 설정 (채널별)
 slack:
