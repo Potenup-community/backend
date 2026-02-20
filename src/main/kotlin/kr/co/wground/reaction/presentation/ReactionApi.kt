@@ -10,18 +10,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.ProjectId
 import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.reaction.application.dto.PostReactionStats
+import kr.co.wground.reaction.application.dto.ProjectReactionStats
 import kr.co.wground.reaction.docs.SwaggerReactionErrorExample
 import kr.co.wground.reaction.docs.SwaggerReactionResponseExample
 import kr.co.wground.reaction.presentation.request.CommentReactionStatsBatchRequest
 import kr.co.wground.reaction.presentation.request.PostReactionStatsBatchRequest
+import kr.co.wground.reaction.presentation.request.ProjectReactionStatsBatchRequest
 import kr.co.wground.reaction.presentation.request.ReactionRequest
 import org.springframework.http.ResponseEntity
 
@@ -68,6 +70,10 @@ interface ReactionApi {
                         ExampleObject(
                             name = "COMMENT_NOT_FOUND",
                             value = SwaggerReactionErrorExample.NotFound.COMMENT_NOT_FOUND
+                        ),
+                        ExampleObject(
+                            name = "PROJECT_NOT_FOUND",
+                            value = SwaggerReactionErrorExample.NotFound.PROJECT_NOT_FOUND
                         )
                     ]
                 )]
@@ -247,4 +253,31 @@ interface ReactionApi {
             schema = Schema(type = "string", example = "token_value")
         ) user: CurrentUserId
     ): ResponseEntity<Map<CommentId, CommentReactionStats>>
+
+    @Operation(summary = "여러 프로젝트 리액션 조회", description = "요청 바디로 프로젝트 id 목록을 명시하여 리액션 유형별 수와 내 리액션 여부를 조회합니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "200", description = "조회 성공"),
+            ApiResponse(
+                responseCode = "400", description = "너무 작거나 큰 프로젝트 id 목록",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [ExampleObject(
+                        name = "INVALID_PROJECT_ID_LIST_SIZE",
+                        value = SwaggerReactionErrorExample.BadRequest.INVALID_PROJECT_ID_LIST_SIZE
+                    )]
+                )]
+            )
+        ]
+    )
+    fun getProjectReactionStats(
+        @Valid request: ProjectReactionStatsBatchRequest,
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")
+        ) user: CurrentUserId
+    ): ResponseEntity<Map<ProjectId, ProjectReactionStats>>
 }
