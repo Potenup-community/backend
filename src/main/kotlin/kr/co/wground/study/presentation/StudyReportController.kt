@@ -6,7 +6,7 @@ import kr.co.wground.study.application.StudyReportQueryService
 import kr.co.wground.study.application.dto.StudyReportSearchCondition
 import kr.co.wground.study.application.StudyReportAdminService
 import kr.co.wground.study.application.StudyReportService
-import kr.co.wground.study.presentation.response.CustomSliceResponse
+import kr.co.wground.study.presentation.response.CustomPageResponse
 import kr.co.wground.study.presentation.request.study_report.StudyReportCancelRequest
 import kr.co.wground.study.presentation.request.study_report.StudyReportRejectRequest
 import kr.co.wground.study.presentation.request.study_report.StudyReportUpsertRequest
@@ -72,10 +72,10 @@ class StudyReportController(
         @ModelAttribute condition: StudyReportSearchCondition,
         @PageableDefault(size = 20, sort = ["submittedAt"], direction = Sort.Direction.DESC) pageable: Pageable,
         userId: CurrentUserId,
-    ): ResponseEntity<CustomSliceResponse<StudyReportSummaryResponse>> {
+    ): ResponseEntity<CustomPageResponse<StudyReportSummaryResponse>> {
         val response = studyReportQueryService.searchReports(userId.value, condition, pageable)
             .map { StudyReportSummaryResponse.from(it) }
-        return ResponseEntity.ok(CustomSliceResponse.from(response))
+        return ResponseEntity.ok(CustomPageResponse.from(response))
     }
 
     @PatchMapping("/studies/{studyId}/report/approve")

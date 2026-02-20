@@ -6,7 +6,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface StudyReportRepository : JpaRepository<StudyReport, Long> {
+interface StudyReportRepository : JpaRepository<StudyReport, Long>, CustomStudyReportRepository {
     fun findByStudyId(studyId: Long): StudyReport?
     fun existsByStudyId(studyId: Long): Boolean
     fun findAllByStatus(status: StudyReportApprovalStatus, pageable: Pageable): Page<StudyReport>

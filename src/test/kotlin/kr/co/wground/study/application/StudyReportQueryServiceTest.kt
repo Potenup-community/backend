@@ -107,6 +107,8 @@ class StudyReportQueryServiceTest {
         assertFalse(approvedReports.content.isEmpty())
         assertTrue(approvedReports.content.all { it.status == StudyReportApprovalStatus.APPROVED })
         assertEquals(listOf(fixture.secondStudy.id), approvedReports.content.map { it.studyId })
+        assertEquals(1L, approvedReports.totalElements)
+        assertEquals(1, approvedReports.totalPages)
     }
 
     @Test
