@@ -9,6 +9,16 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO} #TODO validate로 바꾸기
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: ${BATCH_SIZE}
+    database-platform: org.hibernate.dialect.MySQLDialect
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -24,16 +34,12 @@ spring:
           connectiontimeout: ${MAIL_TIMEOUT}
           timeout: ${MAIL_TIMEOUT}
           writetimeout: ${MAIL_TIMEOUT}
-  jpa:
-    hibernate:
-      ddl-auto: ${DDL_AUTO} #TODO validate로 바꾸기
-    properties:
-      hibernate:
-        format_sql: true
-        use_sql_comments: true
-        jdbc:
-          batch_size: ${BATCH_SIZE}
-    database-platform: org.hibernate.dialect.MySQLDialect
+  spring:
+    task:
+      scheduling:
+        pool:
+          size: 5
+        thread-name-prefix: sched-
 
 logging:
   level:
@@ -75,6 +81,12 @@ app:
     webPathPrefix: ${PUBLIC_PROFILE_PATH}
     maxBytes: ${PROFILE_MAX_BYTE}
     allowedExts: ${ALLOWED_EXTENSIONS}
+    base-url: ${BASE_URL}
+  item:
+    local-dir: ${LOCAL_ITEM_DIR:C:\depth\uploads\item}
+    webPathPrefix: ${PUBLIC_ITEM_PATH:/images/items}
+    maxBytes: ${ITEM_MAX_BYTE:5242880}
+    allowedExts: ${ALLOWED_ITEM_EXTENSIONS}
     base-url: ${BASE_URL}
 
 # 슬랙 알림 웹 훅 설정

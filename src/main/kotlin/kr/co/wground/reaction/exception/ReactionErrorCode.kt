@@ -17,4 +17,7 @@ enum class ReactionErrorCode(
 
     TOO_LARGE_POST_ID_SET(HttpStatus.BAD_REQUEST, "PR-0010", "요청 된 postId 집합이 너무 큽니다."),
     TOO_LARGE_COMMENT_ID_SET(HttpStatus.BAD_REQUEST, "PR-0011", "요청 된 commentId 집합이 너무 큽니다."),
+
+    PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND, "PR-0012", "반응할 프로젝트를 찾을 수 없습니다."),
+    TOO_LARGE_PROJECT_ID_SET(HttpStatus.BAD_REQUEST, "PR-0013", "요청 된 projectId 집합이 너무 큽니다."),
 }

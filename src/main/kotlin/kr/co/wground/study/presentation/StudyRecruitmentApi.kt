@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable
 @Tag(name = "Study Recruitment", description = "스터디 모집/신청 API")
 interface StudyRecruitmentApi {
 
-    @Operation(summary = "스터디 신청", description = "스터디에 참여 신청을 합니다.")
+    @Operation(summary = "스터디 참여", description = "스터디에 참여 신청을 합니다.")
     @ApiResponses(
         value = [
             ApiResponse(responseCode = "201", description = "신청 성공"),
@@ -84,6 +84,70 @@ interface StudyRecruitmentApi {
         @PathVariable studyId: Long,
     ): ResponseEntity<Unit>
 
+    @Operation(summary = "스터디 강제 참여", description = "관리자가 특정 사용자를 특정 스터디에 강제로 참여시킵니다.")
+    @ApiResponses(
+        value = [
+            ApiResponse(responseCode = "201", description = "신청 성공"),
+            ApiResponse(
+                responseCode = "400", description = "신청 불가",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(
+                            name = "TRACK_MISMATCH",
+                            value = StudySwaggerErrorExample.Recruitment.TRACK_MISMATCH
+                        ),
+                        ExampleObject(
+                            name = "CANNOT_FORCE_JOIN_IN_PROGRESS_OR_COMPLETED",
+                            value = StudySwaggerErrorExample.Recruitment.CANNOT_FORCE_JOIN_IN_PROGRESS_OR_COMPLETED
+                        ),
+                        ExampleObject(
+                            name = "ALREADY_APPLIED",
+                            value = StudySwaggerErrorExample.Recruitment.ALREADY_APPLIED
+                        ),
+                        ExampleObject(
+                            name = "STUDY_MONTH_IS_NOT_CURRENT_MONTH",
+                            value = StudySwaggerErrorExample.Recruitment.STUDY_MONTH_IS_NOT_CURRENT_MONTH
+                        ),
+                        ExampleObject(
+                            name = "MAX_STUDY_EXCEEDED",
+                            value = StudySwaggerErrorExample.Study.MAX_STUDY_EXCEEDED
+                        ),
+                        ExampleObject(
+                            name = "STUDY_CAPACITY_FULL",
+                            value = StudySwaggerErrorExample.Study.STUDY_CAPACITY_FULL
+                        ),
+                    ]
+                )]
+            ),
+            ApiResponse(
+                responseCode = "404", description = "자원 찾을 수 없음",
+                content = [Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = ErrorResponse::class),
+                    examples = [
+                        ExampleObject(name = "STUDY_NOT_FOUND", value = StudySwaggerErrorExample.Study.STUDY_NOT_FOUND),
+                        ExampleObject(
+                            name = "SCHEDULE_NOT_FOUND",
+                            value = StudySwaggerErrorExample.Schedule.SCHEDULE_NOT_FOUND
+                        ),
+                    ]
+                )]
+            )
+        ]
+    )
+    fun forceJoinStudy(
+        @Parameter(
+            `in` = ParameterIn.COOKIE,
+            name = "accessToken",
+            description = "현재 로그인한 사용자 ID",
+            schema = Schema(type = "string", example = "token_value")
+        ) userId: CurrentUserId,
+        @PathVariable studyId: Long,
+        @PathVariable targetUserId: Long,
+    ): ResponseEntity<Unit>
+
     @Operation(summary = "스터디 신청 취소", description = "스터디 신청을 취소합니다.")
     @ApiResponses(
         value = [
@@ -99,8 +163,8 @@ interface StudyRecruitmentApi {
                             value = StudySwaggerErrorExample.Recruitment.LEADER_CANNOT_LEAVE
                         ),
                         ExampleObject(
-                            name = "RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING",
-                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING
+                            name = "RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_RECRUITING",
+                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_RECRUITING
                         ),
                     ]
                 )]

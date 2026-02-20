@@ -27,6 +27,12 @@
           connectiontimeout: 1000
           timeout: 1000
           writetimeout: 1000
+  spring:
+    task:
+      scheduling:
+        pool:
+          size: 5
+        thread-name-prefix: sched-
 
 jwt:
   secret: test-secret
@@ -52,8 +58,14 @@ app:
     local-dir: build/tmp/profiles
     webPathPrefix: /profiles
     maxBytes: 1048576
-    allowedExts: [jpg, jpeg, png, gif]
+    allowedExts: [ jpg, jpeg, png, gif ]
     base-url: http://localhost
+  item:
+    local-dir: ${LOCAL_ITEM_DIR:/uploads/items}
+    webPathPrefix: ${PUBLIC_ITEM_PATH:/images/items}
+    maxBytes: ${ITEM_MAX_BYTE:532095}
+    allowedExts: ${ALLOWED_ITEM_EXTENSIONS:png,gif,webp}
+    base-url: ${BASE_URL:http://localhost}
 
 # 슬랙 알림 웹 훅 설정 (채널별)
 slack:

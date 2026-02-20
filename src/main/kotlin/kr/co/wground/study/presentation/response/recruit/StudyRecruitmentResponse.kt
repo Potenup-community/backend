@@ -2,6 +2,7 @@ package kr.co.wground.study.presentation.response.recruit
 
 import java.time.LocalDateTime
 import kr.co.wground.global.common.UserId
+import kr.co.wground.shop.application.dto.EquippedItem
 import kr.co.wground.study.domain.StudyRecruitment
 
 data class StudyRecruitmentResponse(

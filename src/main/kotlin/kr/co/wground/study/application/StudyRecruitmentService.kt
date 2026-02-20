@@ -4,6 +4,8 @@ import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.shop.application.dto.EquippedItem
+import kr.co.wground.shop.application.dto.EquippedItem.Companion.from
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.StudyRecruitment
@@ -33,28 +35,63 @@ class StudyRecruitmentService(
     private val trackRepository: TrackRepository,
     private val scheduleRepository: StudyScheduleRepository,
     private val recruitValidator: RecruitValidator,
-    private val eventPublisher: ApplicationEventPublisher
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
 
     fun participate(userId: Long, studyId: Long): Long {
 
         val user = findUserOrThrows(userId)
         val track = findTrackByIdOrThrows(user.trackId)
-        recruitValidator.validateGraduated(track.trackStatus)
+        recruitValidator.throwsWhenTrackIsGraduated(track.trackStatus)
 
         val study = findStudyByIdOrThrows(studyId)
 
-        recruitValidator.trackExists(user.trackId, study)
+        recruitValidator.throwsWhenTracksMismatch(user.trackId, study)
 
         val schedule = findScheduleByIdOrThrows(study.scheduleId)
         val requestMonth = scheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId)
-            .firstOrNull { it.isCurrentRound() } ?: throw BusinessException(StudyScheduleServiceErrorCode.SCHEDULE_NOT_FOUND)
+            .firstOrNull { it.isCurrentMonth() }
+            ?: throw BusinessException(StudyScheduleServiceErrorCode.SCHEDULE_NOT_FOUND)
 
-        recruitValidator.validateSchedule(schedule)
-        recruitValidator.validateCurrentMonth(schedule, requestMonth)
-        recruitValidator.validateHasMaxStudyLimit(userId, schedule.id)
+        recruitValidator.throwsWhenRecruitingIsOver(schedule)
+        recruitValidator.throwsWhenScheduleIsNotCurrentMonth(schedule, requestMonth)
+        recruitValidator.throwsWhenStudyLimitExceeded(userId, schedule.id)
 
         study.participate(userId)
+        val saved = studyRepository.save(study)
+
+        eventPublisher.publishEvent(
+            StudyRecruitEvent(
+                studyId = saved.id,
+                leaderId = saved.leaderId
+            )
+        )
+
+        return saved.recruitments.find { it.userId == userId }?.id
+            ?: throw RuntimeException("알 수 없는 이유로 스터디 생성에 실패했습니다.")
+    }
+
+    /**
+     * 관리자의 요청에 따른 스터디 강제 참여
+     */
+    fun forceJoin(userId: Long, studyId: Long): Long {
+
+        val user = findUserOrThrows(userId)
+        val track = findTrackByIdOrThrows(user.trackId)
+        recruitValidator.throwsWhenTrackIsGraduated(track.trackStatus)
+
+        val study = findStudyByIdOrThrows(studyId)
+
+        recruitValidator.throwsWhenTracksMismatch(user.trackId, study)
+
+        val schedule = findScheduleByIdOrThrows(study.scheduleId)
+        val requestMonth = scheduleRepository.findAllByTrackIdOrderByMonthsAsc(user.trackId)
+            .firstOrNull { it.isCurrentMonth() } ?: throw BusinessException(StudyScheduleServiceErrorCode.SCHEDULE_NOT_FOUND)
+
+        recruitValidator.throwsWhenScheduleIsNotCurrentMonth(schedule, requestMonth)
+        recruitValidator.throwsWhenStudyLimitExceeded(userId, schedule.id)
+
+        study.forceJoin(userId)
         val saved = studyRepository.save(study)
 
         eventPublisher.publishEvent(
@@ -74,7 +111,7 @@ class StudyRecruitmentService(
 
         findScheduleByIdOrThrows(recruitment.study.scheduleId)
 
-        recruitValidator.validateRecruitUserId(recruitment.userId, userId)
+        recruitValidator.throwsWhenUserIsNotRecruitmentOwner(recruitment, userId)
 
         recruitment.study.withdraw(userId)
 
@@ -88,7 +125,6 @@ class StudyRecruitmentService(
         if (recruitments.isEmpty()) {
             throw BusinessException(StudyServiceErrorCode.RECRUITMENT_NOT_FOUND)
         }
-
         val user = findUserOrThrows(userId)
         val track = findTrackByIdOrThrows(user.trackId)
         return recruitments.map { recruitment ->
@@ -101,7 +137,7 @@ class StudyRecruitmentService(
         val study = findStudyByIdOrThrows(studyId)
 
         // To Do: 신청이 아니라 참여니까 스터디장이 아닌 참가자들도 볼 수 있어야 하지 않을까?
-        recruitValidator.validateDetermineLeader(study, userId)
+        recruitValidator.throwsWhenUserIsNotStudyLeader(study, userId)
 
         val recruitments = studyRecruitmentRepository.findAllByStudyId(studyId)
 
@@ -113,7 +149,11 @@ class StudyRecruitmentService(
             val applicant = users[recruitment.userId]
                 ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
-            StudyRecruitmentResponse.of(recruitment, applicant.name, track.trackName)
+            StudyRecruitmentResponse.of(
+                recruitment,
+                applicant.name,
+                track.trackName,
+            )
         }
     }
 

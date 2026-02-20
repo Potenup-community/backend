@@ -5,6 +5,7 @@ import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
+import kr.co.wground.gallery.application.repository.ProjectRepository
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.domain.enums.HighlightType
 import kr.co.wground.post.domain.enums.Topic
@@ -14,6 +15,7 @@ import kr.co.wground.reaction.application.dto.PostReactCommand
 import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.infra.jpa.CommentReactionJpaRepository
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
+import kr.co.wground.reaction.infra.jpa.ProjectReactionJpaRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
@@ -28,8 +30,10 @@ import org.springframework.context.ApplicationEventPublisher
 class ReactionCommandServiceTest {
     private val postReactionJpaRepository = mock(PostReactionJpaRepository::class.java)
     private val commentReactionJpaRepository = mock(CommentReactionJpaRepository::class.java)
+    private val projectReactionJpaRepository = mock(ProjectReactionJpaRepository::class.java)
     private val postRepository = mock(PostRepository::class.java)
     private val commentRepository = mock(CommentRepository::class.java)
+    private val projectRepository = mock(ProjectRepository::class.java)
     private val eventPublisher = mock(ApplicationEventPublisher::class.java)
     private lateinit var reactionCommandService: ReactionCommandService
 
@@ -38,8 +42,10 @@ class ReactionCommandServiceTest {
         reactionCommandService = ReactionCommandService(
             postReactionJpaRepository,
             commentReactionJpaRepository,
+            projectReactionJpaRepository,
             postRepository,
             commentRepository,
+            projectRepository,
             eventPublisher
         )
     }

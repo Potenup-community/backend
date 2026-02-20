@@ -2,6 +2,7 @@ package kr.co.wground.study.domain
 
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
+import jakarta.persistence.Embedded
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -37,6 +38,7 @@ class Study private constructor(
     capacity: Int = RECOMMENDED_MAX_CAPACITY,
     budget: BudgetType,
     budgetExplain: String,
+    weeklyPlans: WeeklyPlans,
     externalChatUrl: String = DEFAULT_CHAT_URL,
     referenceUrl: String? = null,
     @Column(nullable = false)
@@ -70,6 +72,11 @@ class Study private constructor(
 
     @Column(nullable = false)
     var budgetExplain: String = budgetExplain
+        protected set
+
+    @Embedded
+    var weeklyPlans: WeeklyPlans = weeklyPlans
+        protected set
 
     @OneToMany(mappedBy = "study", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     protected val _recruitments: MutableList<StudyRecruitment> = ArrayList()
@@ -114,6 +121,7 @@ class Study private constructor(
             capacity: Int = RECOMMENDED_MAX_CAPACITY,
             budget: BudgetType,
             budgetExplain: String,
+            weeklyPlans: WeeklyPlans,
             externalChatUrl: String = DEFAULT_CHAT_URL,
             referenceUrl: String? = null,
             tags: List<Tag>? = emptyList()
@@ -124,10 +132,11 @@ class Study private constructor(
                 trackId = trackId,
                 scheduleId = scheduleId,
                 description = description,
-                status = StudyStatus.PENDING,
+                status = StudyStatus.RECRUITING,
                 capacity = capacity,
                 budget = budget,
                 budgetExplain = budgetExplain,
+                weeklyPlans = weeklyPlans,
                 externalChatUrl = externalChatUrl,
                 referenceUrl = referenceUrl
             )
@@ -152,6 +161,7 @@ class Study private constructor(
             capacity: Int = RECOMMENDED_MAX_CAPACITY,
             budget: BudgetType,
             budgetExplain: String,
+            weeklyPlans: WeeklyPlans,
             externalChatUrl: String = DEFAULT_CHAT_URL,
             referenceUrl: String? = null,
             createdAt: LocalDateTime,
@@ -169,6 +179,7 @@ class Study private constructor(
                 capacity = capacity,
                 budget = budget,
                 budgetExplain = budgetExplain,
+                weeklyPlans = weeklyPlans,
                 externalChatUrl = externalChatUrl,
                 referenceUrl = referenceUrl,
                 createdAt = createdAt,
@@ -197,8 +208,25 @@ class Study private constructor(
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_FULL)
         }
 
-        if (this.status != StudyStatus.PENDING) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_NOT_PENDING)
+        if (this.status != StudyStatus.RECRUITING) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_NOT_RECRUITING)
+        }
+
+        if (_recruitments.any { it.userId == userId }) {
+            throw BusinessException(StudyDomainErrorCode.ALREADY_APPLIED)
+        }
+
+        _recruitments.add(StudyRecruitment.apply(userId = userId, this))
+    }
+
+    fun forceJoin(userId: UserId) {
+
+        if (_recruitments.size >= this.capacity) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_FULL)
+        }
+
+        if (this.status == StudyStatus.IN_PROGRESS || this.status == StudyStatus.COMPLETED) {
+            throw BusinessException(StudyDomainErrorCode.CANNOT_FORCE_JOIN_IN_PROGRESS_OR_COMPLETED)
         }
 
         if (_recruitments.any { it.userId == userId }) {
@@ -218,8 +246,8 @@ class Study private constructor(
             throw BusinessException(StudyDomainErrorCode.NOT_PARTICIPATED_THAT_STUDY)
         }
 
-        if (status != StudyStatus.PENDING) {
-            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING)
+        if (status != StudyStatus.RECRUITING) {
+            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_RECRUITING)
         }
 
         // orphanRemoval == true!
@@ -234,6 +262,7 @@ class Study private constructor(
         newBudgetExplain: String,
         newChatUrl: String,
         newRefUrl: String?,
+        newWeeklyPlans: WeeklyPlans,
         newTags: List<Tag>?
     ) {
         validateCanUpdate()
@@ -248,6 +277,7 @@ class Study private constructor(
         this.budgetExplain = newBudgetExplain
         this.externalChatUrl = newChatUrl
         this.referenceUrl = newRefUrl
+        this.weeklyPlans = newWeeklyPlans
         this.name = newName
         this.description = newDescription
         this.capacity = newCapacity
@@ -295,27 +325,35 @@ class Study private constructor(
         this._studyTags.add(studyTag)
     }
 
-    fun close() {
-        this.status = StudyStatus.CLOSED
+    fun closeRecruitment() {
+        if (this.status == StudyStatus.RECRUITING) {
+            this.status = StudyStatus.RECRUITING_CLOSED
+        }
     }
 
-    fun approve() {
-        if (this.status != StudyStatus.CLOSED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE)
+    fun start() {
+        if (this.status != StudyStatus.RECRUITING_CLOSED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_MUST_BE_RECRUITING_CLOSED_TO_START)
         }
 
         if (_recruitments.size < MIN_CAPACITY) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_START_DUE_TO_NOT_ENOUGH_MEMBER)
         }
 
-        this.status = StudyStatus.APPROVED
+        this.status = StudyStatus.IN_PROGRESS
+    }
+
+    fun complete() {
+        if (this.status == StudyStatus.IN_PROGRESS) {
+            this.status = StudyStatus.COMPLETED
+        }
     }
 
     // ----- validate
 
     fun validateHardDeletable() {
-        if (this.status == StudyStatus.APPROVED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_APPROVED)
+        if (this.status == StudyStatus.IN_PROGRESS || this.status == StudyStatus.COMPLETED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_DELETE_IN_PROGRESS_OR_COMPLETED)
         }
     }
 
@@ -324,8 +362,8 @@ class Study private constructor(
     }
 
     private fun validateCanUpdate() {
-        if (this.status == StudyStatus.APPROVED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_APPROVED)
+        if (this.status == StudyStatus.IN_PROGRESS || this.status == StudyStatus.COMPLETED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_IN_PROGRESS_OR_COMPLETED)
         }
     }
 

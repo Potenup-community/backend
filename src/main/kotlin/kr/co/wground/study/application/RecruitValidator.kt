@@ -4,6 +4,7 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
+import kr.co.wground.study.domain.StudyRecruitment
 import kr.co.wground.study_schedule.domain.StudySchedule
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
@@ -18,44 +19,44 @@ class RecruitValidator(
         const val MAX_STUDY_CAN_ENROLLED = 2
     }
 
-    fun trackExists(userTrackId: Long, study: Study) {
+    fun throwsWhenTracksMismatch(userTrackId: Long, study: Study) {
         if (userTrackId != study.trackId) {
             throw BusinessException(StudyServiceErrorCode.TRACK_MISMATCH)
         }
     }
 
-    fun validateHasMaxStudyLimit(userId: Long, scheduleId: Long) {
+    fun throwsWhenStudyLimitExceeded(userId: Long, scheduleId: Long) {
         val count = studyRecruitmentRepository.countStudyRecruitment(userId, scheduleId)
         if (count >= MAX_STUDY_CAN_ENROLLED) {
             throw BusinessException(StudyServiceErrorCode.MAX_STUDY_EXCEEDED)
         }
     }
 
-    fun validateSchedule(schedule: StudySchedule) {
+    fun throwsWhenRecruitingIsOver(schedule: StudySchedule) {
         if (schedule.isRecruitmentClosed()) {
             throw BusinessException(StudyScheduleServiceErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT)
         }
     }
 
-    fun validateCurrentMonth(schedule: StudySchedule, current: StudySchedule) {
+    fun throwsWhenScheduleIsNotCurrentMonth(schedule: StudySchedule, current: StudySchedule) {
         if (schedule.months.ordinal < current.months.ordinal) {
             throw BusinessException(StudyServiceErrorCode.STUDY_MONTH_IS_NOT_CURRENT_MONTH)
         }
     }
 
-    fun validateRecruitUserId(recruitUserId: Long, userId: UserId) {
-        if (recruitUserId != userId) {
+    fun throwsWhenUserIsNotRecruitmentOwner(recruitment: StudyRecruitment, userId: UserId) {
+        if (recruitment.userId != userId) {
             throw BusinessException(StudyServiceErrorCode.NOT_RECRUITMENT_OWNER)
         }
     }
 
-    fun validateDetermineLeader(study: Study, leaderId: Long) {
+    fun throwsWhenUserIsNotStudyLeader(study: Study, leaderId: Long) {
         if (!study.isLeader(leaderId)) {
             throw BusinessException(StudyServiceErrorCode.NOT_STUDY_LEADER)
         }
     }
 
-    fun validateGraduated(trackStatus: TrackStatus) {
+    fun throwsWhenTrackIsGraduated(trackStatus: TrackStatus) {
         if(isGraduated(trackStatus)){
             throw BusinessException(StudyServiceErrorCode.GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY)
         }

@@ -3,6 +3,7 @@ package kr.co.wground.post.application
 import java.util.UUID
 import kr.co.wground.comment.infra.CommentRepository
 import kr.co.wground.common.event.AnnouncementCreatedEvent
+import kr.co.wground.common.event.PostCreatedEvent
 import kr.co.wground.common.event.SyncDraftImagesToPostEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.PostId
@@ -49,7 +50,7 @@ class PostService(
         )
 
         noticeEventPublish(dto, postId)
-
+        publishPostCreatedEvent(postId, dto.writerId)
         return postId
     }
 
@@ -108,6 +109,10 @@ class PostService(
         }
     }
 
+    private fun publishPostCreatedEvent(postId: PostId, writerId: WriterId) {
+        eventPublisher.publishEvent(PostCreatedEvent(postId, writerId))
+    }
+
     private fun findPostByIdOrThrow(id: PostId): Post {
         return postRepository.findByIdOrNull(id)
             ?: throw BusinessException(PostErrorCode.NOT_FOUND_POST)
@@ -126,20 +131,19 @@ class PostService(
     }
 
     fun getPostDetail(id: PostId): PostDetailDto {
-        val foundCourse = findPostByIdOrThrow(id)
-        val writer = findUserDisplayInfoByIdOrThrow(foundCourse.writerId)
-
+        val findPost = findPostByIdOrThrow(id)
+        val writer = findUserDisplayInfoByIdOrThrow(findPost.writerId)
         val reactionsByPostId = postReactionRepository.findPostReactionsByPostId(id)
 
         val commentsCount = commentRepository.countByPostIds(listOf(id))
             .firstOrNull()?.count ?: 0
 
         val postNavigationDto = postRepository.findIdsOfPreviousAndNext(
-            foundCourse.id,
-            foundCourse.createdAt
+            findPost.id,
+            findPost.createdAt
         )
 
-        return foundCourse.toDto(
+        return findPost.toDto(
             writerName = writer.name,
             trackName = writer.trackName,
             profileImageUrl = writer.profileImageUrl,
@@ -148,7 +152,8 @@ class PostService(
             previousPostId = postNavigationDto.previousPostId,
             reactions = reactionsByPostId,
             nextPostTitle = postNavigationDto.nextPostTitle,
-            previousPostTitle = postNavigationDto.previousPostTitle
+            previousPostTitle = postNavigationDto.previousPostTitle,
+            items = writer.items
         )
     }
 
@@ -171,8 +176,9 @@ class PostService(
     ): Slice<PostSummaryDto> {
         val postIds = posts.map { it.id }.toSet()
         val writerIds = posts.map { it.writerId }.toSet()
+        val writerList = writerIds.toList()
 
-        val writersById = userRepository.findUserDisplayInfos(writerIds.toList())
+        val writersById = userRepository.findUserDisplayInfos(writerList)
         val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
         val commentsCountById = commentRepository.countByPostIds(postIds.toList())
 

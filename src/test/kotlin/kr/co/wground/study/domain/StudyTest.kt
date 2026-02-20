@@ -3,9 +3,7 @@ package kr.co.wground.study.domain
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.domain.enums.BudgetType
 import kr.co.wground.study_schedule.domain.enums.Months
-import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.domain.exception.StudyDomainErrorCode
-import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
 import kr.co.wground.study_schedule.domain.StudySchedule
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
@@ -16,9 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.util.stream.Stream
-import kotlin.repeat
 
 @DisplayName("스터디(Study) 테스트")
 class StudyTest {
@@ -74,6 +70,39 @@ class StudyTest {
             Arguments.of("too short(${Study.MIN_BUDGET_EXPLAIN_LENGTH}자 미만; mixed)", " \t1\n "),
             Arguments.of("too long(${Study.MAX_BUDGET_EXPLAIN_LENGTH}자 초과)", " \t" + "1".repeat(Study.MAX_BUDGET_EXPLAIN_LENGTH + 1) + "\n ")
         )
+
+        @JvmStatic
+        fun invalidWeeklyPlanInputs(): Stream<Arguments> = Stream.of(
+            Arguments.of("empty", ""),
+            Arguments.of("blank(space)", " "),
+            Arguments.of("blank(tab)", "\t"),
+            Arguments.of("blank(newline)", "\n"),
+            Arguments.of("blank(mixed)", " \t \n "),
+            Arguments.of("too short(${WeeklyPlans.MIN_PLAN_LENGTH}자 미만)", "1".repeat(WeeklyPlans.MIN_PLAN_LENGTH - 1)),
+            Arguments.of("too short(${WeeklyPlans.MIN_PLAN_LENGTH}자 미만; trimmed)", " 1 "),
+            Arguments.of("too short(${WeeklyPlans.MIN_PLAN_LENGTH}자 미만; mixed)", " \t1\n "),
+            Arguments.of("too long(${WeeklyPlans.MAX_PLAN_LENGTH}자 초과)", " \t" + "1".repeat(WeeklyPlans.MAX_PLAN_LENGTH + 1) + "\n ")
+        )
+
+        @JvmStatic
+        fun invalidWeeklyPlansForCreateOrUpdate(): Stream<Arguments> {
+            val validWeek1Plan = "1주차 계획"
+            val validWeek2Plan = "2주차 계획"
+            val validWeek3Plan = "3주차 계획"
+            val validWeek4Plan = "4주차 계획"
+
+            return invalidWeeklyPlanInputs().flatMap { argument ->
+                val caseName = argument.get()[0] as String
+                val invalidPlan = argument.get()[1] as String
+
+                Stream.of(
+                    Arguments.of("1주차-$caseName", invalidPlan, validWeek2Plan, validWeek3Plan, validWeek4Plan),
+                    Arguments.of("2주차-$caseName", validWeek1Plan, invalidPlan, validWeek3Plan, validWeek4Plan),
+                    Arguments.of("3주차-$caseName", validWeek1Plan, validWeek2Plan, invalidPlan, validWeek4Plan),
+                    Arguments.of("4주차-$caseName", validWeek1Plan, validWeek2Plan, validWeek3Plan, invalidPlan),
+                )
+            }
+        }
     }
 
     // ----- 정원 수
@@ -244,50 +273,107 @@ class StudyTest {
         assertEquals(StudyDomainErrorCode.STUDY_URL_INVALID.code, thrown.code)
     }
 
-    // ----- 결재 테스트
+    // ----- 스터디 진행 계획
 
-    @Test
-    @DisplayName("대상 스터디가 PENDING 상태일 때, 스터디 결재 시, 예외 발생 - BusinessException(STUDY_MUST_BE_CLOSED_TO_APPROVE)")
-    fun shouldThrowStudyMustBeClosedToApprove_whenApprovePendingStudy() {
-
+    @ParameterizedTest(name = "스터디 진행 계획: {0}")
+    @MethodSource("invalidWeeklyPlansForCreateOrUpdate")
+    @DisplayName("스터디 생성 시, 주차 별 진행 계획 중 하나라도 유효하지 않은 경우, 예외 발생 - BusinessException(WEEKLY_STUDY_PLANS_INVALID)")
+    fun shouldThrowWeeklyStudyPlansInvalid_whenCreateStudyWithInvalidWeeklyPlans(
+        caseName: String,
+        week1Plan: String,
+        week2Plan: String,
+        week3Plan: String,
+        week4Plan: String,
+    ) {
         val thrown = assertThrows<BusinessException> {
-            val pending = createStudyWithCapacity(createRecruitingStudySchedule(),2)
-            pending.approve()
+            createStudyWithWeeklyPlans(
+                schedule = createRecruitingStudySchedule(),
+                week1Plan = week1Plan,
+                week2Plan = week2Plan,
+                week3Plan = week3Plan,
+                week4Plan = week4Plan,
+            )
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.WEEKLY_STUDY_PLANS_INVALID.code, thrown.code)
+    }
+
+    @ParameterizedTest(name = "스터디 진행 계획: {0}")
+    @MethodSource("invalidWeeklyPlansForCreateOrUpdate")
+    @DisplayName("스터디 수정 시, 주차 별 진행 계획 중 하나라도 유효하지 않은 경우, 예외 발생 - BusinessException(WEEKLY_STUDY_PLANS_INVALID)")
+    fun shouldThrowWeeklyStudyPlansInvalid_whenUpdateStudyWithInvalidWeeklyPlans(
+        caseName: String,
+        week1Plan: String,
+        week2Plan: String,
+        week3Plan: String,
+        week4Plan: String,
+    ) {
+        val thrown = assertThrows<BusinessException> {
+            val created = createStudyWithWeeklyPlans(
+                schedule = createRecruitingStudySchedule(),
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            )
+
+            updateStudyWeeklyPlans(
+                study = created,
+                week1Plan = week1Plan,
+                week2Plan = week2Plan,
+                week3Plan = week3Plan,
+                week4Plan = week4Plan,
+            )
+        }
+
+        assertEquals(StudyDomainErrorCode.WEEKLY_STUDY_PLANS_INVALID.code, thrown.code)
+    }
+
+
+
+    // ----- 진행 시작 테스트
+
+    @Test
+    @DisplayName("대상 스터디가 RECRUITING 상태일 때, 스터디 진행 시작 시, 예외 발생 - BusinessException(STUDY_MUST_BE_RECRUITING_CLOSED_TO_START)")
+    fun shouldThrowStudyMustBeRecruitingClosedToStart_whenStartFromRecruiting() {
+
+        val thrown = assertThrows<BusinessException> {
+            val study = createStudyWithCapacity(createRecruitingStudySchedule(),2)
+            study.start()
+        }
+
+        assertEquals(StudyDomainErrorCode.STUDY_MUST_BE_RECRUITING_CLOSED_TO_START.code, thrown.code)
     }
 
     @Test
-    @DisplayName("스터디가 CLOSED 상태이고 최소 인원에 미달되었을 때, 결재 시도한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)")
-    // STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER
-    fun shouldThrowStudyCannotApprovedDueToNotEnoughMember_whenApproveStudyWhichNotMeetMinimumMemberCondition() {
+    @DisplayName("스터디가 RECRUITING_CLOSED 상태이고 최소 인원에 미달되었을 때, 진행 시작 시도한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_START_DUE_TO_NOT_ENOUGH_MEMBER)")
+    fun shouldThrowStudyCannotStartDueToNotEnoughMember_whenStartWithoutMinimumMember() {
 
         val thrown = assertThrows<BusinessException> {
-            val pending = createStudyWithCapacity(createRecruitingStudySchedule(), Study.MIN_CAPACITY)
-            pending.close()
-            pending.approve()
+            val study = createStudyWithCapacity(createRecruitingStudySchedule(), Study.MIN_CAPACITY)
+            study.closeRecruitment()
+            study.start()
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_START_DUE_TO_NOT_ENOUGH_MEMBER.code, thrown.code)
     }
 
     // ----- 참여 테스트
 
     @Test
-    @DisplayName("APPROVED 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
-    fun shouldThrowStudyNotRecruiting_whenIncreaseMemberOnApprovedStudy() {
+    @DisplayName("IN_PROGRESS 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
+    fun shouldThrowStudyNotRecruiting_whenIncreaseMemberOnInProgressStudy() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, 3)
             created.participate(THE_OTHER_USER_ID)
-            created.close()
-            created.approve()
+            created.closeRecruitment()
+            created.start()
 
             created.participate(THE_OTHER_USER_ID + 1)
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_NOT_PENDING.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_NOT_RECRUITING.code, thrown.code)
     }
 
     @Test
@@ -307,25 +393,25 @@ class StudyTest {
     // ----- 수정 테스트
 
     @Test
-    @DisplayName("APPROVED 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(STUDY_CANNOT_MODIFY_AFTER_DETERMINED)")
-    fun shouldThrowStudyCannotModifyAfterDetermined_whenUpdateApprovedStudy() {
+    @DisplayName("IN_PROGRESS 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(STUDY_CANNOT_MODIFY_IN_PROGRESS_OR_COMPLETED)")
+    fun shouldThrowStudyCannotModifyInProgressOrCompleted_whenUpdateInProgressStudy() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
             created.participate(THE_OTHER_USER_ID)
-            created.close()
-            created.approve()
+            created.closeRecruitment()
+            created.start()
 
             updateStudyName(created, "제목제목")
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_APPROVED.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_IN_PROGRESS_OR_COMPLETED.code, thrown.code)
     }
 
     @Test
     @Disabled
-    @DisplayName("PENDING 상태일 때, 생성 시점에 설정 가능한 임의의 항목을 수정할 시, 성공한다")
-    fun shouldUpdateEditableFields_whenStudyPending() {
+    @DisplayName("RECRUITING 상태일 때, 생성 시점에 설정 가능한 임의의 항목을 수정할 시, 성공한다")
+    fun shouldUpdateEditableFields_whenStudyRecruiting() {
         val schedule = createRecruitingStudySchedule()
         val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
 
@@ -352,6 +438,7 @@ class StudyTest {
             newBudgetExplain = newBudgetExplain,
             newChatUrl = newChatUrl,
             newRefUrl = newRefUrl,
+            newWeeklyPlans = created.weeklyPlans,
             newTags = newTags
         )
 
@@ -400,6 +487,12 @@ class StudyTest {
             name = "스터디 제목",
             description = "스터디 소개글",
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -412,6 +505,12 @@ class StudyTest {
             name = name,
             description = "스터디 소개글",
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -424,6 +523,12 @@ class StudyTest {
             name = "유효한 제목",
             description = description,
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -436,6 +541,12 @@ class StudyTest {
             name = "유효한 제목",
             description = "스터디 소개글",
             budgetExplain = budgetExplain,
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -448,6 +559,12 @@ class StudyTest {
             name = "유효한 제목",
             description = "유효한 소개글",
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
@@ -461,10 +578,40 @@ class StudyTest {
             name = "유효한 제목",
             description = "유효한 소개글",
             budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
             leaderId = THE_LEADER_ID,
             trackId = 3L,
             scheduleId = schedule.id,
             referenceUrl = referenceUrl
+        )
+    }
+
+    private fun createStudyWithWeeklyPlans(
+        schedule: StudySchedule,
+        week1Plan: String,
+        week2Plan: String,
+        week3Plan: String,
+        week4Plan: String,
+    ): Study {
+        return Study.createNew(
+            budget = BudgetType.BOOK,
+            name = "유효한 제목",
+            description = "유효한 소개글",
+            budgetExplain = "피자먹을래요",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = week1Plan,
+                week2Plan = week2Plan,
+                week3Plan = week3Plan,
+                week4Plan = week4Plan,
+            ),
+            leaderId = THE_LEADER_ID,
+            trackId = 3L,
+            scheduleId = schedule.id,
         )
     }
 
@@ -479,6 +626,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -492,6 +640,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -505,6 +654,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -518,6 +668,7 @@ class StudyTest {
             newBudgetExplain = budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -531,6 +682,7 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = externalChatUrl,
             newRefUrl = study.referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
             newTags = NOT_GONNA_CHANGE
         )
     }
@@ -544,6 +696,32 @@ class StudyTest {
             newBudgetExplain = study.budgetExplain,
             newChatUrl = study.externalChatUrl,
             newRefUrl = referenceUrl,
+            newWeeklyPlans = study.weeklyPlans,
+            newTags = NOT_GONNA_CHANGE
+        )
+    }
+
+    private fun updateStudyWeeklyPlans(
+        study: Study,
+        week1Plan: String,
+        week2Plan: String,
+        week3Plan: String,
+        week4Plan: String,
+    ) {
+        return study.updateStudyInfo(
+            newCapacity = study.capacity,
+            newName = study.name,
+            newDescription = study.description,
+            newBudget = study.budget,
+            newBudgetExplain = study.budgetExplain,
+            newChatUrl = study.externalChatUrl,
+            newRefUrl = study.referenceUrl,
+            newWeeklyPlans = WeeklyPlans.of(
+                week1Plan = week1Plan,
+                week2Plan = week2Plan,
+                week3Plan = week3Plan,
+                week4Plan = week4Plan,
+            ),
             newTags = NOT_GONNA_CHANGE
         )
     }

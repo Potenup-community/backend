@@ -46,15 +46,15 @@ object StudySwaggerErrorExample {
             "status": 400,
             "errors": []
         }"""
-        const val STUDY_MUST_BE_CLOSED_TO_APPROVE = """{
+        const val STUDY_MUST_BE_RECRUITING_CLOSED_TO_START = """{
             "code": "SD-0008",
-            "message": "모집이 완료된 스터디만 승인 할 수 있습니다.",
+            "message": "모집 종료 상태의 스터디만 진행 시작할 수 있습니다.",
             "status": 400,
             "errors": []
         }"""
-        const val STUDY_CANNOT_MODIFY_AFTER_DETERMINED = """{
+        const val STUDY_CANNOT_MODIFY_IN_PROGRESS_OR_COMPLETED = """{
             "code": "SD-0009",
-            "message": "스터디 정보 수정은 결재되기 이전에만 가능합니다.",
+            "message": "진행 중 또는 완료 상태의 스터디는 수정할 수 없습니다.",
             "status": 400,
             "errors": []
         }"""
@@ -70,9 +70,9 @@ object StudySwaggerErrorExample {
             "status": 400,
             "errors": []
         }"""
-        const val STUDY_CANT_DELETE_STATUS_DETERMINE = """{
+        const val STUDY_CANNOT_DELETE_IN_PROGRESS_OR_COMPLETED = """{
             "code": "SD-0012",
-            "message": "결재 상신된 스터디는 삭제할 수 없습니다.",
+            "message": "진행 중 또는 완료 상태의 스터디는 삭제할 수 없습니다.",
             "status": 400,
             "errors": []
         }"""
@@ -112,12 +112,18 @@ object StudySwaggerErrorExample {
             "status": 403,
             "errors": []
         }"""
+        const val WEEKLY_STUDY_PLANS_INVALID = """{
+            "code": "SD-0019",
+            "message": "주차 별 스터디 계획 형식이 유효하지 않습니다. 주차 별 스터디 계획은 각각 2 자 이상 300 자 이하의 비어있지 않은 문자열이어야 합니다.",
+            "status": 400,
+            "errors": []
+        }"""
     }
 
     object Recruitment {
-        const val RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING = """{
+        const val RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_RECRUITING = """{
             "code": "SR-0002",
-            "message": "스터디 상태가 PENDING 이 아닌 경우 신청을 취소할 수 없습니다.",
+            "message": "스터디 상태가 모집 중이 아닌 경우 신청을 취소할 수 없습니다.",
             "status": 400,
             "errors": []
         }"""
@@ -147,13 +153,13 @@ object StudySwaggerErrorExample {
         }"""
         const val STUDY_NOT_RECRUITING = """{
             "code": "SR-0008",
-            "message": "해당 스터디는 모집중이 아닙니다.",
+            "message": "해당 스터디는 모집 중이 아닙니다.",
             "status": 400,
             "errors": []
         }"""
         const val ALREADY_APPLIED = """{
             "code": "SR-0009",
-            "message": "이미 신청하거나 승인된 스터디입니다.",
+            "message": "이미 신청했거나 진행 중인 스터디입니다.",
             "status": 400,
             "errors": []
         }"""
@@ -169,6 +175,12 @@ object StudySwaggerErrorExample {
             "status": 400,
             "errors": []
         }"""
+        const val CANNOT_FORCE_JOIN_IN_PROGRESS_OR_COMPLETED = """
+            "code": "SR-0018",
+            "message": "진행 중 또는 완료 상태의 스터디에는 강제 참여할 수 없습니다.",
+            "status": 409,
+            "errors": []
+        """
     }
 
     object Schedule {

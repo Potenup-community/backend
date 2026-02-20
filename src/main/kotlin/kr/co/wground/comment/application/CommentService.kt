@@ -18,6 +18,7 @@ import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
+import kr.co.wground.shop.application.dto.EquippedItem
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.context.ApplicationEventPublisher
@@ -236,6 +237,7 @@ class CommentService(
                 author = authorsById[comment.writerId],
                 reactionStats = reactionStatsById[comment.id],
                 replies = replies,
+                items = authorsById[comment.writerId]?.items ?: emptyList()
             )
         }
 
