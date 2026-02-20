@@ -132,7 +132,7 @@ class Study private constructor(
                 trackId = trackId,
                 scheduleId = scheduleId,
                 description = description,
-                status = StudyStatus.PENDING,
+                status = StudyStatus.RECRUITING,
                 capacity = capacity,
                 budget = budget,
                 budgetExplain = budgetExplain,
@@ -208,8 +208,8 @@ class Study private constructor(
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_FULL)
         }
 
-        if (this.status != StudyStatus.PENDING) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_NOT_PENDING)
+        if (this.status != StudyStatus.RECRUITING) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_NOT_RECRUITING)
         }
 
         if (_recruitments.any { it.userId == userId }) {
@@ -225,8 +225,8 @@ class Study private constructor(
             throw BusinessException(StudyDomainErrorCode.STUDY_CAPACITY_FULL)
         }
 
-        if (this.status == StudyStatus.APPROVED) {
-            throw BusinessException(StudyDomainErrorCode.CANNOT_FORCE_JOIN_AFTER_APPROVAL)
+        if (this.status == StudyStatus.IN_PROGRESS || this.status == StudyStatus.COMPLETED) {
+            throw BusinessException(StudyDomainErrorCode.CANNOT_FORCE_JOIN_IN_PROGRESS_OR_COMPLETED)
         }
 
         if (_recruitments.any { it.userId == userId }) {
@@ -246,8 +246,8 @@ class Study private constructor(
             throw BusinessException(StudyDomainErrorCode.NOT_PARTICIPATED_THAT_STUDY)
         }
 
-        if (status != StudyStatus.PENDING) {
-            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING)
+        if (status != StudyStatus.RECRUITING) {
+            throw BusinessException(StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_RECRUITING)
         }
 
         // orphanRemoval == true!
@@ -325,27 +325,35 @@ class Study private constructor(
         this._studyTags.add(studyTag)
     }
 
-    fun close() {
-        this.status = StudyStatus.CLOSED
+    fun closeRecruitment() {
+        if (this.status == StudyStatus.RECRUITING) {
+            this.status = StudyStatus.RECRUITING_CLOSED
+        }
     }
 
-    fun approve() {
-        if (this.status != StudyStatus.CLOSED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE)
+    fun start() {
+        if (this.status != StudyStatus.RECRUITING_CLOSED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_MUST_BE_RECRUITING_CLOSED_TO_START)
         }
 
         if (_recruitments.size < MIN_CAPACITY) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_START_DUE_TO_NOT_ENOUGH_MEMBER)
         }
 
-        this.status = StudyStatus.APPROVED
+        this.status = StudyStatus.IN_PROGRESS
+    }
+
+    fun complete() {
+        if (this.status == StudyStatus.IN_PROGRESS) {
+            this.status = StudyStatus.COMPLETED
+        }
     }
 
     // ----- validate
 
     fun validateHardDeletable() {
-        if (this.status == StudyStatus.APPROVED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_APPROVED)
+        if (this.status == StudyStatus.IN_PROGRESS || this.status == StudyStatus.COMPLETED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_DELETE_IN_PROGRESS_OR_COMPLETED)
         }
     }
 
@@ -354,8 +362,8 @@ class Study private constructor(
     }
 
     private fun validateCanUpdate() {
-        if (this.status == StudyStatus.APPROVED) {
-            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_APPROVED)
+        if (this.status == StudyStatus.IN_PROGRESS || this.status == StudyStatus.COMPLETED) {
+            throw BusinessException(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_IN_PROGRESS_OR_COMPLETED)
         }
     }
 
