@@ -9,11 +9,11 @@ import kr.co.wground.gallery.domain.model.Position
 import kr.co.wground.gallery.domain.model.Project
 import kr.co.wground.gallery.domain.model.ProjectContent
 import kr.co.wground.global.common.ProjectId
+import kr.co.wground.global.common.UserId
 import kr.co.wground.image.application.ImageStorageService
 import kr.co.wground.user.infra.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kr.co.wground.global.common.UserId
 
 @Service
 @Transactional
@@ -24,12 +24,10 @@ class ProjectCommandUseCaseImpl(
 ) : ProjectCommandUseCase {
 
     override fun create(command: CreateProjectCommand): ProjectId {
-        val allMembers = ensureAuthorIncluded(command)
-        val allMemberIds = allMembers.map { it.userId }
+        val resolvedMembers = resolveMembers(command.members)
+        val allMembers = ensureAuthorIncluded(command.authorId, resolvedMembers)
 
-        validateMembersExist(allMemberIds)
-
-        val thumbnailPath = saveThumbnail(command)
+        val thumbnailPath = imageStorageService.saveProjectThumbnail(command.authorId, command.thumbnailImage)
 
         val project = Project.create(
             authorId = command.authorId,
@@ -43,27 +41,34 @@ class ProjectCommandUseCaseImpl(
             thumbnailImagePath = thumbnailPath,
         )
 
-        allMembers.forEach { member ->
-            project.addMember(member.userId, member.position)
+        allMembers.forEach { (userId, position) ->
+            project.addMember(userId, position)
         }
 
-        val saved = projectRepository.save(project)
-        return saved.id
+        return projectRepository.save(project).id
+    }
+    
+    private fun resolveMembers(
+        assignments: List<CreateProjectCommand.MemberAssignment>,
+    ): List<Pair<UserId, Position>> {
+        if (assignments.isEmpty()) return emptyList()
+
+        val requestedIds = assignments.mapTo(HashSet()) { it.userId }
+        val foundIds = userRepository.findByUserIdIn(requestedIds.toList()).mapTo(HashSet()) { it.userId }
+
+        if (!foundIds.containsAll(requestedIds)) throw BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND)
+
+        return assignments.map { it.userId to it.position }
     }
 
-    private fun ensureAuthorIncluded(command: CreateProjectCommand): List<CreateProjectCommand.MemberAssignment> {
-        val hasAuthor = command.members.any { it.userId == command.authorId }
-        if (hasAuthor) return command.members
-        return command.members + CreateProjectCommand.MemberAssignment(command.authorId, Position.OTHER)
-    }
-
-    private fun validateMembersExist(memberIds: List<UserId>) {
-        val foundUsers = userRepository.findByUserIdIn(memberIds)
-        if (foundUsers.size != memberIds.distinct().size) {
-            throw BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND)
-        }
-    }
-
-    private fun saveThumbnail(command: CreateProjectCommand): String =
-        imageStorageService.saveProjectThumbnail(command.authorId, command.thumbnailImage)
+    /**
+     * 등록한 사용자가 멤버 목록에 없으면 OTHER 포지션으로 자동 포함한다.
+     * 등록한 사용자는 반드시 프로젝트 멤버여야 하므로 누락 시 조용히 추가한다.
+     */
+    private fun ensureAuthorIncluded(
+        authorId: UserId,
+        members: List<Pair<UserId, Position>>,
+    ): List<Pair<UserId, Position>> =
+        if (members.any { it.first == authorId }) members
+        else members + (authorId to Position.OTHER)
 }
