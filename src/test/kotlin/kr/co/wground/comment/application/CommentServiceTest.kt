@@ -41,13 +41,12 @@ class CommentServiceTest {
     private val userRepository = mock(UserRepository::class.java)
     private val reactionQueryService = mock(ReactionQueryService::class.java)
     private val eventPublisher = mock(ApplicationEventPublisher::class.java)
-    private val inventoryQueryPort = mock(InventoryQueryPort::class.java)
     private lateinit var commentService: CommentService
 
     @BeforeEach
     fun setUp() {
         commentService =
-            CommentService(commentRepository, postRepository, userRepository, reactionQueryService, eventPublisher, inventoryQueryPort)
+            CommentService(commentRepository, postRepository, userRepository, reactionQueryService, eventPublisher)
     }
 
     @DisplayName("내가 좋아요한 댓글을 조회한다 (삭제 댓글은 [삭제된 댓글]로 반환)")
