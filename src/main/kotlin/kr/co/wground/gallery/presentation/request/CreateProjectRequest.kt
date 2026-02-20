@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Size
 import kr.co.wground.gallery.application.usecase.command.CreateProjectCommand
 import kr.co.wground.gallery.domain.model.Position
-import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
 import org.springframework.web.multipart.MultipartFile
 
@@ -27,7 +26,7 @@ data class CreateProjectRequest(
 
     val members: List<MemberAssignment> = emptyList(),
 ) {
-    data class MemberAssignment(val name: String, val trackId: TrackId, val position: Position)
+    data class MemberAssignment(val userId: UserId, val position: Position)
 
     fun toCommand(authorId: UserId, thumbnailImage: MultipartFile): CreateProjectCommand {
         return CreateProjectCommand(
@@ -37,7 +36,7 @@ data class CreateProjectRequest(
             githubUrl = githubUrl,
             deployUrl = deployUrl,
             techStacks = techStacks,
-            members = members.map { CreateProjectCommand.MemberAssignment(it.name, it.trackId, it.position) },
+            members = members.map { CreateProjectCommand.MemberAssignment(it.userId, it.position) },
             thumbnailImage = thumbnailImage,
         )
     }

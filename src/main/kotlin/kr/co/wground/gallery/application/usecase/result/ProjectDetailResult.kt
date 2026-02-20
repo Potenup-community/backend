@@ -15,6 +15,8 @@ data class ProjectDetailResult(
     val techStacks: List<String>,
     val members: List<MemberInfo>,
     val viewCount: Int,
+    val reactionCount: Int,
+    val reactedByMe: Boolean,
     val author: AuthorInfo,
     val createdAt: LocalDateTime,
     val modifiedAt: LocalDateTime,

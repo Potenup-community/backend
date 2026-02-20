@@ -11,5 +11,7 @@ data class ProjectSummaryResult(
     val techStacks: List<String>,
     val memberCount: Long,
     val viewCount: Int,
+    val reactionCount: Int,
+    val reactedByMe: Boolean,
     val createdAt: LocalDateTime,
 )
