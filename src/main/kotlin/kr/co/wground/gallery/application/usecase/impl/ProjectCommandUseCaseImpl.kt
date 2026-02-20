@@ -47,30 +47,18 @@ class ProjectCommandUseCaseImpl(
 
         return projectRepository.save(project).id
     }
-
-    /**
-     * (name, trackId) 쌍으로 User를 조회해 (userId, position) 쌍으로 변환한다.
-     *
-     * 동명이인은 trackId로 구분할 수 있다 — 같은 트랙 안에서 동명이인이 있는 극단적 경우는
-     * 현재 요구사항 범위 밖이므로 그 경우 첫 번째로 매칭된 사용자를 반환한다.
-     * 어떤 (name, trackId) 쌍과도 매칭되는 사용자가 없으면 MEMBER_NOT_FOUND 예외를 던진다.
-     */
+    
     private fun resolveMembers(
         assignments: List<CreateProjectCommand.MemberAssignment>,
     ): List<Pair<UserId, Position>> {
         if (assignments.isEmpty()) return emptyList()
 
-        val names = assignments.map { it.name }
-        val trackIds = assignments.map { it.trackId }
-        val foundUsers = userRepository.findByNameInAndTrackIdIn(names, trackIds)
+        val requestedIds = assignments.mapTo(HashSet()) { it.userId }
+        val foundIds = userRepository.findByUserIdIn(requestedIds.toList()).mapTo(HashSet()) { it.userId }
 
-        val userLookup = foundUsers.associateBy { it.name to it.trackId }
+        if (!foundIds.containsAll(requestedIds)) throw BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND)
 
-        return assignments.map { assignment ->
-            val user = userLookup[assignment.name to assignment.trackId]
-                ?: throw BusinessException(ProjectErrorCode.MEMBER_NOT_FOUND)
-            user.userId to assignment.position
-        }
+        return assignments.map { it.userId to it.position }
     }
 
     /**

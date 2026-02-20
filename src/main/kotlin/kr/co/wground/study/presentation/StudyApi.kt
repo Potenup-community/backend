@@ -99,6 +99,10 @@ interface StudyApi {
                             name = "MAX_STUDY_EXCEEDED",
                             value = StudySwaggerErrorExample.Study.MAX_STUDY_EXCEEDED
                         ),
+                        ExampleObject(
+                            name = "WEEKLY_STUDY_PLANS_INVALID",
+                            value = StudySwaggerErrorExample.Study.WEEKLY_STUDY_PLANS_INVALID
+                        ),
                     ]
                 )]
             ),
@@ -151,8 +155,8 @@ interface StudyApi {
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
                         ExampleObject(
-                            name = "STUDY_CANNOT_MODIFY_AFTER_DETERMINED",
-                            value = StudySwaggerErrorExample.Study.STUDY_CANNOT_MODIFY_AFTER_DETERMINED
+                            name = "STUDY_CANNOT_MODIFY_IN_PROGRESS_OR_COMPLETED",
+                            value = StudySwaggerErrorExample.Study.STUDY_CANNOT_MODIFY_IN_PROGRESS_OR_COMPLETED
                         ),
                         ExampleObject(
                             name = "STUDY_CAPACITY_CANNOT_LESS_THAN_CURRENT",
@@ -185,6 +189,10 @@ interface StudyApi {
                         ExampleObject(
                             name = "STUDY_CANNOT_MODIFY_AFTER_DEADLINE",
                             value = StudySwaggerErrorExample.Study.STUDY_CANNOT_MODIFY_AFTER_DEADLINE
+                        ),
+                        ExampleObject(
+                            name = "WEEKLY_STUDY_PLANS_INVALID",
+                            value = StudySwaggerErrorExample.Study.WEEKLY_STUDY_PLANS_INVALID
                         ),
                     ]
                 )]
@@ -236,8 +244,8 @@ interface StudyApi {
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
                         ExampleObject(
-                            name = "STUDY_CANT_DELETE_STATUS_DETERMINE",
-                            value = StudySwaggerErrorExample.Study.STUDY_CANT_DELETE_STATUS_DETERMINE
+                            name = "STUDY_CANNOT_DELETE_IN_PROGRESS_OR_COMPLETED",
+                            value = StudySwaggerErrorExample.Study.STUDY_CANNOT_DELETE_IN_PROGRESS_OR_COMPLETED
                         ),
                     ]
                 )]
@@ -272,19 +280,19 @@ interface StudyApi {
         @PathVariable studyId: Long
     ): ResponseEntity<Unit>
 
-    @Operation(summary = "스터디 승인 (관리자)", description = "관리자가 스터디 개설을 승인합니다.")
+    @Operation(summary = "스터디 진행 시작 (관리자)", description = "관리자가 스터디를 진행 중 상태로 전환합니다.")
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "204", description = "승인 성공"),
+            ApiResponse(responseCode = "204", description = "진행 시작 성공"),
             ApiResponse(
-                responseCode = "400", description = "승인 불가",
+                responseCode = "400", description = "진행 시작 불가",
                 content = [Content(
                     mediaType = "application/json",
                     schema = Schema(implementation = ErrorResponse::class),
                     examples = [
                         ExampleObject(
-                            name = "STUDY_MUST_BE_CLOSED_TO_APPROVE",
-                            value = StudySwaggerErrorExample.Study.STUDY_MUST_BE_CLOSED_TO_APPROVE
+                            name = "STUDY_MUST_BE_RECRUITING_CLOSED_TO_START",
+                            value = StudySwaggerErrorExample.Study.STUDY_MUST_BE_RECRUITING_CLOSED_TO_START
                         ),
                     ]
                 )]
@@ -301,7 +309,7 @@ interface StudyApi {
             )
         ]
     )
-    fun approveStudy(
+    fun approveToStartStudy(
         @PathVariable studyId: Long
     ): ResponseEntity<Unit>
 

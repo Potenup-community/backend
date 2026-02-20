@@ -3,13 +3,13 @@ package kr.co.wground.study.application
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.study.application.dto.ParticipantInfo
-import kr.co.wground.study_schedule.application.dto.ScheduleDto
 import kr.co.wground.study.application.dto.StudyCreateCommand
 import kr.co.wground.study.application.dto.StudySearchDto
 import kr.co.wground.study.application.dto.StudyUpdateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.Tag
+import kr.co.wground.study.domain.WeeklyPlans
 import kr.co.wground.study.infra.StudyRecruitmentRepository
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study.infra.TagRepository
@@ -83,6 +83,12 @@ class StudyService(
             capacity = command.capacity,
             budget = command.budget,
             budgetExplain = command.budgetExplain,
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = command.week1Plan,
+                week2Plan = command.week2Plan,
+                week3Plan = command.week3Plan,
+                week4Plan = command.week4Plan,
+            ),
             externalChatUrl = command.chatUrl,
             referenceUrl = command.refUrl
         )
@@ -115,6 +121,12 @@ class StudyService(
             newBudgetExplain = command.budgetExplain ?: study.budgetExplain,
             newChatUrl = command.chatUrl ?: study.externalChatUrl,
             newRefUrl = command.refUrl ?: study.referenceUrl,
+            newWeeklyPlans = WeeklyPlans.of(
+                week1Plan = command.week1Plan,
+                week2Plan = command.week2Plan,
+                week3Plan = command.week3Plan,
+                week4Plan = command.week4Plan,
+            ),
             newTags = newTags,
         )
         return study.id
@@ -144,9 +156,9 @@ class StudyService(
         )
     }
 
-    fun approveStudy(studyId: Long) {
+    fun approveStart(studyId: Long) {
         val study = findStudyEntityOrThrows(studyId)
-        study.approve()
+        study.start()
     }
 
     @Transactional(readOnly = true)
