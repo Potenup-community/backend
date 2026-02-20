@@ -26,7 +26,7 @@ enum class StudyServiceErrorCode(
     //StudyRecruitment
     NOT_RECRUITMENT_OWNER(HttpStatus.FORBIDDEN,"SR-0001","본인이 작성한 신청만 취소할 수 있습니다."),
     TRACK_MISMATCH(HttpStatus.BAD_REQUEST,"SR-0002","신청자의 과정과 스터디의 과정이 일치하지 않습니다."),
-    STUDY_NOT_PENDING(HttpStatus.BAD_REQUEST,"SR-0003","해당 스터디는 모집중이 아닙니다."),
+    STUDY_NOT_RECRUITING(HttpStatus.BAD_REQUEST,"SR-0003","해당 스터디는 모집 중이 아닙니다."),
     RECRUITMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"SD-0004","해당 스터디 참여 건을 찾을 수 없습니다."),
     STUDY_MONTH_IS_NOT_CURRENT_MONTH(HttpStatus.BAD_REQUEST,"SR-0005","신청한 차수는 현재 진행되는 차수에 해당하지 않습니다."),
     GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY(HttpStatus.FORBIDDEN,"SR-0006","수료생은 지원할 수 없는 스터디입니다."),

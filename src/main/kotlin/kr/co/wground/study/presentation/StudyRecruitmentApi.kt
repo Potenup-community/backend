@@ -99,8 +99,8 @@ interface StudyRecruitmentApi {
                             value = StudySwaggerErrorExample.Recruitment.TRACK_MISMATCH
                         ),
                         ExampleObject(
-                            name = "STUDY_NOT_RECRUITING",
-                            value = StudySwaggerErrorExample.Recruitment.CANNOT_FORCE_JOIN_AFTER_APPROVAL
+                            name = "CANNOT_FORCE_JOIN_IN_PROGRESS_OR_COMPLETED",
+                            value = StudySwaggerErrorExample.Recruitment.CANNOT_FORCE_JOIN_IN_PROGRESS_OR_COMPLETED
                         ),
                         ExampleObject(
                             name = "ALREADY_APPLIED",
@@ -163,8 +163,8 @@ interface StudyRecruitmentApi {
                             value = StudySwaggerErrorExample.Recruitment.LEADER_CANNOT_LEAVE
                         ),
                         ExampleObject(
-                            name = "RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING",
-                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING
+                            name = "RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_RECRUITING",
+                            value = StudySwaggerErrorExample.Recruitment.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_RECRUITING
                         ),
                     ]
                 )]

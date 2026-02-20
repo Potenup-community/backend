@@ -71,14 +71,14 @@ class StudyRecruitmentServiceTest {
     companion object {
         @JvmStatic
         fun studyStatusCannotBeApplied(): Stream<Arguments> = Stream.of(
-            Arguments.of("CLOSED", StudyStatus.CLOSED, StudyServiceErrorCode.STUDY_NOT_PENDING.code),
-            Arguments.of("APPROVED", StudyStatus.APPROVED, StudyServiceErrorCode.STUDY_NOT_PENDING.code),
+            Arguments.of("RECRUITING_CLOSED", StudyStatus.RECRUITING_CLOSED, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
+            Arguments.of("IN_PROGRESS", StudyStatus.IN_PROGRESS, StudyServiceErrorCode.STUDY_NOT_RECRUITING.code),
         )
 
         @JvmStatic
         fun studyStatusCannotBeWithdrawn(): Stream<Arguments> = Stream.of(
-            Arguments.of("CLOSED", StudyStatus.CLOSED, StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING.code),
-            Arguments.of("APPROVED", StudyStatus.APPROVED, StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_PENDING.code),
+            Arguments.of("RECRUITING_CLOSED", StudyStatus.RECRUITING_CLOSED, StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_RECRUITING.code),
+            Arguments.of("IN_PROGRESS", StudyStatus.IN_PROGRESS, StudyDomainErrorCode.RECRUITMENT_CANCEL_NOT_ALLOWED_STUDY_NOT_RECRUITING.code),
         )
     }
 
@@ -243,7 +243,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("교육생이 CLOSED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    @DisplayName("교육생이 RECRUITING_CLOSED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
     fun shouldThrowStudyNotRecruiting_whenApplyToClosedStudy() {
 
         /*
@@ -311,7 +311,7 @@ class StudyRecruitmentServiceTest {
         )
         studyScheduleRepository.save(schedule)
 
-        study.close()
+        study.closeRecruitment()
         studyRepository.save(study)
 
         // when: 스터디 신청
@@ -338,7 +338,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("교육생이 APPROVED 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    @DisplayName("교육생이 IN_PROGRESS 상태의 스터디에 신청한 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
     fun shouldThrowStudyNotRecruiting_whenApplyToApprovedStudy() {
 
         /*
@@ -406,8 +406,8 @@ class StudyRecruitmentServiceTest {
         )
         studyScheduleRepository.save(schedule)
 
-        study.close()
-        study.approve()
+        study.closeRecruitment()
+        study.start()
         studyRepository.save(study)
 
         // when: 스터디 신청
@@ -440,8 +440,8 @@ class StudyRecruitmentServiceTest {
         /*
          * given
          * 1. ENROLLED 트랙 및 현재 차수 일정
-         * 2. 모집 중(PENDING) 스터디
-         * 3. 교육생의 APPROVED 신청 건 존재
+         * 2. 모집 중(RECRUITING) 스터디
+         * 3. 교육생의 IN_PROGRESS 신청 건 존재
          */
         val today = LocalDate.now()
         val track = trackRepository.save(
@@ -475,8 +475,8 @@ class StudyRecruitmentServiceTest {
         val studyId = studyService.createStudy(
             StudyCreateCommand(
                 userId = leader.userId,
-                name = "승인 중복 신청 스터디",
-                description = "승인 중복 신청 스터디",
+                name = "참여 중복 신청 스터디",
+                description = "참여 중복 신청 스터디",
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
@@ -520,7 +520,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("이미 모집 기간이 마감된 경우(스터디 상태가 CLOSED 일 때), 참여 시, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    @DisplayName("이미 모집 기간이 마감된 경우(스터디 상태가 RECRUITING_CLOSED 일 때), 참여 시, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
     fun shouldThrowStudyAlreadyFinishToRecruit_whenIncreaseMemberAfterRecruitEnd() {
 
         val thrown = assertThrows<BusinessException> {
@@ -566,7 +566,7 @@ class StudyRecruitmentServiceTest {
             val savedStudent1 = userRepository.save(student1)
 
             val study = Study.createNew(
-                name = "삭제 테스트 스터디(PENDING)",
+                name = "삭제 테스트 스터디(RECRUITING)",
                 leaderId = leader.userId,
                 trackId = track.trackId,
                 scheduleId = schedule.id,
@@ -584,7 +584,7 @@ class StudyRecruitmentServiceTest {
                 referenceUrl = null,
             )
             study.participate(student1.userId)
-            study.close()
+            study.closeRecruitment()
             studyRepository.save(study)
 
             entityManager.flush()
@@ -620,7 +620,7 @@ class StudyRecruitmentServiceTest {
     // 강제 참여 테스트
 
     @Test
-    @DisplayName("이미 모집 기간이 마감된 경우(스터디 상태가 CLOSED 일 때), 강제 참여 시키는 것이 가능하다.")
+    @DisplayName("이미 모집 기간이 마감된 경우(스터디 상태가 RECRUITING_CLOSED 일 때), 강제 참여 시키는 것이 가능하다.")
     fun shouldSuccess_whenForceJoinToStudyWhichIsClosed() {
 
         val today = LocalDate.now()
@@ -664,7 +664,7 @@ class StudyRecruitmentServiceTest {
         val savedStudent1 = userRepository.save(student1)
 
         val study = Study.createNew(
-            name = "삭제 테스트 스터디(PENDING)",
+            name = "삭제 테스트 스터디(RECRUITING)",
             leaderId = leader.userId,
             trackId = track.trackId,
             scheduleId = schedule.id,
@@ -682,7 +682,7 @@ class StudyRecruitmentServiceTest {
             referenceUrl = null,
         )
         study.participate(student1.userId)
-        study.close()
+        study.closeRecruitment()
         studyRepository.save(study)
 
         entityManager.flush()
@@ -860,7 +860,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("교육생을 APPROVED 상태의 스터디에 강제 참여 시킨 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    @DisplayName("교육생을 IN_PROGRESS 상태의 스터디에 강제 참여 시킨 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
     fun shouldThrowSStudyCannotForceJoinAfterApproval_whenForceJoinAfterApproved() {
 
         val today = LocalDate.now()
@@ -921,8 +921,8 @@ class StudyRecruitmentServiceTest {
         )
         studyScheduleRepository.save(schedule)
 
-        study.close()
-        study.approve()
+        study.closeRecruitment()
+        study.start()
         studyRepository.save(study)
 
         // when: 스터디 신청
@@ -945,7 +945,7 @@ class StudyRecruitmentServiceTest {
         }
 
         // then: 예외 발생(STUDY_NOT_RECRUITING)
-        assertEquals(StudyDomainErrorCode.CANNOT_FORCE_JOIN_AFTER_APPROVAL.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.CANNOT_FORCE_JOIN_IN_PROGRESS_OR_COMPLETED.code, thrown.code)
     }
 
     @Test
@@ -984,8 +984,8 @@ class StudyRecruitmentServiceTest {
         val studyId = studyService.createStudy(
             StudyCreateCommand(
                 userId = leader.userId,
-                name = "승인 중복 신청 스터디",
-                description = "승인 중복 신청 스터디",
+                name = "참여 중복 신청 스터디",
+                description = "참여 중복 신청 스터디",
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
@@ -1038,7 +1038,7 @@ class StudyRecruitmentServiceTest {
          * given
          * 1. ENROLLED 트랙
          * 2. 과거 차수 참여 이력
-         * 3. 현재 차수 스터디 2개에 PENDING 신청
+         * 3. 현재 차수 스터디 2개에 RECRUITING 신청
          */
         val today = LocalDate.now()
         val track = trackRepository.save(
@@ -1217,10 +1217,10 @@ class StudyRecruitmentServiceTest {
 
     // ----- 신청 취소 테스트
 
-    // To Do: CLOSED 상태의 스터디에서 취소하려 한 경우, 예외 발생 - BusinessException(?)
+    // To Do: RECRUITING_CLOSED 상태의 스터디에서 취소하려 한 경우, 예외 발생 - BusinessException(?)
     @ParameterizedTest(name = "스터디 상태: {0}")
     @MethodSource("studyStatusCannotBeWithdrawn")
-    @DisplayName("스터디장이 아닐 때, PENDING 상태가 아닌 스터디에 참여 중인 신청 건에 대해, 취소를 시도하면, 예외 발생 - BusinessException()")
+    @DisplayName("스터디장이 아닐 때, RECRUITING 상태가 아닌 스터디에 참여 중인 신청 건에 대해, 취소를 시도하면, 예외 발생 - BusinessException()")
     fun shouldThrow_when(caseName: String, givenStudyStatus: StudyStatus, expectedErrorCode: String) {
 
         /*
@@ -1285,7 +1285,7 @@ class StudyRecruitmentServiceTest {
         )
 
         // 모집 마감
-        study.close()
+        study.closeRecruitment()
 
         // when: 스터디 취소
         val thrown = assertThrows<BusinessException> {
@@ -1297,14 +1297,14 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("스터디장이 PENDING 상태인 자신의 스터디에서 신청 취소하려는 경우, 예외 발생 - BusinessException(LEADER_CANNOT_LEAVE)")
+    @DisplayName("스터디장이 RECRUITING 상태인 자신의 스터디에서 신청 취소하려는 경우, 예외 발생 - BusinessException(LEADER_CANNOT_LEAVE)")
     fun shouldThrowLeaderCannotLeave_whenLeaderCancelsOwnUnapprovedStudy() {
 
         /*
          * given
          * 1. ENROLLED 트랙 및 현재 차수 일정
-         * 2. 결재되지 않은(PENDING) 스터디 생성(스터디장은 자동 참여됨)
-         * 3. 다른 교육생이 스터디에 신청 및 승인 됨
+         * 2. 진행 시작되지 않은(RECRUITING) 스터디 생성(스터디장은 자동 참여됨)
+         * 3. 다른 교육생이 스터디에 신청 및 참여함
          */
         val today = LocalDate.now()
         val track = trackRepository.save(
@@ -1393,8 +1393,8 @@ class StudyRecruitmentServiceTest {
         /*
          * given
          * 1. ENROLLED 트랙 및 현재 차수 일정
-         * 2. 모집 중(PENDING) 스터디
-         * 3. 교육생 신청 후 승인
+         * 2. 모집 중(RECRUITING) 스터디
+         * 3. 교육생 신청 후 참여
          */
         val today = LocalDate.now()
         val track = trackRepository.save(
@@ -1428,8 +1428,8 @@ class StudyRecruitmentServiceTest {
         val studyId = studyService.createStudy(
             StudyCreateCommand(
                 userId = leader.userId,
-                name = "승인 카운트 스터디",
-                description = "승인 카운트 스터디",
+                name = "참여 카운트 스터디",
+                description = "참여 카운트 스터디",
                 capacity = 5,
                 budget = BudgetType.MEAL,
                 budgetExplain = "🍕🍕🍕",
@@ -1495,7 +1495,7 @@ class StudyRecruitmentServiceTest {
         entityManager.flush()
         entityManager.clear()
 
-        // then: 승인된 신청 건 수 == 현재 참여 인원 수 == 4 (리더 포함)
+        // then: 참여 신청 건 수 == 현재 참여 인원 수 == 4 (리더 포함)
         val updatedStudy = studyRepository.findById(studyId).orElseThrow()
         val approvedCount = studyRecruitmentRepository.findAllByStudyId(studyId).size
         assertEquals(4, approvedCount)
