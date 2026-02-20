@@ -189,7 +189,7 @@ object StudySwaggerErrorExample {
         }"""
         const val CANNOT_FORCE_JOIN_IN_PROGRESS_OR_COMPLETED = """
             "code": "SR-0018",
-            "message": "진행 중 또는 완료 상태의 스터디에는 강제 참여할 수 없습니다.",
+            "message": "진행 중 또는 완료 상태의 스터디에는 추가 참여할 수 없습니다.",
             "status": 409,
             "errors": []
         """
