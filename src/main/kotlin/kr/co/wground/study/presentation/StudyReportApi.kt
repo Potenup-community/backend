@@ -18,7 +18,7 @@ import kr.co.wground.study.docs.StudySwaggerResponseExample
 import kr.co.wground.study.presentation.request.study_report.StudyReportCancelRequest
 import kr.co.wground.study.presentation.request.study_report.StudyReportRejectRequest
 import kr.co.wground.study.presentation.request.study_report.StudyReportUpsertRequest
-import kr.co.wground.study.presentation.response.CustomSliceResponse
+import kr.co.wground.study.presentation.response.CustomPageResponse
 import kr.co.wground.study.presentation.response.study_report.StudyReportApprovalHistoryResponse
 import kr.co.wground.study.presentation.response.study_report.StudyReportDetailResponse
 import kr.co.wground.study.presentation.response.study_report.StudyReportIdResponse
@@ -225,7 +225,7 @@ interface StudyReportApi {
                 responseCode = "200", description = "조회 성공",
                 content = [Content(
                     mediaType = "application/json",
-                    schema = Schema(implementation = CustomSliceResponse::class),
+                    schema = Schema(implementation = CustomPageResponse::class),
                     examples = [ExampleObject(value = StudySwaggerResponseExample.STUDY_REPORT_SUMMARY_RESPONSE)]
                 )]
             ),
@@ -253,7 +253,7 @@ interface StudyReportApi {
             description = "현재 로그인한 사용자 ID",
             schema = Schema(type = "string", example = "token_value")
         ) userId: CurrentUserId,
-    ): ResponseEntity<CustomSliceResponse<StudyReportSummaryResponse>>
+    ): ResponseEntity<CustomPageResponse<StudyReportSummaryResponse>>
 
     @Operation(summary = "스터디 결과 보고 승인", description = "관리자가 상신된 결과 보고를 승인합니다.")
     @ApiResponses(

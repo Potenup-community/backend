@@ -183,6 +183,8 @@ object StudySwaggerResponseExample {
              ],
              "pageNumber": 0,
              "pageSize": 20,
+             "totalElements": 57,
+             "totalPages": 3,
              "hasNext": true
          }
          """

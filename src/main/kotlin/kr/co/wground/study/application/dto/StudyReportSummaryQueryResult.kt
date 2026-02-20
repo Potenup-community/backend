@@ -1,11 +1,12 @@
 package kr.co.wground.study.application.dto
 
+import com.querydsl.core.annotations.QueryProjection
 import kr.co.wground.global.common.UserId
 import kr.co.wground.study.domain.StudyReport
 import kr.co.wground.study.domain.enums.StudyReportApprovalStatus
 import java.time.LocalDateTime
 
-data class StudyReportSummaryQueryResult(
+data class StudyReportSummaryQueryResult @QueryProjection constructor(
     val reportId: Long,
     val studyId: Long,
     val studyName: String,
