@@ -20,27 +20,34 @@ class SlackNotificationSender(
     private val log = LoggerFactory.getLogger(javaClass)
 
     override fun send(message: NotificationMessage) {
-        val webhookUrl = resolveWebhookUrl(message.channel)
+        val channels = message.type.slackCategory.resolveChannels(message.audience)
+        val payload = blockKitBuilder.build(message)
 
-        try {
-            val headers = HttpHeaders().apply {
-                contentType = MediaType.APPLICATION_JSON
+        channels.forEach { channel ->
+            val webhookUrl = resolveWebhookUrl(channel)
+
+            try {
+                val headers = HttpHeaders().apply {
+                    contentType = MediaType.APPLICATION_JSON
+                }
+                val request = HttpEntity(payload, headers)
+
+                restTemplate.postForEntity<String>(webhookUrl, request)
+                log.info("Slack message sent successfully: type=${message.type}, audience=${message.audience}, channel=$channel")
+            } catch (e: Exception) {
+                log.error("Failed to send Slack message: type=${message.type}, audience=${message.audience}, channel=$channel, ${e.message}", e)
             }
-
-            val payload = blockKitBuilder.build(message)
-            val request = HttpEntity(payload, headers)
-
-            restTemplate.postForEntity<String>(webhookUrl, request)
-            log.info("Slack message sent successfully: type=${message.type}, channel=${message.channel}")
-        } catch (e: Exception) {
-            log.error("Failed to send Slack message: channel=${message.channel}, ${e.message}", e)
         }
     }
 
     private fun resolveWebhookUrl(channel: SlackChannel): String {
         return when (channel) {
-            SlackChannel.GENERAL -> webhookProperties.generalUrl
-            SlackChannel.STUDY -> webhookProperties.studyUrl
+            SlackChannel.GENERAL_BE -> webhookProperties.generalUrlBe
+            SlackChannel.STUDY_BE -> webhookProperties.studyUrlBe
+            SlackChannel.GENERAL_AI -> webhookProperties.generalUrlAi
+            SlackChannel.STUDY_AI -> webhookProperties.studyUrlAi
+            SlackChannel.GENERAL_GAME -> webhookProperties.generalUrlGame
+            SlackChannel.STUDY_GAME -> webhookProperties.studyUrlGame
         }
     }
 }
