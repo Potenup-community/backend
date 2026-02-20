@@ -7,6 +7,10 @@ object StudySwaggerResponseExample {
             "id": 1,
             "name": "코틀린 정복 스터디",
             "description": "코틀린 기초부터 심화까지 함께 공부합니다.",
+            "week1Plan": "코틀린 기본 문법 학습",
+            "week2Plan": "컬렉션/함수형 API 실습",
+            "week3Plan": "Spring + Kotlin 프로젝트 적용",
+            "week4Plan": "최종 회고 및 발표",
             "capacity": 6,
             "currentMemberCount": 3,
             "status": "RECRUITING",
@@ -119,6 +123,87 @@ object StudySwaggerResponseExample {
          {
              "studyId": 1
          }
+         """
+
+    const val STUDY_REPORT_ID_RESPONSE = """
+         {
+             "reportId": 12
+         }
+         """
+
+    const val STUDY_REPORT_SUBMISSION_STATUS_RESPONSE = """
+         {
+             "hasReport": true,
+             "status": "RESUBMITTED",
+             "submittedAt": "2026-02-18T15:00:00",
+             "lastModifiedAt": "2026-02-18T15:10:00"
+         }
+         """
+
+    const val STUDY_REPORT_DETAIL_RESPONSE = """
+         {
+             "reportId": 12,
+             "studyId": 1,
+             "status": "RESUBMITTED",
+             "week1Activity": "코틀린 기본 문법 학습 및 실습",
+             "week2Activity": "컬렉션/함수형 API 적용",
+             "week3Activity": "Spring + Kotlin 프로젝트 적용",
+             "week4Activity": "최종 회고 및 발표",
+             "retrospectiveGood": "매주 과제를 성실히 수행했습니다.",
+             "retrospectiveImprove": "테스트 코드 커버리지를 더 높일 필요가 있습니다.",
+             "retrospectiveNextAction": "다음 스터디에서 TDD를 적극 적용합니다.",
+             "submittedAt": "2026-02-18T15:00:00",
+             "lastModifiedAt": "2026-02-18T15:10:00"
+         }
+         """
+
+    const val STUDY_REPORT_SUMMARY_RESPONSE = """
+         {
+             "content": [
+                 {
+                     "reportId": 14,
+                     "studyId": 3,
+                     "studyName": "스프링 심화 스터디",
+                     "leaderId": 222,
+                     "leaderName": "이순신",
+                     "status": "SUBMITTED",
+                     "submittedAt": "2026-02-18T12:00:00",
+                     "lastModifiedAt": "2026-02-18T12:00:00"
+                 },
+                 {
+                     "reportId": 12,
+                     "studyId": 1,
+                     "studyName": "코틀린 정복 스터디",
+                     "leaderId": 101,
+                     "leaderName": "홍길동",
+                     "status": "RESUBMITTED",
+                     "submittedAt": "2026-02-18T15:00:00",
+                     "lastModifiedAt": "2026-02-18T15:10:00"
+                 }
+             ],
+             "pageNumber": 0,
+             "pageSize": 20,
+             "totalElements": 57,
+             "totalPages": 3,
+             "hasNext": true
+         }
+         """
+
+    const val STUDY_REPORT_APPROVAL_HISTORY_RESPONSE = """
+         [
+             {
+                 "action": "RESUBMIT",
+                 "actorId": 101,
+                 "reason": null,
+                 "timestamp": "2026-02-18T15:10:00"
+             },
+             {
+                 "action": "REJECT",
+                 "actorId": 1,
+                 "reason": "주차별 활동 근거를 조금 더 구체적으로 작성해 주세요.",
+                 "timestamp": "2026-02-18T14:30:00"
+             }
+         ]
          """
 
     const val RECRUITMENT_LIST_RESPONSE = """
