@@ -19,10 +19,10 @@ import org.springframework.web.bind.annotation.RestController
 class ShopController(
     private val purchaseItemUseCase: PurchaseItemUseCase,
     private val queryShopUseCase: ShopQueryUseCase,
-) {
+): ShopApi {
 
     @GetMapping("/items")
-    fun getShopItems(): ResponseEntity<List<ShopItemGroupResponse>> {
+    override fun getShopItems(): ResponseEntity<List<ShopItemGroupResponse>> {
         val items = queryShopUseCase.getActiveItems()
         val grouped = items.groupBy { it.itemType }
 
@@ -36,13 +36,13 @@ class ShopController(
     }
 
     @GetMapping("/items/{itemId}")
-    fun getShopItemDetail(@PathVariable itemId: Long): ResponseEntity<ShopItemDetailResponse> {
+    override fun getShopItemDetail(@PathVariable itemId: Long): ResponseEntity<ShopItemDetailResponse> {
         val item = queryShopUseCase.getShopItemDetail(itemId)
         return ResponseEntity.ok(ShopItemDetailResponse.from(item))
     }
 
     @PostMapping("/items/{itemId}/purchase")
-    fun purchaseItem(
+    override fun purchaseItem(
         userId: CurrentUserId,
         @PathVariable itemId: Long,
     ): ResponseEntity<Unit> {

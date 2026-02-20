@@ -29,6 +29,10 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.mapValues
+import kr.co.wground.shop.application.dto.EquippedItem
 
 @Service
 @Transactional
@@ -175,7 +179,7 @@ class StudyService(
                 result.track.trackId,
                 result.track.trackName,
                 result.study.recruitments.first{ it.userId == result.leader.userId }.createdAt,
-                result.leader.accessProfile()
+                result.leader.accessProfile(),
             )
 
             StudySearchResponse.of(
@@ -194,6 +198,7 @@ class StudyService(
             ?: throw BusinessException(StudyServiceErrorCode.TRACK_NOT_FOUND)
 
         val participants = userRepository.findByUserIdIn(study.recruitments.map { it.userId })
+
         val participantInfoList = participants.map {
                 ParticipantInfo(
                     id = it.userId,
@@ -201,7 +206,7 @@ class StudyService(
                     trackId = track.trackId,
                     trackName = track.trackName,
                     joinedAt = study.recruitments.first{ it.userId == it.userId }.createdAt,
-                    profileImageUrl = it.accessProfile()
+                    profileImageUrl = it.accessProfile(),
                 )
             }
 

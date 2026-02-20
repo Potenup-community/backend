@@ -15,6 +15,7 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.point.exception.PointErrorCode
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Entity
 @Table(
@@ -202,7 +203,9 @@ class PointHistory private constructor(
                 amount = amount,
                 type = PointType.EVENT_ADMIN,
                 refType = PointReferenceType.EVENT,
-                refId = adminId
+                refId = LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))
+                        .toLong()
             )
         }
 

@@ -2,6 +2,7 @@ package kr.co.wground.user.application.operations
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
+import kr.co.wground.shop.application.dto.EquippedItem
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.dto.MyInfoDto
 import kr.co.wground.user.domain.constant.UserStatus
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional
 class UserServiceImpl(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) : UserService {
 
     @Transactional(readOnly = true)
@@ -24,7 +25,9 @@ class UserServiceImpl(
         if (user.status != UserStatus.ACTIVE) {
             throw BusinessException(UserServiceErrorCode.INACTIVE_USER)
         }
-        return MyInfoDto.from(user)
+
+        val items = userRepository.findEquippedItemsByUserIds(listOf(userId)).map { EquippedItem.from(it) }
+        return MyInfoDto.from(user, items)
     }
 
     @Transactional(readOnly = true)
