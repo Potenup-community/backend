@@ -9,14 +9,16 @@ import kr.co.wground.user.application.operations.dto.DecisionDto
 import kr.co.wground.user.application.operations.dto.UserConditionCountDto
 import kr.co.wground.user.application.operations.event.DecideUserStatusEvent
 import kr.co.wground.user.domain.RequestSignup
+import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
-import kr.co.wground.user.infra.CustomUserRepository
 import kr.co.wground.user.infra.RequestSignupRepository
+import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserInfoDto
 import kr.co.wground.user.utils.email.event.VerificationEvent
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -24,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class AdminServiceImpl(
     val signupRepository: RequestSignupRepository,
-    val userRepository: CustomUserRepository,
+    val userRepository: UserRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : AdminService {
     override fun decisionSignup(decisionDto: DecisionDto) {
@@ -33,7 +35,14 @@ class AdminServiceImpl(
         validateSignupSize(requests)
         validateBulkIds(decisionDto.userIds.size, requests.size)
 
-        requests.forEach { request -> request.decide(decisionDto.requestStatus) }
+        requests.forEach { request ->
+            request.decide(decisionDto.requestStatus)
+            if (decisionDto.role != UserRole.ADMIN) {
+                val user = userRepository.findByIdOrNull(request.userId)
+                    ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
+                user.toAdmin()
+            }
+        }
 
         eventPublisher.publishEvent(
             DecideUserStatusEvent(
