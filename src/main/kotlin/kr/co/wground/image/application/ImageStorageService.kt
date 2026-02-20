@@ -162,6 +162,8 @@ class ImageStorageService(
         return removed.trimStart('/')
     }
 
+    fun toUrl(relativePath: String): String = uploadedUrl(relativePath)
+
     private fun uploadedUrl(relativePath: String): String {
         val base = props.baseUrl.trimEnd('/')
         val path = props.publicBasePath.trimEnd('/')
