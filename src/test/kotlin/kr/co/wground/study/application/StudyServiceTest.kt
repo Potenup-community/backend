@@ -64,7 +64,7 @@ class StudyServiceTest {
 
     /*
      * [참고]
-     * - 특정 스터디에 참여 했다는 것은, 해당 스터디에 대한 승인된 신청 건이 존재함을 의미한다.
+     * - 특정 스터디에 참여 했다는 것은, 해당 스터디에 대한 참여 신청 건이 존재함을 의미한다.
      * - 지금부터 스터디를 생성한 사람을 "스터디장"이라고 표현한다.
      * - 테스트에서 별도로 참여시키는 게 아니라, 스터디 생성 후 자동으로 참여된 상태임을 확인하는 테스트 임
      */
@@ -299,7 +299,7 @@ class StudyServiceTest {
         assertEquals(StudyDomainErrorCode.STUDY_TAG_COUNT_EXCEEDED.code, thrown.code)
     }
 
-    // ----- 결재 테스트
+    // ----- 진행 시작 테스트
 
     // ----- 마감 테스트
 
@@ -310,12 +310,12 @@ class StudyServiceTest {
     // ----- 삭제 테스트
 
     @Test
-    @DisplayName("PENDING 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다")
+    @DisplayName("RECRUITING 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다")
     fun shouldDeleteRecruitments_whenDeletePendingStudy() {
 
         /*
          * given
-         * 1. PENDING 상태의 스터디
+         * 1. RECRUITING 상태의 스터디
          * 2. 스터디장 + 추가 신청 건 존재
          */
         val today = LocalDate.now()
@@ -337,7 +337,7 @@ class StudyServiceTest {
         val studyId = studyService.createStudy(
             StudyCreateCommand(
                 userId = savedLeader.userId,
-                name = "삭제 테스트 스터디(PENDING)",
+                name = "삭제 테스트 스터디(RECRUITING)",
                 description = "삭제 테스트",
                 capacity = 5,
                 budget = BudgetType.MEAL,
@@ -381,12 +381,12 @@ class StudyServiceTest {
     }
 
     @Test
-    @DisplayName("CLOSED 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다")
+    @DisplayName("RECRUITING_CLOSED 상태의 스터디를 삭제한 경우, 관련된 모든 신청 건이 같이 삭제된다")
     fun shouldDeleteRecruitments_whenDeleteClosedStudy() {
 
         /*
          * given
-         * 1. CLOSED 상태의 스터디
+         * 1. RECRUITING_CLOSED 상태의 스터디
          * 2. 스터디장 + 추가 신청 건 존재
          */
         val today = LocalDate.now()
@@ -408,7 +408,7 @@ class StudyServiceTest {
         val studyId = studyService.createStudy(
             StudyCreateCommand(
                 userId = savedLeader.userId,
-                name = "삭제 테스트 스터디(CLOSED)",
+                name = "삭제 테스트 스터디(RECRUITING_CLOSED)",
                 description = "삭제 테스트",
                 capacity = 5,
                 budget = BudgetType.MEAL,
@@ -437,9 +437,9 @@ class StudyServiceTest {
         val recruitmentsBefore = studyRecruitmentRepository.findAllByStudyId(studyId)
         assertEquals(2, recruitmentsBefore.size)
 
-        // 모집 마감 + 최소 인원 충족 -> CLOSED
+        // 모집 마감 + 최소 인원 충족 -> RECRUITING_CLOSED
         val managedStudy = studyRepository.findByIdOrNull(studyId)!!
-        managedStudy.close()
+        managedStudy.closeRecruitment()
 
         // when: 스터디 삭제
         studyService.deleteStudy(studyId, savedLeader.userId, isAdmin = false)
@@ -456,12 +456,12 @@ class StudyServiceTest {
     }
 
     @Test
-    @DisplayName("결재(APPROVED) 상태의 스터디를 삭제하려 한 경우, 예외 발생 - BusinessException(STUDY_CANT_DELETE_STATUS_DETERMINE)")
-    fun shouldThrowStudyCantDeleteStatusDetermine_whenDeleteApprovedStudy() {
+    @DisplayName("진행 중(IN_PROGRESS) 상태의 스터디를 삭제하려 한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_DELETE_IN_PROGRESS_OR_COMPLETED)")
+    fun shouldThrowStudyCannotDeleteInProgressOrCompleted_whenDeleteInProgressStudy() {
 
         /*
          * given
-         * 1. APPROVED 상태의 스터디
+         * 1. IN_PROGRESS 상태의 스터디
          */
         val today = LocalDate.now()
         val savedTrack = createAndSaveEnrolledTrack(today)
@@ -493,7 +493,7 @@ class StudyServiceTest {
         val studyId = studyService.createStudy(
             StudyCreateCommand(
                 userId = savedLeader.userId,
-                name = "삭제 테스트 스터디(APPROVED)",
+                name = "삭제 테스트 스터디(IN_PROGRESS)",
                 description = "삭제 테스트",
                 capacity = 5,
                 budget = BudgetType.MEAL,
@@ -510,7 +510,7 @@ class StudyServiceTest {
         val savedStudy = studyRepository.findByIdOrNull(studyId)
         assertNotNull(savedStudy)
 
-        // 모집 마감 + 최소 인원 충족 -> CLOSED -> APPROVED
+        // 모집 마감 + 최소 인원 충족 -> RECRUITING_CLOSED -> IN_PROGRESS
         savedStudy!!.participate(savedStudent.userId)
         schedule.updateSchedule(
             newMonths = null,
@@ -518,17 +518,17 @@ class StudyServiceTest {
             newRecruitEnd = today.minusDays(5),
             newStudyEnd = today.plusDays(10)
         )
-        savedStudy.close()
-        savedStudy.approve()
-        assertEquals(StudyStatus.APPROVED, savedStudy.status)
+        savedStudy.closeRecruitment()
+        savedStudy.start()
+        assertEquals(StudyStatus.IN_PROGRESS, savedStudy.status)
 
-        // when: APPROVED 스터디 삭제 시도
+        // when: IN_PROGRESS 스터디 삭제 시도
         val thrown = assertThrows<BusinessException> {
             studyService.deleteStudy(savedStudy.id, savedLeader.userId, isAdmin = false)
         }
 
-        // then: 예외 발생(STUDY_CANT_DELETE_STATUS_DETERMINE)
-        assertEquals(StudyDomainErrorCode.STUDY_CANT_DELETE_STATUS_APPROVED.code, thrown.code)
+        // then: 예외 발생(STUDY_CANNOT_DELETE_IN_PROGRESS_OR_COMPLETED)
+        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_DELETE_IN_PROGRESS_OR_COMPLETED.code, thrown.code)
     }
 
     // ----- 참여 스터디 수 제한 테스트
@@ -537,13 +537,13 @@ class StudyServiceTest {
 
     @Test
     @DisplayName("과거 차수에 대한 스터디 참여 이력이 있는, 특정 트랙의 교육생이, 해당 트랙의 서로 다른 현재 차수 스터디에 두 개 참여 중일 때, 신규 스터디 생성 시 예외 발생 - BusinessException(MAX_STUDY_EXCEEDED)")
-    fun shouldThrowMaxStudyExceeded_whenTwoApprovedApplicationsExist() {
+    fun shouldThrowMaxStudyExceeded_whenTwoInProgressApplicationsExist() {
 
         /*
          * given
          * 1. ENROLLED 상태의 트랙
          * 2. 과거 차수 일정/스터디 참여 이력
-         * 3. 현재 차수 스터디 2개에 APPROVED 신청
+         * 3. 현재 차수 스터디 2개에 IN_PROGRESS 신청
          */
         val today = LocalDate.now()
         val savedTrack = createAndSaveEnrolledTrack(today)

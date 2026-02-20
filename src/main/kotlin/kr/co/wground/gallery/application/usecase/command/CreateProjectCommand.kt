@@ -14,5 +14,8 @@ data class CreateProjectCommand(
     val members: List<MemberAssignment>,
     val thumbnailImage: MultipartFile,
 ) {
-    data class MemberAssignment(val userId: UserId, val position: Position)
+    data class MemberAssignment(
+        val userId: UserId,
+        val position: Position,
+    )
 }

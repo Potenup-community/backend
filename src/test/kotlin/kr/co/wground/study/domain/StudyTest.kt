@@ -331,50 +331,49 @@ class StudyTest {
 
 
 
-    // ----- 결재 테스트
+    // ----- 진행 시작 테스트
 
     @Test
-    @DisplayName("대상 스터디가 PENDING 상태일 때, 스터디 결재 시, 예외 발생 - BusinessException(STUDY_MUST_BE_CLOSED_TO_APPROVE)")
-    fun shouldThrowStudyMustBeClosedToApprove_whenApprovePendingStudy() {
+    @DisplayName("대상 스터디가 RECRUITING 상태일 때, 스터디 진행 시작 시, 예외 발생 - BusinessException(STUDY_MUST_BE_RECRUITING_CLOSED_TO_START)")
+    fun shouldThrowStudyMustBeRecruitingClosedToStart_whenStartFromRecruiting() {
 
         val thrown = assertThrows<BusinessException> {
-            val pending = createStudyWithCapacity(createRecruitingStudySchedule(),2)
-            pending.approve()
+            val study = createStudyWithCapacity(createRecruitingStudySchedule(),2)
+            study.start()
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_MUST_BE_CLOSED_TO_APPROVE.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_MUST_BE_RECRUITING_CLOSED_TO_START.code, thrown.code)
     }
 
     @Test
-    @DisplayName("스터디가 CLOSED 상태이고 최소 인원에 미달되었을 때, 결재 시도한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER)")
-    // STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER
-    fun shouldThrowStudyCannotApprovedDueToNotEnoughMember_whenApproveStudyWhichNotMeetMinimumMemberCondition() {
+    @DisplayName("스터디가 RECRUITING_CLOSED 상태이고 최소 인원에 미달되었을 때, 진행 시작 시도한 경우, 예외 발생 - BusinessException(STUDY_CANNOT_START_DUE_TO_NOT_ENOUGH_MEMBER)")
+    fun shouldThrowStudyCannotStartDueToNotEnoughMember_whenStartWithoutMinimumMember() {
 
         val thrown = assertThrows<BusinessException> {
-            val pending = createStudyWithCapacity(createRecruitingStudySchedule(), Study.MIN_CAPACITY)
-            pending.close()
-            pending.approve()
+            val study = createStudyWithCapacity(createRecruitingStudySchedule(), Study.MIN_CAPACITY)
+            study.closeRecruitment()
+            study.start()
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_APPROVED_DUE_TO_NOT_ENOUGH_MEMBER.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_START_DUE_TO_NOT_ENOUGH_MEMBER.code, thrown.code)
     }
 
     // ----- 참여 테스트
 
     @Test
-    @DisplayName("APPROVED 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
-    fun shouldThrowStudyNotRecruiting_whenIncreaseMemberOnApprovedStudy() {
+    @DisplayName("IN_PROGRESS 상태에서, 참여 인원 수 1 증가 시, 예외 발생 - BusinessException(STUDY_NOT_RECRUITING)")
+    fun shouldThrowStudyNotRecruiting_whenIncreaseMemberOnInProgressStudy() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, 3)
             created.participate(THE_OTHER_USER_ID)
-            created.close()
-            created.approve()
+            created.closeRecruitment()
+            created.start()
 
             created.participate(THE_OTHER_USER_ID + 1)
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_NOT_PENDING.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_NOT_RECRUITING.code, thrown.code)
     }
 
     @Test
@@ -394,25 +393,25 @@ class StudyTest {
     // ----- 수정 테스트
 
     @Test
-    @DisplayName("APPROVED 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(STUDY_CANNOT_MODIFY_AFTER_DETERMINED)")
-    fun shouldThrowStudyCannotModifyAfterDetermined_whenUpdateApprovedStudy() {
+    @DisplayName("IN_PROGRESS 상태인 경우, 스터디를 수정 시, 예외 발생 - BusinessException(STUDY_CANNOT_MODIFY_IN_PROGRESS_OR_COMPLETED)")
+    fun shouldThrowStudyCannotModifyInProgressOrCompleted_whenUpdateInProgressStudy() {
         val thrown = assertThrows<BusinessException> {
             val schedule = createRecruitingStudySchedule()
             val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
             created.participate(THE_OTHER_USER_ID)
-            created.close()
-            created.approve()
+            created.closeRecruitment()
+            created.start()
 
             updateStudyName(created, "제목제목")
         }
 
-        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_AFTER_APPROVED.code, thrown.code)
+        assertEquals(StudyDomainErrorCode.STUDY_CANNOT_MODIFY_IN_PROGRESS_OR_COMPLETED.code, thrown.code)
     }
 
     @Test
     @Disabled
-    @DisplayName("PENDING 상태일 때, 생성 시점에 설정 가능한 임의의 항목을 수정할 시, 성공한다")
-    fun shouldUpdateEditableFields_whenStudyPending() {
+    @DisplayName("RECRUITING 상태일 때, 생성 시점에 설정 가능한 임의의 항목을 수정할 시, 성공한다")
+    fun shouldUpdateEditableFields_whenStudyRecruiting() {
         val schedule = createRecruitingStudySchedule()
         val created = createStudyWithCapacity(schedule, Study.MIN_CAPACITY)
 

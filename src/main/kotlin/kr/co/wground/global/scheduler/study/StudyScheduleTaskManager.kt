@@ -63,6 +63,15 @@ class StudyScheduleTaskManager(
             }
         }
 
+        // 스터디 완료 작업 등록
+        if (studyEnd.isAfter(now)) {
+            val future = taskScheduler.schedule(
+                { studyScheduleStatusChangeTasks.completeStudy(scheduleId) },
+                studyEnd.atZone(ZoneId.systemDefault()).toInstant()
+            )
+            newTasks.add(future)
+        }
+
         // 스터디 종료 예정 알림 작업 등록
         for (d in STUDY_ALERT_PREVIOUS_DAYS..1) {
             val studyEndNotifyTime = studyEnd.minusDays(d)

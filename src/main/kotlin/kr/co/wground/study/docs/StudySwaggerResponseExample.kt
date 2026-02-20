@@ -9,7 +9,7 @@ object StudySwaggerResponseExample {
             "description": "코틀린 기초부터 심화까지 함께 공부합니다.",
             "capacity": 6,
             "currentMemberCount": 3,
-            "status": "PENDING",
+            "status": "RECRUITING",
             "budget": "MEAL",
             "budgetExplain": "피자먹을래요",
             "chatUrl": "https://open.kakao.com/...",
@@ -80,7 +80,7 @@ object StudySwaggerResponseExample {
                "description": "코틀린 기초부터 심화까지 함께 공부합니다.",
                "capacity": 6,
                "currentMemberCount": 3,
-               "status": "PENDING",
+               "status": "RECRUITING",
                "chatUrl": null,
                "tags": [
                  "KOTLIN",

@@ -23,7 +23,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.ArgumentMatchers.any
 import org.springframework.mock.web.MockMultipartFile
 
 @ExtendWith(MockKExtension::class)
@@ -54,7 +53,12 @@ class ProjectCommandUseCaseImplTest {
         fun shouldCreateProject_whenValidCommand() {
             // given
             val command = createValidCommand()
-            stubDependencies(memberUserIds = listOf(1L, 10L, 20L))
+            stubDependencies(
+                users = listOf(
+                    createUser(10L),
+                    createUser(20L),
+                ),
+            )
 
             // when
             val result = useCase.create(command)
@@ -70,11 +74,14 @@ class ProjectCommandUseCaseImplTest {
             val command = createValidCommand(
                 authorId = 1L,
                 members = listOf(
-                    CreateProjectCommand.MemberAssignment(10L, Position.FRONTEND),
+                    CreateProjectCommand.MemberAssignment(userId = 10L, position = Position.FRONTEND),
                 ),
             )
             val projectSlot = slot<Project>()
-            stubDependencies(memberUserIds = listOf(1L, 10L), projectSlot = projectSlot)
+            stubDependencies(
+                users = listOf(createUser(10L)),
+                projectSlot = projectSlot,
+            )
 
             // when
             useCase.create(command)
@@ -92,12 +99,18 @@ class ProjectCommandUseCaseImplTest {
             val command = createValidCommand(
                 authorId = 1L,
                 members = listOf(
-                    CreateProjectCommand.MemberAssignment(1L, Position.BACKEND),
-                    CreateProjectCommand.MemberAssignment(10L, Position.FRONTEND),
+                    CreateProjectCommand.MemberAssignment(userId = 1L, position = Position.BACKEND),
+                    CreateProjectCommand.MemberAssignment(userId = 10L, position = Position.FRONTEND),
                 ),
             )
             val projectSlot = slot<Project>()
-            stubDependencies(memberUserIds = listOf(1L, 10L), projectSlot = projectSlot)
+            stubDependencies(
+                users = listOf(
+                    createUser(1L),   // authorId와 동일 → 중복 추가 안 됨
+                    createUser(10L),
+                ),
+                projectSlot = projectSlot,
+            )
 
             // when
             useCase.create(command)
@@ -112,11 +125,11 @@ class ProjectCommandUseCaseImplTest {
             // given
             val command = createValidCommand(
                 members = listOf(
-                    CreateProjectCommand.MemberAssignment(10L, Position.BACKEND),
-                    CreateProjectCommand.MemberAssignment(999L, Position.FRONTEND),
+                    CreateProjectCommand.MemberAssignment(userId = 10L, position = Position.BACKEND),
+                    CreateProjectCommand.MemberAssignment(userId = 999L, position = Position.FRONTEND),
                 ),
             )
-            every { userRepository.findByUserIdIn(any()) } returns listOf(createUser(1L), createUser(10L))
+            every { userRepository.findByUserIdIn(any()) } returns listOf(createUser(10L))
 
             // when & then
             assertThatThrownBy { useCase.create(command) }
@@ -127,10 +140,10 @@ class ProjectCommandUseCaseImplTest {
     }
 
     private fun stubDependencies(
-        memberUserIds: List<Long>,
+        users: List<User>,
         projectSlot: io.mockk.CapturingSlot<Project>? = null,
     ) {
-        every { userRepository.findByUserIdIn(any()) } returns memberUserIds.map { createUser(it) }
+        every { userRepository.findByUserIdIn(any()) } returns users
         every { imageStorageService.saveProjectThumbnail(any(), any()) } returns "projects/1/thumb.png"
         if (projectSlot != null) {
             every { projectRepository.save(capture(projectSlot)) } answers { projectSlot.captured }
@@ -142,8 +155,8 @@ class ProjectCommandUseCaseImplTest {
     private fun createValidCommand(
         authorId: Long = 1L,
         members: List<CreateProjectCommand.MemberAssignment> = listOf(
-            CreateProjectCommand.MemberAssignment(10L, Position.BACKEND),
-            CreateProjectCommand.MemberAssignment(20L, Position.FRONTEND),
+            CreateProjectCommand.MemberAssignment(userId = 10L, position = Position.BACKEND),
+            CreateProjectCommand.MemberAssignment(userId = 20L, position = Position.FRONTEND),
         ),
     ): CreateProjectCommand = CreateProjectCommand(
         authorId = authorId,
@@ -160,7 +173,7 @@ class ProjectCommandUseCaseImplTest {
         userId = userId,
         trackId = 1L,
         email = "user$userId@test.com",
-        name = "테스트유저$userId",
+        name = "user$userId",
         phoneNumber = "010-0000-${userId.toString().padStart(4, '0')}",
         provider = "google",
         role = UserRole.MEMBER,
