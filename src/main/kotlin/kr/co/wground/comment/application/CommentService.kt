@@ -19,9 +19,6 @@ import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.shop.application.dto.EquippedItem
-import kr.co.wground.shop.application.dto.EquippedItem.Companion.from
-import kr.co.wground.shop.application.query.InventoryQueryPort
-import kr.co.wground.shop.application.dto.EquippedItemWithUserDto
 import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.context.ApplicationEventPublisher
@@ -39,7 +36,6 @@ class CommentService(
     private val userRepository: UserRepository,
     private val reactionQueryService: ReactionQueryService,
     private val eventPublisher: ApplicationEventPublisher,
-    private val inventoryQueryPort: InventoryQueryPort
 ) {
     @Transactional
     fun write(dto: CommentCreateDto): Long {
@@ -117,10 +113,9 @@ class CommentService(
 
         val allComments = commentRepository.findAllByPostId(postId)
         val usersById = loadUsersByComments(allComments)
-        val equippedItemsWithUser = inventoryQueryPort.getEquipItems(usersById.keys.toList())
         val reactionStatsByCommentId = fetchReactionCounts(allComments, userId.value)
 
-        return groupCommentsWithReplies(allComments, usersById, reactionStatsByCommentId, equippedItemsWithUser)
+        return groupCommentsWithReplies(allComments, usersById, reactionStatsByCommentId)
     }
 
     @Transactional(readOnly = true)
@@ -229,13 +224,11 @@ class CommentService(
         comments: List<Comment>,
         authorsById: Map<UserId, UserDisplayInfoDto>,
         reactionStatsById: Map<CommentId, CommentReactionStats>,
-        equippedItemsWithUser: List<EquippedItemWithUserDto>
     ): List<CommentSummaryDto> {
         val groupedByParent = comments
             .sortedWith(compareBy<Comment> { it.createdAt }.thenBy { it.id })
             .groupBy { it.parentId }
 
-        val equippedItems = equippedItemsWithUser.groupBy { it.userId }.mapValues { (_, rows) -> rows.map(EquippedItem::from) }
         fun toSummary(comment: Comment): CommentSummaryDto {
             val replies = groupedByParent[comment.id].orEmpty().map { toSummary(it) }
 
@@ -244,7 +237,7 @@ class CommentService(
                 author = authorsById[comment.writerId],
                 reactionStats = reactionStatsById[comment.id],
                 replies = replies,
-                items = equippedItems[comment.writerId] ?: emptyList()
+                items = authorsById[comment.writerId]?.items ?: emptyList()
             )
         }
 

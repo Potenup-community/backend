@@ -21,7 +21,6 @@ import kr.co.wground.post.exception.PostErrorCode
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.post.infra.predicate.GetPostSummaryPredicate
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
-import kr.co.wground.shop.application.query.InventoryQueryPort
 import kr.co.wground.user.infra.CustomUserRepository
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
 import org.springframework.context.ApplicationEventPublisher
@@ -39,7 +38,6 @@ class PostService(
     private val userRepository: CustomUserRepository,
     private val postReactionRepository: PostReactionJpaRepository,
     private val eventPublisher: ApplicationEventPublisher,
-    private val inventoryQueryPort: InventoryQueryPort
 ) {
     fun createPost(dto: PostCreateDto): Long {
         val postId = postRepository.save(dto.toDomain()).id
@@ -135,7 +133,6 @@ class PostService(
     fun getPostDetail(id: PostId): PostDetailDto {
         val findPost = findPostByIdOrThrow(id)
         val writer = findUserDisplayInfoByIdOrThrow(findPost.writerId)
-        val equippedItemsWithUser = inventoryQueryPort.getEquipItems(listOf(writer.userId))
         val reactionsByPostId = postReactionRepository.findPostReactionsByPostId(id)
 
         val commentsCount = commentRepository.countByPostIds(listOf(id))
@@ -156,7 +153,7 @@ class PostService(
             reactions = reactionsByPostId,
             nextPostTitle = postNavigationDto.nextPostTitle,
             previousPostTitle = postNavigationDto.previousPostTitle,
-            equippedItemsWithUser = equippedItemsWithUser
+            items = writer.items
         )
     }
 
@@ -185,9 +182,7 @@ class PostService(
         val postReactionStats = postReactionRepository.fetchPostReactionStatsRows(postIds, userId)
         val commentsCountById = commentRepository.countByPostIds(postIds.toList())
 
-        val equippedItems = inventoryQueryPort.getEquipItems(writerList)
-
-        return posts.toDtos(writersById, commentsCountById, postReactionStats, equippedItems)
+        return posts.toDtos(writersById, commentsCountById, postReactionStats)
     }
 
     private fun findUserDisplayInfoByIdOrThrow(id: WriterId): UserDisplayInfoDto {

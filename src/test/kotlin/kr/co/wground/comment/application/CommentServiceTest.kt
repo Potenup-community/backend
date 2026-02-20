@@ -15,7 +15,6 @@ import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.reaction.application.dto.LikedCommentDto
-import kr.co.wground.shop.application.query.InventoryQueryPort
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserStatus

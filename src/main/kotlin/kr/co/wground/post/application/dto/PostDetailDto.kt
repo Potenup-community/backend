@@ -47,9 +47,8 @@ fun Post.toDto(
     nextPostTitle: String?,
     previousPostId: PostId?,
     previousPostTitle: String?,
-    equippedItemsWithUser: List<EquippedItemWithUserDto>
+    items: List<EquippedItem>
 ): PostDetailDto {
-    val equippedItems = equippedItemsWithUser.map { EquippedItem.from(it) }
     return PostDetailDto(
         postId = id,
         writerId = writerId,
@@ -73,6 +72,6 @@ fun Post.toDto(
                     count = count
                 )
             },
-        equippedItems = equippedItems
+        equippedItems = items
     )
 }

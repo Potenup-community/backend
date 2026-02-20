@@ -7,8 +7,11 @@ import com.querydsl.core.types.dsl.Expressions
 import com.querydsl.core.types.dsl.NumberExpression
 import com.querydsl.jpa.impl.JPAQuery
 import com.querydsl.jpa.impl.JPAQueryFactory
-import java.time.LocalDateTime
 import kr.co.wground.global.common.UserId
+import kr.co.wground.shop.application.dto.EquippedItem
+import kr.co.wground.shop.application.dto.EquippedItemWithUserDto
+import kr.co.wground.shop.domain.QShopItem.shopItem
+import kr.co.wground.shop.domain.QUserInventory.userInventory
 import kr.co.wground.track.domain.QTrack.track
 import kr.co.wground.track.domain.constant.TrackStatus
 import kr.co.wground.user.application.operations.constant.COUNT_DEFAULT_VALUE
@@ -33,6 +36,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.support.PageableExecutionUtils
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 
 @Repository
 class CustomUserRepositoryImpl(
@@ -199,9 +203,11 @@ class CustomUserRepositoryImpl(
     }
 
     override fun findUserDisplayInfos(userIds: List<UserId>): Map<UserId, UserDisplayInfoDto> {
+        if (userIds.isEmpty()) return emptyMap()
+
         val trackNameExpr = track.trackName.coalesce(NOT_ASSOCIATE)
 
-        val results = queryFactory
+        val userResults = queryFactory
             .select(
                 Projections.constructor(
                     UserDisplayInfoDto::class.java,
@@ -216,7 +222,40 @@ class CustomUserRepositoryImpl(
             .where(user.userId.`in`(userIds))
             .fetch()
 
-        return results.associateBy { it.userId }
+        val equipItems = findEquippedItemsByUserIds(userIds)
+            .groupBy { it.userId }
+            .mapValues { (_, rows) ->
+                rows
+                    .map(EquippedItem::from)
+            }
+
+        val result = userResults.associateBy { it.userId }
+
+        return result.mapValues { (userId, dto) ->
+            dto.copy(items = equipItems[userId].orEmpty())
+        }
+    }
+
+
+    override fun findEquippedItemsByUserIds(userIds: List<UserId>): List<EquippedItemWithUserDto> {
+        if (userIds.isEmpty()) return emptyList()
+
+        return queryFactory
+            .select(
+                Projections.constructor(
+                    EquippedItemWithUserDto::class.java,
+                    userInventory.userId,
+                    userInventory.itemType,
+                    shopItem.imageUrl
+                )
+            )
+            .from(userInventory)
+            .join(shopItem).on(userInventory.shopItemId.eq(shopItem.id))
+            .where(
+                userInventory.userId.`in`(userIds),
+                userInventory.equipped.isTrue
+            )
+            .fetch()
     }
 
     override fun findUserDisplayInfosForMention(

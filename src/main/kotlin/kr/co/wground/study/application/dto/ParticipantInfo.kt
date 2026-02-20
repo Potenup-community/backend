@@ -12,5 +12,4 @@ data class ParticipantInfo(
     val trackName: String,
     val joinedAt: LocalDateTime,
     val profileImageUrl: String,
-    val items : List<EquippedItem>
 )

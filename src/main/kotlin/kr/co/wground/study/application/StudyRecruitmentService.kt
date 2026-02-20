@@ -6,7 +6,6 @@ import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.shop.application.dto.EquippedItem
 import kr.co.wground.shop.application.dto.EquippedItem.Companion.from
-import kr.co.wground.shop.application.query.InventoryQueryPort
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
 import kr.co.wground.study.domain.StudyRecruitment
@@ -37,7 +36,6 @@ class StudyRecruitmentService(
     private val scheduleRepository: StudyScheduleRepository,
     private val recruitValidator: RecruitValidator,
     private val eventPublisher: ApplicationEventPublisher,
-    private val inventoryQueryPort: InventoryQueryPort
 ) {
 
     fun participate(userId: Long, studyId: Long): Long {
@@ -127,12 +125,10 @@ class StudyRecruitmentService(
         if (recruitments.isEmpty()) {
             throw BusinessException(StudyServiceErrorCode.RECRUITMENT_NOT_FOUND)
         }
-        val equippedItems = inventoryQueryPort.getEquipItems(listOf(userId)).groupBy { it.userId }
-            .mapValues { (_, rows) -> rows.map(EquippedItem::from) }
         val user = findUserOrThrows(userId)
         val track = findTrackByIdOrThrows(user.trackId)
         return recruitments.map { recruitment ->
-            StudyRecruitmentResponse.of(recruitment, user.name, track.trackName, equippedItems[userId] ?: emptyList())
+            StudyRecruitmentResponse.of(recruitment, user.name, track.trackName)
         }
     }
 
@@ -148,8 +144,6 @@ class StudyRecruitmentService(
         val userIds = recruitments.map { it.userId }.toSet()
         val users = userRepository.findAllById(userIds).associateBy { it.userId }
         val track = findTrackByIdOrThrows(study.trackId)
-        val equippedItems = inventoryQueryPort.getEquipItems(userIds.toList()).groupBy { it.userId }
-            .mapValues { (_, rows) -> rows.map(EquippedItem::from) }
 
         return recruitments.map { recruitment ->
             val applicant = users[recruitment.userId]
@@ -159,7 +153,6 @@ class StudyRecruitmentService(
                 recruitment,
                 applicant.name,
                 track.trackName,
-                equippedItems[recruitment.userId] ?: emptyList()
             )
         }
     }

@@ -60,7 +60,12 @@ app:
     maxBytes: 1048576
     allowedExts: [jpg, jpeg, png, gif]
     base-url: http://localhost
-
+  item:
+    local-dir: ${LOCAL_ITEM_DIR:C:\depth\uploads\item}
+    webPathPrefix: ${PUBLIC_ITEM_PATH:/images/items}
+    maxBytes: ${ITEM_MAX_BYTE:532095}
+    allowedExts: ${ALLOWED_ITEM_EXTENSIONS}
+    base-url: ${BASE_URL}
 # 슬랙 알림 웹 훅 설정 (채널별)
 slack:
   webhook:

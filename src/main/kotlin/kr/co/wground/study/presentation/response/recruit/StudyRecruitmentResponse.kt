@@ -13,10 +13,9 @@ data class StudyRecruitmentResponse(
     val userId: UserId,
     val userName: String,
     val createdAt: LocalDateTime,
-    val items: List<EquippedItem>
 ) {
     companion object {
-        fun of(recruitment: StudyRecruitment, userName: String, trackName: String, items: List<EquippedItem>): StudyRecruitmentResponse {
+        fun of(recruitment: StudyRecruitment, userName: String, trackName: String): StudyRecruitmentResponse {
             return StudyRecruitmentResponse(
                 id = recruitment.id,
                 studyId = recruitment.study.id,
@@ -25,7 +24,6 @@ data class StudyRecruitmentResponse(
                 userId = recruitment.userId,
                 userName = userName,
                 createdAt = recruitment.createdAt,
-                items = items
             )
         }
     }

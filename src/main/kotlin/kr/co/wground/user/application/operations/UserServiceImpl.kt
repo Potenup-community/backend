@@ -3,7 +3,6 @@ package kr.co.wground.user.application.operations
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.shop.application.dto.EquippedItem
-import kr.co.wground.shop.application.query.InventoryQueryPort
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.dto.MyInfoDto
 import kr.co.wground.user.domain.constant.UserStatus
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class UserServiceImpl(
     private val userRepository: UserRepository,
-    private val inventoryQueryPort: InventoryQueryPort
 ) : UserService {
 
     @Transactional(readOnly = true)
@@ -28,9 +26,8 @@ class UserServiceImpl(
             throw BusinessException(UserServiceErrorCode.INACTIVE_USER)
         }
 
-        val equippedItems = inventoryQueryPort.getEquipItems(listOf(userId)).map { EquippedItem.from(it) }
-
-        return MyInfoDto.from(user, equippedItems)
+        val items = userRepository.findEquippedItemsByUserIds(listOf(userId)).map { EquippedItem.from(it) }
+        return MyInfoDto.from(user, items)
     }
 
     @Transactional(readOnly = true)
