@@ -69,7 +69,7 @@ class StudyRecruitmentService(
     }
 
     /**
-     * 관리자의 요청에 따른 스터디 강제 참여
+     * 관리자의 요청에 따른 스터디 추가 참여
      */
     fun forceJoin(userId: Long, studyId: Long): Long {
 
