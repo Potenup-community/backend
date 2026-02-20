@@ -96,7 +96,7 @@ class StudyReport private constructor(
             teamRetrospective: TeamRetrospective,
             now: LocalDateTime = LocalDateTime.now(),
         ): StudyReport {
-            throwsWhenUpdateNotAllowed(study.status)
+            throwsWhenCreateNotAllowed(study.status)
 
             return StudyReport(
                 study = study,
@@ -108,7 +108,7 @@ class StudyReport private constructor(
             )
         }
 
-        private fun throwsWhenUpdateNotAllowed(studyStatus: StudyStatus) {
+        private fun throwsWhenCreateNotAllowed(studyStatus: StudyStatus) {
             if (studyStatus != StudyStatus.IN_PROGRESS && studyStatus != StudyStatus.COMPLETED) {
                 throw BusinessException(StudyDomainErrorCode.STUDY_REPORT_UPDATE_NOT_ALLOWED_FOR_STUDY_STATUS)
             }
