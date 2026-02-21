@@ -1,7 +1,7 @@
 package kr.co.wground.resumereview.application
 
 import jakarta.transaction.Transactional
-import kr.co.wground.common.outbox.OutboxEventRepository
+import kr.co.wground.common.outbox.repository.OutboxEventRepository
 import kr.co.wground.common.outbox.ResumeReviewOutboxFactory
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.resumereview.application.command.ResumeReviewCommand

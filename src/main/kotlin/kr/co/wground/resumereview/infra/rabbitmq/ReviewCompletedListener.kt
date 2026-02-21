@@ -2,7 +2,7 @@ package kr.co.wground.resumereview.infra.rabbitmq
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.wground.common.event.ResumeReviewCompletedEvent
-import kr.co.wground.common.outbox.OutboxEventRepository
+import kr.co.wground.common.outbox.repository.OutboxEventRepository
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.global.config.RabbitMQConfig
