@@ -34,6 +34,13 @@ spring:
           connectiontimeout: ${MAIL_TIMEOUT}
           timeout: ${MAIL_TIMEOUT}
           writetimeout: ${MAIL_TIMEOUT}
+
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT}
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+
   spring:
     task:
       scheduling:
