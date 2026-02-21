@@ -5,6 +5,7 @@ import kr.co.wground.common.event.CommentCreatedEvent
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
+import kr.co.wground.common.event.ResumeReviewCompletedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.common.event.StudyRecruitmentEvent
 import kr.co.wground.common.event.StudyRecruitEndedSoonEvent
@@ -235,6 +236,30 @@ class NotificationEventListener(
                 )
             }
         }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleResumeReviewCompleted(event: ResumeReviewCompletedEvent) {
+        createNotificationSafely {
+            notificationCommandService.create(
+                recipientId = event.userId,
+                actorId = null,
+                type = NotificationType.RESUME_REVIEW_COMPLETED,
+                title = "이력서 첨삭 완료",
+                reference = NotificationReference(
+                    referenceId = event.resumeReviewId,
+                    referenceType = ReferenceType.RESUME_REVIEW,
+                )
+            )
+        }
+
+        notificationSender.send(
+            NotificationMessage(
+                type = NotificationMessageType.STUDY_RECRUIT_START_REMINDER,
+                link = "$frontendUrl/resume-reviews",
+            )
+        )
     }
 
     @Async(NOTIFICATION_EXECUTOR)
