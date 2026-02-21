@@ -9,7 +9,7 @@ import kr.co.wground.resumereview.application.command.dto.CreateResumeReviewDto
 import kr.co.wground.resumereview.application.command.dto.ReviewAcceptedResultDto
 import kr.co.wground.resumereview.application.command.dto.toDomain
 import kr.co.wground.resumereview.application.hash.RequestHashCalculator
-import kr.co.wground.resumereview.application.publisher.ReviewRequestedEvent
+import kr.co.wground.common.event.ReviewRequestedEvent
 import kr.co.wground.resumereview.application.query.ResumeReviewQuery
 import kr.co.wground.resumereview.domain.ResumeReview
 import kr.co.wground.resumereview.exception.ResumeReviewErrorCode
