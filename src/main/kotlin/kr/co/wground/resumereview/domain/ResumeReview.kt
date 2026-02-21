@@ -128,4 +128,5 @@ enum class ResumeReviewStatus {
         this == COMPLETED || this == FAILED
 
     fun isCompleted() = this == COMPLETED
+    fun isFailed() = this == FAILED
 }
