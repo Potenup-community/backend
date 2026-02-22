@@ -1,9 +1,9 @@
 package kr.co.wground.common.outbox.repository
 
 import com.querydsl.jpa.impl.JPAQueryFactory
-import kr.co.wground.common.outbox.QOutboxEventEntity.outboxEventEntity
 import kr.co.wground.common.outbox.entity.OutboxEventEntity
 import kr.co.wground.common.outbox.entity.OutboxStatus
+import kr.co.wground.common.outbox.entity.QOutboxEventEntity.outboxEventEntity
 import java.time.Instant
 
 class CustomOutboxEventRepositoryImpl(
