@@ -11,6 +11,7 @@ import jakarta.persistence.Table
 import kr.co.wground.global.common.UserId
 import java.time.Instant
 import java.util.UUID
+import kotlin.random.Random
 
 @Entity
 @Table(
@@ -63,16 +64,25 @@ class OutboxEventEntity protected constructor(
         nextRetryAt = null
     }
 
-    fun markFailed(err: String) {
-        status = OutboxStatus.FAILED
+    fun markFailed(err: String, now: Instant = Instant.now()) {
         lastError = err.take(1000)
-        retryCount += 1
-        this.nextRetryAt = computeBackoff(retryCount)
+        retryCount.plus(1)
+
+        if (retryCount >= 10) {
+            status = OutboxStatus.DEAD
+            nextRetryAt = null
+            return
+        }
+
+        status = OutboxStatus.FAILED
+        nextRetryAt = computeBackoff(retryCount, now)
     }
 
-    private fun computeBackoff(retryCount: Int): Instant {
-        val seconds = minOf(300, (1 shl minOf(retryCount, 8)))
-        return Instant.now().plusSeconds(seconds.toLong())
+    private fun computeBackoff(retryCount: Int, now: Instant): Instant {
+        val expiration = 1L shl minOf(retryCount, 8)
+        val cap = minOf(256L, expiration)
+        val jittered = Random.nextLong(0, cap + 1)
+        return now.plusSeconds(jittered)
     }
 
     companion object {
@@ -100,4 +110,4 @@ class OutboxEventEntity protected constructor(
     }
 }
 
-enum class OutboxStatus { PENDING, PUBLISHED, FAILED }
+enum class OutboxStatus { PENDING, PUBLISHED, FAILED, DEAD }
