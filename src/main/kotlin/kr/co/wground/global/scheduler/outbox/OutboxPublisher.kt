@@ -7,6 +7,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
 @Component
@@ -15,7 +16,8 @@ class OutboxPublisher(
     private val rabbitTemplate: RabbitTemplate,
     private val resumeReviewRepository: ResumeReviewRepository,
 ) {
-    @Scheduled(fixedDelayString = "\${outbox.publish-interval-ms:1000}")
+    @Scheduled(fixedDelayString = "\${outbox.publish-interval-ms}")
+    @Transactional
     fun publishBatch() {
         val now = Instant.now()
         val candidates = outboxEventRepository.findPublishCandidates(now, limit = 50)
@@ -25,11 +27,8 @@ class OutboxPublisher(
                 publishOne(event)
 
                 event.markPublished()
-                outboxEventRepository.save(event)
 
-                resumeReviewRepository.findByIdOrNull(event.domainId)?.let {
-                    resumeReviewRepository.save(it)
-                }
+                resumeReviewRepository.findByIdOrNull(event.domainId)?.processed()
             } catch (ex: Exception) {
                 event.markFailed(
                     ex.message ?: ex::class.java.name,
