@@ -37,7 +37,7 @@ class AdminServiceImpl(
 
         requests.forEach { request ->
             request.decide(decisionDto.requestStatus)
-            if (decisionDto.role != UserRole.ADMIN) {
+            if (decisionDto.role == UserRole.ADMIN) {
                 val user = userRepository.findByIdOrNull(request.userId)
                     ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
                 user.toAdmin()
