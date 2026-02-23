@@ -1,5 +1,8 @@
 package kr.co.wground.notification.infra.slack
 
+import kr.co.wground.notification.application.port.NotificationMessage
+import kr.co.wground.notification.application.port.NotificationSender
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
@@ -20,4 +23,11 @@ class SlackConfig {
             .readTimeout(Duration.ofSeconds(5))
             .build()
     }
+
+    @Bean
+    @ConditionalOnMissingBean(NotificationSender::class)
+    fun noopNotificationSender(): NotificationSender =
+        object : NotificationSender {
+            override fun send(message: NotificationMessage) = Unit
+        }
 }

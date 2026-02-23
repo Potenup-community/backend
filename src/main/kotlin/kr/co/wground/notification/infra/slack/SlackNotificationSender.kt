@@ -3,6 +3,7 @@ package kr.co.wground.notification.infra.slack
 import kr.co.wground.notification.application.port.NotificationMessage
 import kr.co.wground.notification.application.port.NotificationSender
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -11,6 +12,7 @@ import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.postForEntity
 
 @Component
+@ConditionalOnProperty(prefix = "slack.webhook", name = ["enabled"], havingValue = "true")
 class SlackNotificationSender(
     private val restTemplate: RestTemplate,
     private val blockKitBuilder: SlackBlockKitBuilder,
