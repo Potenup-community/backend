@@ -1,5 +1,6 @@
 package kr.co.wground.notification.infra.slack
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
@@ -12,6 +13,7 @@ import java.time.Duration
 class SlackConfig {
 
     @Bean
+    @ConditionalOnProperty(prefix = "slack.webhook", name = ["enabled"], havingValue = "true")
     fun restTemplate(builder: RestTemplateBuilder): RestTemplate {
         return builder
             .connectTimeout(Duration.ofSeconds(5))
