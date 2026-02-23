@@ -70,8 +70,13 @@ app:
 # 슬랙 알림 웹 훅 설정 (채널별)
 slack:
   webhook:
-    general-url: ${SLACK_WEBHOOK_GENERAL_URL_TEST:}
-    study-url: ${SLACK_WEBHOOK_STUDY_URL_TEST:}
+    enabled: false
+    general-url-be: ${SLACK_WEBHOOK_GENERAL_URL_BE_TEST:}
+    study-url-be: ${SLACK_WEBHOOK_STUDY_URL_BE_TEST:}
+    general-url-ai: ${SLACK_WEBHOOK_GENERAL_URL_AI_TEST:}
+    study-url-ai: ${SLACK_WEBHOOK_STUDY_URL_AI_TEST:}
+    general-url-game: ${SLACK_WEBHOOK_GENERAL_URL_GAME_TEST:}
+    study-url-game: ${SLACK_WEBHOOK_STUDY_URL_GAME_TEST:}
 
 management:
   endpoints:
