@@ -7,5 +7,5 @@ object EmailConstants {
     const val APPROVED_AT = "approvedAt"
     const val TEMPLATE = "mail/welcome-email"
     const val DATE_PATTERN = "yyyy-MM-dd HH:mm"
-    const val SUBJECT = "[Depth] 회원 가입 승인 안내입니다."
+    const val SUBJECT = "[PotenUp-Community] 회원 가입 승인 안내입니다."
 }

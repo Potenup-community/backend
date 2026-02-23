@@ -18,6 +18,7 @@ import kr.co.wground.notification.application.port.NotificationMessage
 import kr.co.wground.notification.application.port.NotificationMessageType
 import kr.co.wground.notification.application.port.NotificationSender
 import kr.co.wground.notification.domain.enums.BroadcastTargetType
+import kr.co.wground.notification.domain.enums.NotificationAudience
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.enums.ReferenceType
 import kr.co.wground.notification.domain.vo.NotificationReference
@@ -176,6 +177,7 @@ class NotificationEventListener(
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.ANNOUNCEMENT,
+                audience = NotificationAudience.ALL,
                 link = postLink,
                 metadata = mapOf(
                     "title" to event.title,
@@ -271,6 +273,7 @@ class NotificationEventListener(
             "trackName" to track.trackName,
             "months" to "${event.months.month}차",
         )
+        val audience = NotificationAudience.fromTrackName(track.trackName) ?: NotificationAudience.ALL
 
         // 인앱 알림 (트랙별 브로드캐스트)
         broadcastNotificationCommandService.create(
@@ -285,6 +288,7 @@ class NotificationEventListener(
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.STUDY_RECRUIT_START_REMINDER,
+                audience = audience,
                 link = studyLink,
                 metadata = placeholders,
             )
@@ -300,6 +304,7 @@ class NotificationEventListener(
             "trackName" to track.trackName,
             "months" to "${event.months.month}차",
         )
+        val audience = NotificationAudience.fromTrackName(track.trackName) ?: NotificationAudience.ALL
 
         // 인앱 알림 (트랙별 브로드캐스트)
         broadcastNotificationCommandService.create(
@@ -314,6 +319,7 @@ class NotificationEventListener(
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.STUDY_RECRUIT_END_REMINDER,
+                audience = audience,
                 link = studyLink,
                 metadata = placeholders,
             )

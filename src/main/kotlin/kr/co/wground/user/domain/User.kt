@@ -18,11 +18,11 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
+import kr.co.wground.user.domain.vo.RefreshToken
+import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
 import kr.co.wground.user.utils.defaultimage.domain.UserProfile
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
-import kr.co.wground.user.domain.vo.RefreshToken
-import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
 
 @Entity
 @EntityListeners(AuditingEntityListener::class)
@@ -32,8 +32,7 @@ class User(
     @Column(nullable = false)
     val userId: UserId = 0,
 
-    @Column(nullable = false)
-    val trackId: TrackId,
+    trackId: TrackId,
 
     @Column(unique = true)
     val email: String,
@@ -57,6 +56,10 @@ class User(
     status: UserStatus = UserStatus.BLOCKED
 
 ) {
+    @Column(nullable = false)
+    var trackId: TrackId = trackId
+        protected set
+
     @Embedded
     var userProfile: UserProfile = UserProfile.default()
         protected set
@@ -102,7 +105,7 @@ class User(
         this.userProfile = userProfile
     }
 
-    fun accessProfile(): String{
+    fun accessProfile(): String {
         return "${this.userProfile.imageUrl}/${this.userProfile.currentFileName}"
     }
 
@@ -116,6 +119,7 @@ class User(
 
     fun toAdmin() {
         this.role = UserRole.ADMIN
+        this.trackId = 1
     }
 
     fun toInstructor() {
