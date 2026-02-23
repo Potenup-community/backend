@@ -33,6 +33,11 @@
         pool:
           size: 5
         thread-name-prefix: sched-
+  rabbitmq:
+    host: ${RABBIT_HOST:localhot}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
 
 jwt:
   secret: test-secret
@@ -82,3 +87,6 @@ management:
   endpoints:
     web:
       base-path: /actuator
+
+outbox:
+  publish-interval-ms: ${PUBLISH_INTERVAL_MS}
