@@ -27,15 +27,8 @@ enum class NotificationType(
 
     // 멘션
     COMMENT_MENTION(SlackChannelCategory.GENERAL),
-  
-    // 공지사항
-    ANNOUNCEMENT,
-
-    // 스터디 모집
-    STUDY_RECRUIT_START,
-    STUDY_RECRUIT_END,
 
     //이력서 첨삭
-    RESUME_REVIEW_COMPLETED
+    RESUME_REVIEW_COMPLETED(SlackChannelCategory.GENERAL)
     ;
 }
