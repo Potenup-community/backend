@@ -617,10 +617,10 @@ class StudyRecruitmentServiceTest {
         assertEquals(StudyScheduleServiceErrorCode.STUDY_ALREADY_FINISH_TO_RECRUIT.code, thrown.code)
     }
 
-    // 강제 참여 테스트
+    // 추가 참여 테스트
 
     @Test
-    @DisplayName("이미 모집 기간이 마감된 경우(스터디 상태가 RECRUITING_CLOSED 일 때), 강제 참여 시키는 것이 가능하다.")
+    @DisplayName("이미 모집 기간이 마감된 경우(스터디 상태가 RECRUITING_CLOSED 일 때), 추가 참여 시키는 것이 가능하다.")
     fun shouldSuccess_whenForceJoinToStudyWhichIsClosed() {
 
         val today = LocalDate.now()
@@ -716,7 +716,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("수료생을 스터디에 강제 참여 시킨 경우, 예외 발생 - BusinessException(GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY)")
+    @DisplayName("수료생을 스터디에 추가 참여 시킨 경우, 예외 발생 - BusinessException(GRADUATED_STUDENT_CANT_RECRUIT_OFFICIAL_STUDY)")
     fun shouldThrowGraduatedStudentCantRecruitOfficialStudy_whenForceJoinGraduatedStudent() {
         
         val today = LocalDate.now()
@@ -765,7 +765,7 @@ class StudyRecruitmentServiceTest {
         )
         val savedUser = userRepository.save(user)
 
-        // when: 수료생 강제 참여 시도
+        // when: 수료생 추가 참여 시도
         val thrown = assertThrows<BusinessException> {
             studyRecruitmentService.forceJoin(
                 userId = savedUser.userId,
@@ -778,7 +778,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("교육생을 자신의 트랙이 아닌 스터디에 강제 참여 시킨 경우, 예외 발생 - BusinessException(TRACK_MISMATCH)")
+    @DisplayName("교육생을 자신의 트랙이 아닌 스터디에 추가 참여 시킨 경우, 예외 발생 - BusinessException(TRACK_MISMATCH)")
     fun shouldThrowTrackMismatch_whenForceJoinApplicantWhichHasDifferentTrack() {
 
         val today = LocalDate.now()
@@ -860,7 +860,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("교육생을 IN_PROGRESS 상태의 스터디에 강제 참여 시킨 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
+    @DisplayName("교육생을 IN_PROGRESS 상태의 스터디에 추가 참여 시킨 경우, 예외 발생 - BusinessException(STUDY_ALREADY_FINISH_TO_RECRUIT)")
     fun shouldThrowSStudyCannotForceJoinAfterApproval_whenForceJoinAfterApproved() {
 
         val today = LocalDate.now()
@@ -949,7 +949,7 @@ class StudyRecruitmentServiceTest {
     }
 
     @Test
-    @DisplayName("교육생이 특정 스터디에 이미 참여중일 때, 해당 교육생을 같은 스터디에 다시 강제 참여 시키면, 예외 발생 - BusinessException(ALREADY_APPLIED)")
+    @DisplayName("교육생이 특정 스터디에 이미 참여중일 때, 해당 교육생을 같은 스터디에 다시 추가 참여 시키면, 예외 발생 - BusinessException(ALREADY_APPLIED)")
     fun shouldThrowAlreadyApplied_whenForceJoinApplicant() {
 
         val today = LocalDate.now()

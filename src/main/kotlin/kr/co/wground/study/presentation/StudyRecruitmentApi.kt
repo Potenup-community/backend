@@ -84,7 +84,7 @@ interface StudyRecruitmentApi {
         @PathVariable studyId: Long,
     ): ResponseEntity<Unit>
 
-    @Operation(summary = "스터디 강제 참여", description = "관리자가 특정 사용자를 특정 스터디에 강제로 참여시킵니다.")
+    @Operation(summary = "스터디 추가 참여", description = "관리자가 특정 사용자를 특정 스터디에 추가로 참여시킵니다.")
     @ApiResponses(
         value = [
             ApiResponse(responseCode = "201", description = "신청 성공"),

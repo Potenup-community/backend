@@ -18,6 +18,10 @@ enum class NotificationType(
     STUDY_APPLICATION(SlackChannelCategory.STUDY),
     STUDY_APPROVED(SlackChannelCategory.STUDY),
     STUDY_DELETED(SlackChannelCategory.STUDY),
+    STUDY_REPORT_SUBMITTED(SlackChannelCategory.STUDY),
+    STUDY_REPORT_RESUBMITTED(SlackChannelCategory.STUDY),
+    STUDY_REPORT_APPROVED(SlackChannelCategory.STUDY),
+    STUDY_REPORT_REJECTED(SlackChannelCategory.STUDY),
     STUDY_RECRUIT_START(SlackChannelCategory.STUDY),
     STUDY_RECRUIT_END(SlackChannelCategory.STUDY),
 
