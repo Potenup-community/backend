@@ -1,7 +1,6 @@
 package kr.co.wground.notification.domain.enums
 
-enum class ReferenceType() {
-    POST,
+enum class SlackChannelCategory {
+    GENERAL,
     STUDY,
-    RESUME_REVIEW,
 }

@@ -77,6 +77,13 @@ enum class NotificationMessageVariant(
     STUDY_REPORT_REJECTED_AREUM(NotificationType.STUDY_REPORT_REJECTED, "스터디 결과 보고가 반려되었어요. 내용을 확인해 주세요."),
     STUDY_REPORT_REJECTED_JAKYUNG(NotificationType.STUDY_REPORT_REJECTED, "결과 보고가 반려되었습니다. 수정 후 다시 상신해주세요!"),
     STUDY_REPORT_REJECTED_KWANGMIN(NotificationType.STUDY_REPORT_REJECTED, "스터디 결과 보고가 반려 처리되었습니다."),
+    // ===== 스터디 모집 시작 알림 =====
+    STUDY_RECRUIT_START_AREUM(NotificationType.STUDY_RECRUIT_START, "{trackName} {months} 스터디 모집이 시작되었어요!"),
+    STUDY_RECRUIT_START_JAKYUNG(NotificationType.STUDY_RECRUIT_START, "스터디 신청 오픈! 지금 바로 신청해보세요~"),
+
+    // ===== 스터디 모집 마감 알림 =====
+    STUDY_RECRUIT_END_AREUM(NotificationType.STUDY_RECRUIT_END, "{trackName} {months} 스터디 모집 마감이 임박했어요!"),
+    STUDY_RECRUIT_END_JAKYUNG(NotificationType.STUDY_RECRUIT_END, "마감 3일 전! 아직 신청하지 않았다면 지금 확인해주세요."),
     ;
 
     companion object {

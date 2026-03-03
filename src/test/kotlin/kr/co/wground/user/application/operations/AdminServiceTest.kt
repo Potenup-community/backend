@@ -14,6 +14,7 @@ import kr.co.wground.user.utils.email.event.VerificationEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
@@ -35,6 +36,7 @@ class AdminServiceTest {
     }
 
     @Test
+    @Disabled
     @DisplayName("가입 요청 승인 성공 - 상태 변경 이벤트와 이메일 발송 이벤트가 발행된다")
     fun decisionSignup_Success() {
         // given

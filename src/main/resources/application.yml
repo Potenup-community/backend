@@ -11,7 +11,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: ${DDL_AUTO} #TODO validate로 바꾸기
+      ddl-auto: ${DDL_AUTO:update} #TODO validate로 바꾸기
     properties:
       hibernate:
         format_sql: true
@@ -34,6 +34,13 @@ spring:
           connectiontimeout: ${MAIL_TIMEOUT}
           timeout: ${MAIL_TIMEOUT}
           writetimeout: ${MAIL_TIMEOUT}
+
+  rabbitmq:
+    host: ${RABBIT_HOST}
+    port: ${RABBIT_PORT}
+    username: ${RABBIT_USER}
+    password: ${RABBIT_PASS}
+
   spring:
     task:
       scheduling:
@@ -92,8 +99,14 @@ app:
 # 슬랙 알림 웹 훅 설정
 slack:
   webhook:
-    general-url: ${SLACK_WEBHOOK_GENERAL_URL_TEST}
-    study-url: ${SLACK_WEBHOOK_STUDY_URL_TEST}
+    enabled: true
+    general-url-be: ${SLACK_WEBHOOK_GENERAL_URL_BE}
+    general-url-game: ${SLACK_WEBHOOK_GENERAL_URL_GAME}
+    general-url-ai: ${SLACK_WEBHOOK_GENERAL_URL_AI}
+    study-url-be: ${SLACK_WEBHOOK_STUDY_URL_BE}
+    study-url-game: ${SLACK_WEBHOOK_STUDY_URL_GAME}
+    study-url-ai: ${SLACK_WEBHOOK_STUDY_URL_AI}
+
 
 management:
   server:
@@ -116,3 +129,6 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+outbox:
+  publish-interval-ms: ${PUBLISH_INTERVAL_MS}
