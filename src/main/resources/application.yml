@@ -36,10 +36,11 @@ spring:
           writetimeout: ${MAIL_TIMEOUT}
 
   rabbitmq:
-    host: ${RABBIT_HOST}
-    port: ${RABBIT_PORT}
-    username: ${RABBIT_USER}
-    password: ${RABBIT_PASS}
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
+    virtual-host: ${RABBIT_VHOST:/}
 
   spring:
     task:
@@ -131,4 +132,4 @@ management:
       probability: 1.0
 
 outbox:
-  publish-interval-ms: ${PUBLISH_INTERVAL_MS}
+  publish-interval-ms: ${PUBLISH_INTERVAL_MS:3000}
