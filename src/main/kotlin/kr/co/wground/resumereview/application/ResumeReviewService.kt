@@ -1,6 +1,5 @@
 package kr.co.wground.resumereview.application
 
-import jakarta.transaction.Transactional
 import kr.co.wground.common.outbox.repository.OutboxEventRepository
 import kr.co.wground.common.outbox.ResumeReviewOutboxFactory
 import kr.co.wground.exception.BusinessException
@@ -10,12 +9,18 @@ import kr.co.wground.resumereview.application.command.dto.ReviewAcceptedResultDt
 import kr.co.wground.resumereview.application.command.dto.toDomain
 import kr.co.wground.resumereview.application.hash.RequestHashCalculator
 import kr.co.wground.common.event.ReviewRequestedEvent
+import kr.co.wground.global.common.UserId
 import kr.co.wground.resumereview.application.query.ResumeReviewQuery
+import kr.co.wground.resumereview.application.query.dto.ResumeReviewDetailResultDto
+import kr.co.wground.resumereview.application.query.dto.ResumeReviewResultDto
+import kr.co.wground.resumereview.application.query.dto.toDto
 import kr.co.wground.resumereview.domain.ResumeReview
 import kr.co.wground.resumereview.exception.ResumeReviewErrorCode
 import kr.co.wground.resumereview.infra.ResumeReviewRepository
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional
@@ -25,7 +30,7 @@ class ResumeReviewService(
     private val resumeReviewOutboxFactory: ResumeReviewOutboxFactory,
     private val outboxEventRepository: OutboxEventRepository,
 ) : ResumeReviewCommand, ResumeReviewQuery {
-    fun review(dto: CreateResumeReviewDto): ReviewAcceptedResultDto {
+    override fun review(dto: CreateResumeReviewDto): ReviewAcceptedResultDto {
         val hashedRequest = requestHashCalculator.calculate(dto)
 
         resumeReviewRepository.findByHash(hashedRequest)?.let {
@@ -46,6 +51,23 @@ class ResumeReviewService(
         }
 
         return ReviewAcceptedResultDto(resumeReviewId = savedEntity.id, status = savedEntity.status)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getMyReviews(userId: UserId): List<ResumeReviewResultDto> {
+        val foundEntities = resumeReviewRepository.findByUserId(userId)
+
+        return foundEntities.toDto()
+    }
+
+    @Transactional(readOnly = true)
+    override fun getMyReview(id: Long, userId: UserId): ResumeReviewDetailResultDto {
+        val foundEntity = resumeReviewRepository.findByIdOrNull(id)
+            ?: throw BusinessException(ResumeReviewErrorCode.NOT_FOUND_EXCEPTION)
+
+        if (foundEntity.userId != userId) throw BusinessException(ResumeReviewErrorCode.NOT_OWNED_RESUME_RESULT)
+
+        return foundEntity.toDto()
     }
 
     private fun createOutbox(savedEntity: ResumeReview, hashedRequest: String) {
