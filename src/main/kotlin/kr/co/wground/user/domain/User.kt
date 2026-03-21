@@ -18,7 +18,6 @@ import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.domain.constant.UserRole
 import kr.co.wground.user.domain.constant.UserSignupStatus
 import kr.co.wground.user.domain.constant.UserStatus
-import kr.co.wground.user.domain.vo.RefreshToken
 import kr.co.wground.user.utils.defaultimage.application.constant.AvatarConstants.DEFAULT_AVATAR_PATH
 import kr.co.wground.user.utils.defaultimage.domain.UserProfile
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -78,24 +77,6 @@ class User(
     var modifiedAt: LocalDateTime = LocalDateTime.now()
         protected set
 
-    @Embedded
-    var refreshToken: RefreshToken = RefreshToken()
-        get() = field ?: RefreshToken()
-        protected set
-
-    fun updateRefreshToken(newHashedToken: String) {
-        this.refreshToken = this.refreshToken.rotate(newHashedToken)
-    }
-
-    fun validateRefreshToken(hashedToken: String): Boolean {
-        return this.refreshToken.isValid(hashedToken)
-    }
-
-    @PrePersist
-    fun initRefreshToken() {
-        if (this.refreshToken == null) this.refreshToken = RefreshToken()
-    }
-
     @PreUpdate
     fun onPreUpdate() {
         modifiedAt = LocalDateTime.now()
@@ -111,10 +92,6 @@ class User(
 
     fun fixAccessProfile() {
         this.userProfile.imageUrl = "$DEFAULT_AVATAR_PATH/${this.userId}"
-    }
-
-    fun logout() {
-        this.refreshToken = RefreshToken()
     }
 
     fun toAdmin() {
