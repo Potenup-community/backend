@@ -1,10 +1,9 @@
 package kr.co.wground.global.config.resolver
 
 import kr.co.wground.exception.BusinessException
-import kr.co.wground.global.jwt.UserPrincipal
+import kr.co.wground.global.security.SecurityUtils
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import org.springframework.core.MethodParameter
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
@@ -23,12 +22,8 @@ class UserIdArgumentResolver : HandlerMethodArgumentResolver {
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?
     ): Any? {
-        val authentication = SecurityContextHolder.getContext().authentication
-            ?: throw BusinessException(
-            UserServiceErrorCode.AUTHENTICATION_NOT_FOUND
-        )
-        val principal  = authentication.principal as? UserPrincipal
+        val userId = SecurityUtils.getCurrentUserId()
             ?: throw BusinessException(UserServiceErrorCode.AUTHENTICATION_NOT_FOUND)
-        return CurrentUserId(principal.userId)
+        return CurrentUserId(userId)
     }
 }

@@ -1,11 +1,13 @@
 package kr.co.wground.study.presentation
 
+import kr.co.wground.global.common.UserId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.study.application.StudyRecruitmentService
 import kr.co.wground.study.presentation.response.recruit.StudyRecruitmentListResponse
 import kr.co.wground.study.presentation.response.recruit.StudyRecruitmentResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -18,12 +20,24 @@ import org.springframework.web.bind.annotation.RestController
 class StudyRecruitmentController(
     private val studyRecruitmentService: StudyRecruitmentService
 ): StudyRecruitmentApi {
+
     @PostMapping("/studies/{studyId}/recruitments")
     override fun applyStudy(
         userId: CurrentUserId,
         @PathVariable studyId: Long,
     ): ResponseEntity<Unit> {
         studyRecruitmentService.participate(userId.value, studyId)
+        return ResponseEntity.status(HttpStatus.CREATED).build()
+    }
+
+    @PostMapping("/studies/{studyId}/force-join/{targetUserId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    override fun forceJoinStudy(
+        userId: CurrentUserId,
+        @PathVariable studyId: Long,
+        @PathVariable targetUserId: UserId
+    ): ResponseEntity<Unit> {
+        studyRecruitmentService.forceJoin(targetUserId, studyId)
         return ResponseEntity.status(HttpStatus.CREATED).build()
     }
 

@@ -15,6 +15,7 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.point.exception.PointErrorCode
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Entity
 @Table(
@@ -44,7 +45,7 @@ class PointHistory private constructor(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false, length = 20)
-    val refType: ReferenceType,
+    val refType: PointReferenceType,
 
     @Column(nullable = false, updatable = false)
     val refId: Long
@@ -67,7 +68,7 @@ class PointHistory private constructor(
             userId: UserId,
             amount: Long,
             type: PointType,
-            refType: ReferenceType,
+            refType: PointReferenceType,
             refId: Long
         ): PointHistory {
             validate(userId, amount, refId)
@@ -80,7 +81,7 @@ class PointHistory private constructor(
                 userId = authorId,
                 amount = PointType.RECEIVE_LIKE_POST.amount,
                 type = PointType.RECEIVE_LIKE_POST,
-                refType = ReferenceType.POST_REACTION,
+                refType = PointReferenceType.POST_REACTION,
                 refId = reactorId
             )
         }
@@ -90,7 +91,7 @@ class PointHistory private constructor(
                 userId = authorId,
                 amount = PointType.RECEIVE_LIKE_COMMENT.amount,
                 type = PointType.RECEIVE_LIKE_COMMENT,
-                refType = ReferenceType.COMMENT_REACTION,
+                refType = PointReferenceType.COMMENT_REACTION,
                 refId = reactorId
             )
         }
@@ -101,7 +102,7 @@ class PointHistory private constructor(
                 userId = reactorId,
                 amount = PointType.GIVE_LIKE_POST.amount,
                 type = PointType.GIVE_LIKE_POST,
-                refType = ReferenceType.POST_REACTION,
+                refType = PointReferenceType.POST_REACTION,
                 refId = postId
             )
         }
@@ -111,7 +112,7 @@ class PointHistory private constructor(
                 userId = reactorId,
                 amount = PointType.GIVE_LIKE_COMMENT.amount,
                 type = PointType.GIVE_LIKE_COMMENT,
-                refType = ReferenceType.COMMENT_REACTION,
+                refType = PointReferenceType.COMMENT_REACTION,
                 refId = commentId
             )
         }
@@ -121,7 +122,7 @@ class PointHistory private constructor(
                 userId = userId,
                 amount = PointType.WRITE_POST.amount,
                 type = PointType.WRITE_POST,
-                refType = ReferenceType.POST,
+                refType = PointReferenceType.POST,
                 refId = postId
             )
         }
@@ -131,28 +132,28 @@ class PointHistory private constructor(
                 userId = userId,
                 amount = PointType.WRITE_COMMENT.amount,
                 type = PointType.WRITE_COMMENT,
-                refType = ReferenceType.COMMENT,
+                refType = PointReferenceType.COMMENT,
                 refId = commentId
             )
         }
 
-        fun forAttendance(userId: UserId, attendanceId: Long): PointHistory {
+        fun forAttendance(userId: UserId, attendanceDate: Long): PointHistory {
             return create(
                 userId = userId,
                 amount = PointType.ATTENDANCE.amount,
                 type = PointType.ATTENDANCE,
-                refType = ReferenceType.ATTENDANCE,
-                refId = attendanceId
+                refType = PointReferenceType.ATTENDANCE,
+                refId = attendanceDate
             )
         }
 
-        fun forAttendanceStreak(userId: UserId, attendanceId: Long): PointHistory {
+        fun forAttendanceStreak(userId: UserId, attendanceDate: Long): PointHistory {
             return create(
                 userId = userId,
                 amount = PointType.ATTENDANCE_STREAK.amount,
                 type = PointType.ATTENDANCE_STREAK,
-                refType = ReferenceType.ATTENDANCE,
-                refId = attendanceId
+                refType = PointReferenceType.ATTENDANCE,
+                refId = attendanceDate
             )
         }
 
@@ -161,7 +162,7 @@ class PointHistory private constructor(
                 userId = userId,
                 amount = PointType.STUDY_CREATE.amount,
                 type = PointType.STUDY_CREATE,
-                refType = ReferenceType.STUDY,
+                refType = PointReferenceType.STUDY,
                 refId = studyId
             )
         }
@@ -171,7 +172,7 @@ class PointHistory private constructor(
                 userId = userId,
                 amount = PointType.STUDY_JOIN.amount,
                 type = PointType.STUDY_JOIN,
-                refType = ReferenceType.STUDY,
+                refType = PointReferenceType.STUDY,
                 refId = studyId
             )
         }
@@ -179,9 +180,19 @@ class PointHistory private constructor(
         fun forPurchase(userId: UserId, amount: Long, itemId: Long): PointHistory {
             return create(
                 userId = userId,
-                amount = -amount,
+                amount = amount,
                 type = PointType.USE_SHOP,
-                refType = ReferenceType.SHOP_ITEM,
+                refType = PointReferenceType.SHOP_ITEM,
+                refId = itemId
+            )
+        }
+
+        fun forUpgradePurchase(userId: UserId, amount: Long, itemId: Long): PointHistory {
+            return create(
+                userId = userId,
+                amount = amount,
+                type = PointType.USE_SHOP,
+                refType = PointReferenceType.UPGRADE_SHOP_ITEM,
                 refId = itemId
             )
         }
@@ -191,8 +202,10 @@ class PointHistory private constructor(
                 userId = userId,
                 amount = amount,
                 type = PointType.EVENT_ADMIN,
-                refType = ReferenceType.EVENT,
-                refId = adminId
+                refType = PointReferenceType.EVENT,
+                refId = LocalDateTime.now()
+                        .format(DateTimeFormatter.ofPattern("yyyyMMddHHmm"))
+                        .toLong()
             )
         }
 
@@ -200,7 +213,7 @@ class PointHistory private constructor(
             if (userId <= 0) {
                 throw BusinessException(PointErrorCode.INVALID_USER_ID)
             }
-            if (amount == 0L) {
+            if (amount <= 0L) {
                 throw BusinessException(PointErrorCode.INVALID_AMOUNT)
             }
             if (refId <= 0) {

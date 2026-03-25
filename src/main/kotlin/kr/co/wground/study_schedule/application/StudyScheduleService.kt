@@ -7,7 +7,7 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.study_schedule.application.dto.ScheduleCreateCommand
 import kr.co.wground.study_schedule.application.dto.ScheduleInfo
 import kr.co.wground.study_schedule.application.dto.ScheduleUpdateCommand
-import kr.co.wground.study_schedule.application.event.StudyScheduleChangedEvent
+import kr.co.wground.study_schedule.application.event.StudyScheduleCreatedOrChangedEvent
 import kr.co.wground.study_schedule.application.dto.QueryStudyScheduleDto
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study_schedule.domain.StudySchedule
@@ -57,7 +57,7 @@ class StudyScheduleService(
 
         val savedSchedule = studyScheduleRepository.save(command.toEntity())
 
-        publishUpdateEvent(savedSchedule, StudyScheduleChangedEvent.EventType.CREATED)
+        publishUpdateEvent(savedSchedule, StudyScheduleCreatedOrChangedEvent.EventType.CREATED)
 
         return ScheduleCreateResponse.of(savedSchedule.id, savedSchedule.trackId, savedSchedule.months)
     }
@@ -84,7 +84,7 @@ class StudyScheduleService(
         )
 
         refreshAffectedStudies(schedule)
-        publishUpdateEvent(schedule, StudyScheduleChangedEvent.EventType.UPDATED)
+        publishUpdateEvent(schedule, StudyScheduleCreatedOrChangedEvent.EventType.UPDATED)
 
         return ScheduleUpdateResponse.of(schedule.id, schedule.trackId, schedule.months)
     }
@@ -97,7 +97,7 @@ class StudyScheduleService(
 
         studyScheduleRepository.deleteById(scheduleId)
 
-        publishUpdateEvent(schedule, StudyScheduleChangedEvent.EventType.DELETED)
+        publishUpdateEvent(schedule, StudyScheduleCreatedOrChangedEvent.EventType.DELETED)
     }
 
     @Transactional(readOnly = true)
@@ -133,7 +133,7 @@ class StudyScheduleService(
     fun getCurrentSchedule(trackId: Long): ScheduleQueryResponse {
         val now = LocalDateTime.now()
         return studyScheduleRepository.findAllByTrackIdOrderByMonthsAsc(trackId)
-            .firstOrNull { it.isCurrentRound(now) }
+            .firstOrNull { it.isCurrentMonth(now) }
             ?.let {
                 ScheduleQueryResponse(
                     id = it.id,
@@ -188,8 +188,15 @@ class StudyScheduleService(
 
     private fun refreshAffectedStudies(schedule: StudySchedule) {
         val affectedStudies = studyRepository.findAllByScheduleId(schedule.id)
-        if (LocalDateTime.now().isAfter(schedule.recruitEndDate)) {
-            affectedStudies.forEach { it.close() }
+        if (LocalDateTime.now().isAfter(schedule.studyEndDate)) {
+            affectedStudies.forEach {
+                // RECRUITING -> RECRUITING_CLOSED
+                it.closeRecruitment()
+                // IN_PROGRESS -> COMPLETED
+                it.complete()
+            }
+        } else if (LocalDateTime.now().isAfter(schedule.recruitEndDate)) {
+            affectedStudies.forEach { it.closeRecruitment() }
         }
     }
 
@@ -209,9 +216,9 @@ class StudyScheduleService(
         return user.trackId
     }
 
-    private fun publishUpdateEvent(schedule: StudySchedule, eventType: StudyScheduleChangedEvent.EventType){
+    private fun publishUpdateEvent(schedule: StudySchedule, eventType: StudyScheduleCreatedOrChangedEvent.EventType){
         eventPublisher.publishEvent(
-            StudyScheduleChangedEvent.of(
+            StudyScheduleCreatedOrChangedEvent.of(
                 schedule = schedule,
                 studyScheduleEventType = eventType
             )

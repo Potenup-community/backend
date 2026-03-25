@@ -5,9 +5,14 @@ import kr.co.wground.common.event.CommentCreatedEvent
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
+import kr.co.wground.common.event.StudyReportApprovedEvent
+import kr.co.wground.common.event.StudyReportRejectedEvent
+import kr.co.wground.common.event.StudyReportResubmittedEvent
+import kr.co.wground.common.event.StudyReportSubmittedEvent
+import kr.co.wground.common.event.ResumeReviewCompletedEvent
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.common.event.StudyRecruitmentEvent
-import kr.co.wground.common.event.StudyRecruitEndedEvent
+import kr.co.wground.common.event.StudyRecruitEndedSoonEvent
 import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.common.event.StudyRecruitStartedEvent
 import kr.co.wground.exception.BusinessException
@@ -17,6 +22,7 @@ import kr.co.wground.notification.application.port.NotificationMessage
 import kr.co.wground.notification.application.port.NotificationMessageType
 import kr.co.wground.notification.application.port.NotificationSender
 import kr.co.wground.notification.domain.enums.BroadcastTargetType
+import kr.co.wground.notification.domain.enums.NotificationAudience
 import kr.co.wground.notification.domain.enums.NotificationType
 import kr.co.wground.notification.domain.enums.ReferenceType
 import kr.co.wground.notification.domain.vo.NotificationReference
@@ -175,6 +181,7 @@ class NotificationEventListener(
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.ANNOUNCEMENT,
+                audience = NotificationAudience.ALL,
                 link = postLink,
                 metadata = mapOf(
                     "title" to event.title,
@@ -192,6 +199,90 @@ class NotificationEventListener(
                 actorId = null,
                 type = NotificationType.STUDY_APPLICATION,
                 title = "스터디 지원",
+                reference = NotificationReference(
+                    referenceType = ReferenceType.STUDY,
+                    referenceId = event.studyId,
+                ),
+            )
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyReportSubmitted(event: StudyReportSubmittedEvent) {
+        val adminIds = userRepository.findAllAdmins()
+            .map { it.userId }
+            .filter { it != event.leaderId }
+
+        adminIds.forEach { adminId ->
+            createNotificationSafely {
+                notificationCommandService.create(
+                    recipientId = adminId,
+                    actorId = event.leaderId,
+                    type = NotificationType.STUDY_REPORT_SUBMITTED,
+                    title = "스터디 결과 보고 상신",
+                    reference = NotificationReference(
+                        referenceType = ReferenceType.STUDY,
+                        referenceId = event.studyId,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyReportResubmitted(event: StudyReportResubmittedEvent) {
+        val adminIds = userRepository.findAllAdmins()
+            .map { it.userId }
+            .filter { it != event.leaderId }
+
+        adminIds.forEach { adminId ->
+            createNotificationSafely {
+                notificationCommandService.create(
+                    recipientId = adminId,
+                    actorId = event.leaderId,
+                    type = NotificationType.STUDY_REPORT_RESUBMITTED,
+                    title = "스터디 결과 보고 재상신",
+                    reference = NotificationReference(
+                        referenceType = ReferenceType.STUDY,
+                        referenceId = event.studyId,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyReportApproved(event: StudyReportApprovedEvent) {
+        if (event.leaderId == event.adminId) return
+
+        createNotificationSafely {
+            notificationCommandService.create(
+                recipientId = event.leaderId,
+                actorId = event.adminId,
+                type = NotificationType.STUDY_REPORT_APPROVED,
+                title = "스터디 결과 보고 승인",
+                reference = NotificationReference(
+                    referenceType = ReferenceType.STUDY,
+                    referenceId = event.studyId,
+                ),
+            )
+        }
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleStudyReportRejected(event: StudyReportRejectedEvent) {
+        if (event.leaderId == event.adminId) return
+
+        createNotificationSafely {
+            notificationCommandService.create(
+                recipientId = event.leaderId,
+                actorId = event.adminId,
+                type = NotificationType.STUDY_REPORT_REJECTED,
+                title = "스터디 결과 보고 반려",
                 reference = NotificationReference(
                     referenceType = ReferenceType.STUDY,
                     referenceId = event.studyId,
@@ -239,6 +330,30 @@ class NotificationEventListener(
 
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    fun handleResumeReviewCompleted(event: ResumeReviewCompletedEvent) {
+        createNotificationSafely {
+            notificationCommandService.create(
+                recipientId = event.userId,
+                actorId = null,
+                type = NotificationType.RESUME_REVIEW_COMPLETED,
+                title = "이력서 첨삭 완료",
+                reference = NotificationReference(
+                    referenceId = event.resumeReviewId,
+                    referenceType = ReferenceType.RESUME_REVIEW,
+                )
+            )
+        }
+
+        notificationSender.send(
+            NotificationMessage(
+                type = NotificationMessageType.STUDY_RECRUIT_START_REMINDER,
+                link = "$frontendUrl/resume-reviews",
+            )
+        )
+    }
+
+    @Async(NOTIFICATION_EXECUTOR)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleStudyRecruitStarted(event: StudyRecruitStartedEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
         val studyLink = "$frontendUrl/studies"
@@ -246,6 +361,7 @@ class NotificationEventListener(
             "trackName" to track.trackName,
             "months" to "${event.months.month}차",
         )
+        val audience = NotificationAudience.fromTrackName(track.trackName) ?: NotificationAudience.ALL
 
         // 인앱 알림 (트랙별 브로드캐스트)
         broadcastNotificationCommandService.create(
@@ -260,6 +376,7 @@ class NotificationEventListener(
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.STUDY_RECRUIT_START_REMINDER,
+                audience = audience,
                 link = studyLink,
                 metadata = placeholders,
             )
@@ -268,13 +385,14 @@ class NotificationEventListener(
 
     @Async(NOTIFICATION_EXECUTOR)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    fun handleStudyRecruitEnded(event: StudyRecruitEndedEvent) {
+    fun handleStudyRecruitEnded(event: StudyRecruitEndedSoonEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
         val studyLink = "$frontendUrl/studies"
         val placeholders = mapOf(
             "trackName" to track.trackName,
             "months" to "${event.months.month}차",
         )
+        val audience = NotificationAudience.fromTrackName(track.trackName) ?: NotificationAudience.ALL
 
         // 인앱 알림 (트랙별 브로드캐스트)
         broadcastNotificationCommandService.create(
@@ -289,6 +407,7 @@ class NotificationEventListener(
         notificationSender.send(
             NotificationMessage(
                 type = NotificationMessageType.STUDY_RECRUIT_END_REMINDER,
+                audience = audience,
                 link = studyLink,
                 metadata = placeholders,
             )

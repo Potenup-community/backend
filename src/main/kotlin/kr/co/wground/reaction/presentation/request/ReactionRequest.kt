@@ -6,9 +6,11 @@ import jakarta.validation.constraints.Positive
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.application.dto.CommentReactCommand
 import kr.co.wground.reaction.application.dto.PostReactCommand
+import kr.co.wground.reaction.application.dto.ProjectReactCommand
 import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.presentation.request.ReactionTarget.COMMENT
 import kr.co.wground.reaction.presentation.request.ReactionTarget.POST
+import kr.co.wground.reaction.presentation.request.ReactionTarget.PROJECT
 
 @Schema(description = "리액션 생성 및 취소 요청 바디")
 data class ReactionRequest(
@@ -39,5 +41,12 @@ data class ReactionRequest(
             throw IllegalStateException("targetType 이 COMMENT 가 아닌 경우 CommentReactCommand 로 변환할 수 없습니다.")
         }
         return CommentReactCommand(userId = userId, commentId = targetId, reactionType = reactionType)
+    }
+
+    fun toProjectReactCommand(userId: UserId): ProjectReactCommand {
+        if (targetType != PROJECT) {
+            throw IllegalStateException("targetType 이 PROJECT 가 아닌 경우 ProjectReactCommand 로 변환할 수 없습니다.")
+        }
+        return ProjectReactCommand(userId = userId, projectId = targetId, reactionType = reactionType)
     }
 }

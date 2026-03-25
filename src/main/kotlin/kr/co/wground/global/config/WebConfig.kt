@@ -12,13 +12,17 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.file.Path
+import kr.co.wground.attendance.presentation.AttendanceInterceptor
+import kr.co.wground.shop.infra.image.ItemPolicy
 
 @Configuration
 class WebConfig(
     private val userIdArgumentResolver: UserIdArgumentResolver,
     private val uploadPolicy: UploadPolicy,
     private val profilePolicy: ProfilePolicy,
-    private val httpRouteMdcInterceptor: HttpRouteMdcInterceptor
+    private val itemPolicy: ItemPolicy,
+    private val httpRouteMdcInterceptor: HttpRouteMdcInterceptor,
+    private val attendanceInterceptor: AttendanceInterceptor
 ) : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         registry
@@ -37,6 +41,11 @@ class WebConfig(
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         val profileLocation = Path.of(profilePolicy.localDir).toAbsolutePath().normalize().toUri().toString()
+        val itemLocation = Path.of(itemPolicy.localDir).toAbsolutePath().normalize().toUri().toString()
+
+        registry.addResourceHandler("${itemPolicy.webPathPrefix.trimEnd('/')}/**")
+            .addResourceLocations(itemLocation)
+            .setCachePeriod(3600)
 
         registry.addResourceHandler("${profilePolicy.webPathPrefix.trimEnd('/')}/**")
             .addResourceLocations(profileLocation)
@@ -55,5 +64,8 @@ class WebConfig(
 
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(httpRouteMdcInterceptor)
+        registry.addInterceptor(attendanceInterceptor)
+            .addPathPatterns("/api/**")
+            .excludePathPatterns("/api/auth/**")
     }
 }

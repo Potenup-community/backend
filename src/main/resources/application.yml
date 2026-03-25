@@ -9,6 +9,16 @@ spring:
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update} #TODO validate로 바꾸기
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: ${BATCH_SIZE}
+    database-platform: org.hibernate.dialect.MySQLDialect
   mail:
     host: ${MAIL_HOST}
     port: ${MAIL_PORT}
@@ -24,16 +34,20 @@ spring:
           connectiontimeout: ${MAIL_TIMEOUT}
           timeout: ${MAIL_TIMEOUT}
           writetimeout: ${MAIL_TIMEOUT}
-  jpa:
-    hibernate:
-      ddl-auto: ${DDL_AUTO} #TODO validate로 바꾸기
-    properties:
-      hibernate:
-        format_sql: true
-        use_sql_comments: true
-        jdbc:
-          batch_size: ${BATCH_SIZE}
-    database-platform: org.hibernate.dialect.MySQLDialect
+
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
+    virtual-host: ${RABBIT_VHOST:/}
+
+  spring:
+    task:
+      scheduling:
+        pool:
+          size: 5
+        thread-name-prefix: sched-
 
 logging:
   level:
@@ -76,12 +90,24 @@ app:
     maxBytes: ${PROFILE_MAX_BYTE}
     allowedExts: ${ALLOWED_EXTENSIONS}
     base-url: ${BASE_URL}
+  item:
+    local-dir: ${LOCAL_ITEM_DIR:C:\depth\uploads\item}
+    webPathPrefix: ${PUBLIC_ITEM_PATH:/images/items}
+    maxBytes: ${ITEM_MAX_BYTE:5242880}
+    allowedExts: ${ALLOWED_ITEM_EXTENSIONS}
+    base-url: ${BASE_URL}
 
 # 슬랙 알림 웹 훅 설정
 slack:
   webhook:
-    general-url: ${SLACK_WEBHOOK_GENERAL_URL_TEST}
-    study-url: ${SLACK_WEBHOOK_STUDY_URL_TEST}
+    enabled: true
+    general-url-be: ${SLACK_WEBHOOK_GENERAL_URL_BE}
+    general-url-game: ${SLACK_WEBHOOK_GENERAL_URL_GAME}
+    general-url-ai: ${SLACK_WEBHOOK_GENERAL_URL_AI}
+    study-url-be: ${SLACK_WEBHOOK_STUDY_URL_BE}
+    study-url-game: ${SLACK_WEBHOOK_STUDY_URL_GAME}
+    study-url-ai: ${SLACK_WEBHOOK_STUDY_URL_AI}
+
 
 management:
   server:
@@ -104,3 +130,6 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+outbox:
+  publish-interval-ms: ${PUBLISH_INTERVAL_MS:3000}

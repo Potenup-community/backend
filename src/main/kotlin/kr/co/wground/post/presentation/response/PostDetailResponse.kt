@@ -10,6 +10,7 @@ import kr.co.wground.post.domain.enums.Topic
 import kr.co.wground.post.presentation.response.PostDetailResponse.PostReactionDetail
 import kr.co.wground.reaction.domain.enums.ReactionType
 import java.time.LocalDateTime
+import kr.co.wground.shop.application.dto.EquippedItem
 
 @Schema(
     description = "게시글 상세 조회 응답",
@@ -30,6 +31,7 @@ data class PostDetailResponse(
     val previousPost: PreviousPost,
     val nextPost: NextPost,
     val reactions: List<PostReactionDetail> = emptyList(),
+    val items: List<EquippedItem>
 ) {
     data class PostReactionDetail(
         val reactionType: ReactionType,
@@ -61,5 +63,6 @@ fun PostDetailDto.toResponse() = PostDetailResponse(
     profileImageUrl = profileImageUrl,
     previousPost = PostDetailResponse.PreviousPost(previousPostId, previousPostTitle),
     nextPost = PostDetailResponse.NextPost(nextPostId, nextPostTitle),
-    reactions = reactions.map { PostReactionDetail(it.reactionType, it.count) }
+    reactions = reactions.map { PostReactionDetail(it.reactionType, it.count) },
+    items = equippedItems
 )

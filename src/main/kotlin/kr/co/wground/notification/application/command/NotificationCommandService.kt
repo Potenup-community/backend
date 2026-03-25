@@ -54,6 +54,7 @@ class NotificationCommandService(
 
     @Transactional
     fun markAsRead(notificationId: NotificationId, recipientId: RecipientId) {
+
         val notification = notificationRepository.findByIdAndRecipientId(notificationId, recipientId)
             ?: throw BusinessException(NotificationErrorCode.NOTIFICATION_NOT_FOUND)
         notification.markAsRead()

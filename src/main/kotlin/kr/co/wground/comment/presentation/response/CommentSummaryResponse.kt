@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 import kr.co.wground.comment.application.dto.CommentSummaryDto
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.reaction.application.dto.CommentReactionStats
+import kr.co.wground.shop.application.dto.EquippedItem
 
 data class CommentSummaryResponse(
     @field:Schema(description = "댓글 ID")
@@ -21,6 +22,8 @@ data class CommentSummaryResponse(
     val isDeleted: Boolean,
     @field:Schema(description = "대댓글 목록")
     val replies: List<CommentSummaryResponse>,
+    @field:Schema(description = "작성자가 장착한 아이템")
+    val items: List<EquippedItem>
 ) {
     companion object {
         fun from(dto: CommentSummaryDto): CommentSummaryResponse {
@@ -37,6 +40,7 @@ data class CommentSummaryResponse(
                 commentReactionStats = dto.commentReactionStats,
                 isDeleted = dto.isDeleted,
                 replies = dto.replies.map { from(it) },
+                items = dto.items
             )
         }
     }

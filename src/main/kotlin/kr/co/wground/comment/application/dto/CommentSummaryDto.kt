@@ -5,6 +5,7 @@ import kr.co.wground.comment.domain.Comment
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.application.dto.CommentReactionStats
+import kr.co.wground.shop.application.dto.EquippedItem
 import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
 import kr.co.wground.user.application.operations.constant.UNKNOWN_USER_NAME_TAG
 import kr.co.wground.user.infra.dto.UserDisplayInfoDto
@@ -22,6 +23,7 @@ data class CommentSummaryDto(
     val commentReactionStats: CommentReactionStats,
     val isDeleted: Boolean,
     val replies: List<CommentSummaryDto>,
+    val items: List<EquippedItem>
 ) {
     companion object {
         fun from(
@@ -29,6 +31,7 @@ data class CommentSummaryDto(
             author: UserDisplayInfoDto?,
             reactionStats: CommentReactionStats?,
             replies: List<CommentSummaryDto>,
+            items: List<EquippedItem>
         ) = CommentSummaryDto(
             commentId = comment.id,
             content = if (comment.isDeleted) DELETED_COMMENT_TAG else comment.content,
@@ -40,6 +43,7 @@ data class CommentSummaryDto(
             commentReactionStats = reactionStats ?: CommentReactionStats.emptyOf(comment.id),
             isDeleted = comment.isDeleted,
             replies = replies,
+            items = items
         )
     }
 }

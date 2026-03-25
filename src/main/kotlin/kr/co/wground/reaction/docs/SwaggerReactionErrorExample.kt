@@ -56,6 +56,17 @@ object SwaggerReactionErrorExample {
                 }
             ]
         }"""
+
+        const val INVALID_PROJECT_ID_LIST_SIZE = """{
+            "code": "V-0001",
+            "message": "요청 값이 올바르지 않습니다.",
+            "errors": [
+                {
+                    "field": "projectIds",
+                    "reason": "projectId 집합이 너무 작거나 큽니다. 1 이상 50 이하여야 합니다."
+                }
+            ]
+        }"""
     }
 
     object NotFound {
@@ -68,6 +79,12 @@ object SwaggerReactionErrorExample {
         const val COMMENT_NOT_FOUND = """{
             "code": "PR-0009",
             "message": "반응할 댓글을 찾을 수 없습니다.",
+            "errors": []
+        }"""
+
+        const val PROJECT_NOT_FOUND = """{
+            "code": "PR-0012",
+            "message": "반응할 프로젝트을 찾을 수 없습니다.",
             "errors": []
         }"""
     }

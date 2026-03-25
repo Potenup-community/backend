@@ -9,6 +9,7 @@ import org.springframework.data.domain.Slice
 import kr.co.wground.post.presentation.response.PostSummaryDetail.PostReactionSummaryDetail
 import kr.co.wground.reaction.domain.enums.ReactionType
 import java.time.LocalDateTime
+import kr.co.wground.shop.application.dto.EquippedItem
 
 @Schema(description = "게시글 서머리 조회 응답 객체", examples = [SwaggerResponseExample.POST_SUMMARY_RESPONSE])
 data class PostSummaryResponse(
@@ -61,6 +62,9 @@ data class PostSummaryDetail(
 
     @field:Schema(description = "게시글 리액션 요약 목록")
     val reactions: List<PostReactionSummaryDetail> = emptyList(),
+
+    @field:Schema(description = "작성자가 장착한 아이템")
+    val items: List<EquippedItem>
 ) {
     @Schema(description = "게시글 리액션 요약 정보")
     data class PostReactionSummaryDetail(
@@ -95,7 +99,8 @@ fun PostSummaryDto.toResponseDetail() = PostSummaryDetail(
             count = it.count,
             reactedByMe = it.reactedByMe
         )
-    }
+    },
+    items = items
 )
 
 fun Slice<PostSummaryDto>.toResponse(): PostSummaryResponse {

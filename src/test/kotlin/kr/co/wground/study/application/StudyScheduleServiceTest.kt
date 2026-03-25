@@ -6,10 +6,10 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.study_schedule.application.dto.ScheduleCreateCommand
 import kr.co.wground.study.application.exception.StudyServiceErrorCode
 import kr.co.wground.study.domain.Study
+import kr.co.wground.study.domain.WeeklyPlans
 import kr.co.wground.study_schedule.domain.StudySchedule
 import kr.co.wground.study.domain.enums.BudgetType
 import kr.co.wground.study_schedule.domain.enums.Months
-import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.study.infra.StudyRepository
 import kr.co.wground.study_schedule.application.StudyScheduleService
 import kr.co.wground.study_schedule.application.exception.StudyScheduleServiceErrorCode
@@ -317,6 +317,12 @@ class StudyScheduleServiceTest {
             capacity = 5,
             budget = BudgetType.MEAL,
             budgetExplain = "🍕🍕🍕",
+            weeklyPlans = WeeklyPlans.of(
+                week1Plan = "1주차 계획",
+                week2Plan = "2주차 계획",
+                week3Plan = "3주차 계획",
+                week4Plan = "4주차 계획",
+            ),
         )
         studyRepository.save(study)
 

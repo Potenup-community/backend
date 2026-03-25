@@ -4,16 +4,20 @@ import jakarta.validation.Valid
 import jakarta.validation.constraints.Positive
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.ProjectId
 import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.reaction.application.ReactionCommandService
 import kr.co.wground.reaction.application.ReactionQueryService
 import kr.co.wground.reaction.application.dto.CommentReactionStats
 import kr.co.wground.reaction.application.dto.PostReactionStats
+import kr.co.wground.reaction.application.dto.ProjectReactionStats
 import kr.co.wground.reaction.presentation.request.CommentReactionStatsBatchRequest
 import kr.co.wground.reaction.presentation.request.PostReactionStatsBatchRequest
+import kr.co.wground.reaction.presentation.request.ProjectReactionStatsBatchRequest
 import kr.co.wground.reaction.presentation.request.ReactionRequest
 import kr.co.wground.reaction.presentation.request.ReactionTarget.COMMENT
 import kr.co.wground.reaction.presentation.request.ReactionTarget.POST
+import kr.co.wground.reaction.presentation.request.ReactionTarget.PROJECT
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -43,6 +47,7 @@ class ReactionController(
         when (request.targetType) {
             POST -> reactionCommandService.reactToPost(request.toPostReactCommand(userId))
             COMMENT -> reactionCommandService.reactToComment(request.toCommentReactCommand(userId))
+            PROJECT -> reactionCommandService.reactToProject(request.toProjectReactCommand(userId))
         }
 
         return ResponseEntity.noContent().build()
@@ -59,6 +64,7 @@ class ReactionController(
         when (request.targetType) {
             POST -> reactionCommandService.unreactToPost(request.toPostReactCommand(userId))
             COMMENT -> reactionCommandService.unreactToComment(request.toCommentReactCommand(userId))
+            PROJECT -> reactionCommandService.unreactToProject(request.toProjectReactCommand(userId))
         }
 
         return ResponseEntity.noContent().build()
@@ -108,6 +114,21 @@ class ReactionController(
         val userId = user.value
 
         val result = reactionQueryService.getCommentReactionStats(request.commentIds, userId)
+
+        return ResponseEntity.ok(result)
+    }
+
+    @GetMapping("/projects")
+    override fun getProjectReactionStats(
+        @Valid
+        @RequestBody
+        request: ProjectReactionStatsBatchRequest,
+        user: CurrentUserId,
+    ): ResponseEntity<Map<ProjectId, ProjectReactionStats>> {
+
+        val userId = user.value
+
+        val result = reactionQueryService.getProjectReactionStats(request.projectIds, userId)
 
         return ResponseEntity.ok(result)
     }

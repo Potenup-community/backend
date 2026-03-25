@@ -7,15 +7,18 @@ import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.common.event.UpdateReactionEvent
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.gallery.application.repository.ProjectRepository
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
 import kr.co.wground.post.domain.Post
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.dto.CommentReactCommand
 import kr.co.wground.reaction.application.dto.PostReactCommand
+import kr.co.wground.reaction.application.dto.ProjectReactCommand
 import kr.co.wground.reaction.exception.ReactionErrorCode
 import kr.co.wground.reaction.infra.jpa.CommentReactionJpaRepository
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
+import kr.co.wground.reaction.infra.jpa.ProjectReactionJpaRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -28,8 +31,10 @@ import java.util.UUID
 class ReactionCommandService(
     private val postReactionJpaRepository: PostReactionJpaRepository,
     private val commentReactionJpaRepository: CommentReactionJpaRepository,
+    private val projectReactionJpaRepository: ProjectReactionJpaRepository,
     private val postRepository: PostRepository,
     private val commentRepository: CommentRepository,
+    private val projectRepository: ProjectRepository,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
 
@@ -80,6 +85,18 @@ class ReactionCommandService(
         )
     }
 
+    fun reactToProject(command: ProjectReactCommand) {
+        projectRepository.findById(command.projectId)
+            ?: throw BusinessException(ReactionErrorCode.PROJECT_NOT_FOUND)
+
+        projectReactionJpaRepository.saveIdempotentlyForMysqlOrH2(
+            command.userId,
+            command.projectId,
+            command.reactionType,
+            LocalDateTime.now()
+        )
+    }
+
     // unreacts --------------------
 
     fun unreactToPost(command: PostReactCommand) {
@@ -97,6 +114,12 @@ class ReactionCommandService(
     fun unreactToComment(command: CommentReactCommand) {
         commentReactionJpaRepository.deleteByUserIdAndCommentIdAndReactionType(
             command.userId, command.commentId, command.reactionType
+        )
+    }
+
+    fun unreactToProject(command: ProjectReactCommand) {
+        projectReactionJpaRepository.deleteByUserIdAndProjectIdAndReactionType(
+            command.userId, command.projectId, command.reactionType
         )
     }
 

@@ -3,6 +3,7 @@ package kr.co.wground.study.application.dto
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
 import java.time.LocalDateTime
+import kr.co.wground.shop.application.dto.EquippedItem
 
 data class ParticipantInfo(
     val id: UserId,

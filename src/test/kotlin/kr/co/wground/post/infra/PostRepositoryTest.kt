@@ -28,7 +28,7 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
 import kotlin.math.pow
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Import(QuerydslTestConfig::class)

@@ -2,6 +2,7 @@ package kr.co.wground.comment.application
 
 import java.time.LocalDateTime
 import java.util.Optional
+import kotlin.jvm.java
 import kr.co.wground.comment.application.dto.CommentCreateDto
 import kr.co.wground.comment.domain.Comment
 import kr.co.wground.comment.infra.CommentRepository
@@ -46,7 +47,13 @@ class CommentServiceTest {
     @BeforeEach
     fun setUp() {
         commentService =
-            CommentService(commentRepository, postRepository, userRepository, reactionQueryService, eventPublisher)
+            CommentService(
+                commentRepository,
+                postRepository,
+                userRepository,
+                reactionQueryService,
+                eventPublisher,
+            )
     }
 
     @DisplayName("내가 좋아요한 댓글을 조회한다 (삭제 댓글은 [삭제된 댓글]로 반환)")

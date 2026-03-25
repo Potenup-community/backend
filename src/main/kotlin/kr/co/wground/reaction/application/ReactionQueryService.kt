@@ -3,9 +3,11 @@ package kr.co.wground.reaction.application
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.CommentId
 import kr.co.wground.global.common.PostId
+import kr.co.wground.global.common.ProjectId
 import kr.co.wground.global.common.UserId
 import kr.co.wground.post.infra.PostRepository
 import kr.co.wground.reaction.application.dto.CommentReactionStats
+import kr.co.wground.reaction.application.dto.ProjectReactionStats
 import kr.co.wground.reaction.exception.ReactionErrorCode
 import kr.co.wground.reaction.infra.jpa.PostReactionJpaRepository
 import kr.co.wground.reaction.application.dto.PostReactionStats
@@ -13,6 +15,7 @@ import kr.co.wground.reaction.application.dto.ReactionSummary
 import kr.co.wground.reaction.application.dto.LikedCommentDto
 import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.reaction.infra.jpa.CommentReactionJpaRepository
+import kr.co.wground.reaction.infra.jpa.ProjectReactionJpaRepository
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
@@ -24,6 +27,7 @@ class ReactionQueryService(
     private val postReactionJpaRepository: PostReactionJpaRepository,
     private val postRepository: PostRepository,
     private val commentReactionJpaRepository: CommentReactionJpaRepository,
+    private val projectReactionJpaRepository: ProjectReactionJpaRepository,
 ) {
 
     fun getPostReactionStats(postId: PostId, userId: UserId): PostReactionStats {
@@ -136,6 +140,32 @@ class ReactionQueryService(
                     totalCount = totalCount.toInt(),
                     summaries = summaries
                 )
+            }
+            .toMap()
+    }
+
+    fun getProjectReactionStats(projectIds: Set<ProjectId>, userId: UserId): Map<ProjectId, ProjectReactionStats> {
+        if (projectIds.isEmpty()) return emptyMap()
+
+        if (projectIds.size > 50) {
+            throw BusinessException(ReactionErrorCode.TOO_LARGE_PROJECT_ID_SET)
+        }
+
+        val rowsFetched = projectReactionJpaRepository.fetchProjectReactionStatsRows(projectIds, userId)
+        val rowsByProjectId = rowsFetched.groupBy { it.projectId }
+
+        return projectIds
+            .asSequence()
+            .mapNotNull { projectId ->
+                val projectRows = rowsByProjectId[projectId].orEmpty()
+                val totalCount = projectRows.sumOf { it.count }
+                if (totalCount == 0L) return@mapNotNull null
+
+                val summaries = projectRows.associate { r ->
+                    r.reactionType to ReactionSummary(count = r.count.toInt(), reactedByMe = r.reactedByMe)
+                }
+
+                projectId to ProjectReactionStats(projectId, totalCount = totalCount.toInt(), summaries = summaries)
             }
             .toMap()
     }

@@ -48,7 +48,7 @@ class PointWallet private constructor(
     }
 
     private fun validatePositiveAmount(amount: Long) {
-        if (isPositive(amount)) {
+        if (!isPositive(amount)) {
             throw BusinessException(PointErrorCode.INVALID_AMOUNT)
         }
     }
@@ -60,7 +60,7 @@ class PointWallet private constructor(
     }
 
     private fun isPositive(amount: Long): Boolean {
-        return amount <= 0
+        return amount > 0
     }
 
     private fun isBalanceNotSufficient(amount: Long): Boolean {

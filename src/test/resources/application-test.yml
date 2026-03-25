@@ -4,13 +4,18 @@ spring:
     driver-class-name: org.h2.Driver
     username: ${H2_USERNAME}
     password: ${H2_PASSWORD}
-
   jpa:
     hibernate:
       ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+  spring:
+    task:
+      scheduling:
+        pool:
+          size: 5
+        thread-name-prefix: sched-
 
 jwt:
   secret: ${JWT_SECRET_TOKEN}
@@ -20,3 +25,13 @@ jwt:
 google:
   auth:
     client-id: ${GOOGLE_CLIENT_KEY}
+
+slack:
+  webhook:
+    enabled: false
+    general-url-be: ${SLACK_WEBHOOK_GENERAL_URL_BE_TEST:}
+    study-url-be: ${SLACK_WEBHOOK_STUDY_URL_BE_TEST:}
+    general-url-ai: ${SLACK_WEBHOOK_GENERAL_URL_AI_TEST:}
+    study-url-ai: ${SLACK_WEBHOOK_STUDY_URL_AI_TEST:}
+    general-url-game: ${SLACK_WEBHOOK_GENERAL_URL_GAME_TEST:}
+    study-url-game: ${SLACK_WEBHOOK_STUDY_URL_GAME_TEST:}

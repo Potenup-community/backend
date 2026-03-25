@@ -27,6 +27,18 @@
           connectiontimeout: 1000
           timeout: 1000
           writetimeout: 1000
+  spring:
+    task:
+      scheduling:
+        pool:
+          size: 5
+        thread-name-prefix: sched-
+  rabbitmq:
+    host: ${RABBIT_HOST:localhot}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
+    virtual-host: ${RABBIT_VHOST:/}
 
 jwt:
   secret: test-secret
@@ -52,16 +64,30 @@ app:
     local-dir: build/tmp/profiles
     webPathPrefix: /profiles
     maxBytes: 1048576
-    allowedExts: [jpg, jpeg, png, gif]
+    allowedExts: [ jpg, jpeg, png, gif ]
     base-url: http://localhost
+  item:
+    local-dir: ${LOCAL_ITEM_DIR:/uploads/items}
+    webPathPrefix: ${PUBLIC_ITEM_PATH:/images/items}
+    maxBytes: ${ITEM_MAX_BYTE:532095}
+    allowedExts: ${ALLOWED_ITEM_EXTENSIONS:png,gif,webp}
+    base-url: ${BASE_URL:http://localhost}
 
 # 슬랙 알림 웹 훅 설정 (채널별)
 slack:
   webhook:
-    general-url: ${SLACK_WEBHOOK_GENERAL_URL_TEST:}
-    study-url: ${SLACK_WEBHOOK_STUDY_URL_TEST:}
+    enabled: false
+    general-url-be: ${SLACK_WEBHOOK_GENERAL_URL_BE_TEST:}
+    study-url-be: ${SLACK_WEBHOOK_STUDY_URL_BE_TEST:}
+    general-url-ai: ${SLACK_WEBHOOK_GENERAL_URL_AI_TEST:}
+    study-url-ai: ${SLACK_WEBHOOK_STUDY_URL_AI_TEST:}
+    general-url-game: ${SLACK_WEBHOOK_GENERAL_URL_GAME_TEST:}
+    study-url-game: ${SLACK_WEBHOOK_STUDY_URL_GAME_TEST:}
 
 management:
   endpoints:
     web:
       base-path: /actuator
+
+outbox:
+  publish-interval-ms: ${PUBLISH_INTERVAL_MS:3000}

@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.event.TransactionalEventListener
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
+import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -55,6 +58,32 @@ class ImageStorageService(
         imageRepository.save(imageFile)
 
         return LocalStoredDto(imageId = id, relativePath = relativePath, url = url)
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    fun saveProjectThumbnail(ownerId: OwnerId, imageFile: MultipartFile): String {
+        validator.validate(imageFile)
+
+        val id = randomUUID().toString()
+        val ext = extFromMime(imageFile.contentType) ?: "bin"
+        val relativePath = "projects/$ownerId/$id.$ext"
+        val targetPath = Path.of(props.localDir, relativePath)
+
+        Files.createDirectories(targetPath.parent)
+        imageFile.inputStream.use { input ->
+            Files.copy(input, targetPath, StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+            override fun afterCompletion(status: Int) {
+                if (status == TransactionSynchronization.STATUS_ROLLED_BACK) {
+                    runCatching { Files.deleteIfExists(targetPath) }
+                        .onFailure { log.error("롤백 후 썸네일 삭제 실패: $targetPath", it) }
+                }
+            }
+        })
+
+        return relativePath
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -132,6 +161,8 @@ class ImageStorageService(
         }
         return removed.trimStart('/')
     }
+
+    fun toUrl(relativePath: String): String = uploadedUrl(relativePath)
 
     private fun uploadedUrl(relativePath: String): String {
         val base = props.baseUrl.trimEnd('/')
