@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface UserTokenJpaRepository : JpaRepository<UserToken, Long> {
     fun findByUserId(userId: Long): UserToken?
+    fun findBySessionId(sessionId: String): UserToken?
 }
