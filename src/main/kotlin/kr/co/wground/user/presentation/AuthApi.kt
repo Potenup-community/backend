@@ -1,16 +1,14 @@
 package kr.co.wground.user.presentation
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
-import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
 import kr.co.wground.global.common.response.ErrorResponse
-import kr.co.wground.global.config.resolver.CurrentUserId
 import kr.co.wground.user.docs.UserSwaggerErrorExample
 import kr.co.wground.user.docs.UserSwaggerResponseExample
 import kr.co.wground.user.presentation.request.LoginRequest
@@ -62,7 +60,7 @@ interface AuthApi {
             )
         ]
     )
-    fun login(@RequestBody loginRequest: LoginRequest): ResponseEntity<RoleResponse>
+    fun login(@RequestBody loginRequest: LoginRequest, request: HttpServletRequest): ResponseEntity<RoleResponse>
 
     @Operation(summary = "로그아웃", description = "로그아웃 처리하며 쿠키를 만료시킵니다.")
     @ApiResponses(
@@ -81,11 +79,7 @@ interface AuthApi {
             )
         ]
     )
-    fun logout(@Parameter(
-        `in` = ParameterIn.COOKIE,
-        name = "accessToken",
-        description = "현재 로그인한 사용자 ID",
-        schema = Schema(type = "string", example = "token_value")) userId: CurrentUserId): ResponseEntity<Unit>
+    fun logout(authentication: Authentication): ResponseEntity<Unit>
 
     @Operation(summary = "인증 상태 확인", description = "현재 요청의 인증 상태(로그인 여부, 유저 ID, 권한)를 확인합니다. # 엑세스 토큰 필수")
     @ApiResponses(

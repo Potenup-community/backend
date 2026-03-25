@@ -7,6 +7,10 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.global.jwt.JwtProvider
 import kr.co.wground.global.jwt.RefreshTokenHasher
 import kr.co.wground.global.jwt.constant.TokenType
+import kr.co.wground.session.application.SessionCommandService
+import kr.co.wground.session.application.dto.DeviceContext
+import kr.co.wground.session.domain.repository.AuthSessionRepository
+import kr.co.wground.session.exception.SessionErrorCode
 import kr.co.wground.token.domain.UserToken
 import kr.co.wground.token.domain.repository.UserTokenRepository
 import kr.co.wground.token.exception.TokenErrorCode
@@ -16,9 +20,11 @@ import kr.co.wground.user.infra.UserRepository
 import kr.co.wground.user.presentation.request.LoginRequest
 import kr.co.wground.user.presentation.response.LoginResponse
 import kr.co.wground.user.presentation.response.TokenResponse
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 
 @Service
 @Transactional(readOnly = true)
@@ -28,11 +34,15 @@ class LoginServiceImpl(
     private val googleTokenVerifier: GoogleTokenVerifier,
     private val jwtProvider: JwtProvider,
     private val refreshTokenHasher: RefreshTokenHasher,
-    private val rotationCache: Cache<String, TokenResponse>
+    private val rotationCache: Cache<String, TokenResponse>,
+    private val sessionCommandService: SessionCommandService,
+    private val authSessionRepository: AuthSessionRepository,
+    @Value("\${jwt.refresh-expiration-ms}")
+    private val refreshTokenExpiredMs: Long,
 ) : LoginService {
 
     @Transactional
-    override fun login(loginRequest: LoginRequest): LoginResponse {
+    override fun login(loginRequest: LoginRequest, deviceContext: DeviceContext): LoginResponse {
         val email = googleTokenVerifier.verify(loginRequest.idToken)
 
         val user = userRepository.findByEmail(email)
@@ -42,62 +52,80 @@ class LoginServiceImpl(
             throw BusinessException(UserServiceErrorCode.INACTIVE_USER)
         }
 
-        val accessToken = jwtProvider.createAccessToken(user.userId, user.role)
+        val expiresAt = LocalDateTime.now().plusSeconds(refreshTokenExpiredMs / 1000)
+        val session = sessionCommandService.upsertSession(user.userId, deviceContext, expiresAt)
 
-        val refreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
+        val accessToken = jwtProvider.createAccessToken(user.userId, user.role, session.sessionId)
+        val refreshToken = jwtProvider.createRefreshToken(user.userId, user.role, session.sessionId)
+        val hashedRefresh = refreshTokenHasher.hash(refreshToken)
 
-        userTokenRepository.findByUserId(user.userId).let { it?.rotate(refreshTokenHasher.hash(refreshToken)) }
-            ?: userTokenRepository.save(
-                UserToken(
-                    userId = user.userId,
-                    token = refreshTokenHasher.hash(refreshToken)
-                )
-            )
+        val existingToken = userTokenRepository.findBySessionId(session.sessionId)
+        if (existingToken != null) {
+            existingToken.rotate(hashedRefresh)
+        } else {
+            val newToken = UserToken(userId = user.userId, token = hashedRefresh)
+            newToken.assignSession(session.sessionId)
+            userTokenRepository.save(newToken)
+        }
 
         return LoginResponse(user.role, accessToken, refreshToken)
     }
 
     @Transactional
-    override fun refreshAccessToken(requestToken: String): TokenResponse {
+    override fun refreshAccessToken(requestToken: String, deviceContext: DeviceContext): TokenResponse {
         val hashedRequest = refreshTokenHasher.hash(requestToken)
 
-        rotationCache.getIfPresent(hashedRequest)?.let {
-            return it
-        }
+        rotationCache.getIfPresent(hashedRequest)?.let { return it }
 
-        val (userId, role) = jwtProvider.getUserIdAndRole(requestToken, TokenType.REFRESH)
+        val tokenClaims = jwtProvider.parseTokenClaims(requestToken, TokenType.REFRESH)
+        val (userId, _, sessionId) = tokenClaims
 
         val user = userRepository.findByIdOrNull(userId)
             ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
-
-        val userToken = userTokenRepository.findByUserId(user.userId)
-            ?: throw BusinessException(TokenErrorCode.USER_REFRESH_TOKEN_NOT_FOUND)
 
         if (user.status != UserStatus.ACTIVE) {
             throw BusinessException(UserServiceErrorCode.INACTIVE_USER)
         }
 
+        val session = sessionId?.let { authSessionRepository.findBySessionId(it) }
+        if (session != null && !session.isActive()) {
+            throw BusinessException(SessionErrorCode.SESSION_INACTIVE)
+        }
+
+        val userToken = (sessionId?.let { userTokenRepository.findBySessionId(it) }
+            ?: userTokenRepository.findByUserId(userId))
+            ?: throw BusinessException(TokenErrorCode.USER_REFRESH_TOKEN_NOT_FOUND)
+
         if (!userToken.isValid(hashedRequest)) {
             throw BusinessException(UserServiceErrorCode.INVALID_REFRESH_TOKEN)
         }
 
-        val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role)
-        val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role)
+        val resolvedSessionId = session?.sessionId ?: sessionId ?: ""
+        val newAccessToken = jwtProvider.createAccessToken(user.userId, user.role, resolvedSessionId)
+        val newRefreshToken = jwtProvider.createRefreshToken(user.userId, user.role, resolvedSessionId)
 
         userToken.rotate(refreshTokenHasher.hash(newRefreshToken))
+        session?.touchLastSeen()
 
-        val response = TokenResponse(user.userId, user.role, newAccessToken, newRefreshToken)
-
+        val response = TokenResponse(
+            userId = user.userId,
+            userRole = user.role,
+            accessToken = newAccessToken,
+            refreshToken = newRefreshToken,
+            sessionId = resolvedSessionId.takeIf { it.isNotBlank() },
+        )
         rotationCache.put(hashedRequest, response)
 
         return response
     }
 
     @Transactional
-    override fun logout(userId: UserId) {
-        val userToken = userTokenRepository.findByUserId(userId)
-            ?: throw BusinessException(TokenErrorCode.USER_REFRESH_TOKEN_NOT_FOUND)
-
-        userToken.clear()
+    override fun logout(userId: UserId, sessionId: String) {
+        if (sessionId.isNotBlank()) {
+            runCatching { sessionCommandService.revokeSession(userId, sessionId) }
+            userTokenRepository.findBySessionId(sessionId)?.clear()
+        } else {
+            userTokenRepository.findByUserId(userId)?.clear()
+        }
     }
 }
