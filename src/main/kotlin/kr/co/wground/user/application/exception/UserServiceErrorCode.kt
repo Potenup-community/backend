@@ -28,4 +28,5 @@ enum class UserServiceErrorCode(
     INVALID_STATUS_TRANSITION(HttpStatus.BAD_REQUEST,"U-0017", "대기 상태로는  다시 돌아갈 수 없습니다."),
     DUPLICATED_PHONE_NUMBER(HttpStatus.BAD_REQUEST,"U-0018","해당 전화번호는 이미 등록되어 있습니다."),
     FIND_IDS_SIZE_DIFFERENT_REQUEST_IDS_SIZE(HttpStatus.CONFLICT, "U-0019", "요청한 ID 목록 값과 조회된 ID 목록 값의 크기가 다릅니다."),
+    ADMIN_TRACK_NOT_FOUND(HttpStatus.NOT_FOUND, "U-0020", "관리자 트랙을 찾을 수 없습니다."),
 }
