@@ -18,7 +18,11 @@ import kr.co.wground.study_schedule.presentation.request.ScheduleUpdateRequest
 import kr.co.wground.study_schedule.presentation.response.ScheduleCreateResponse
 import kr.co.wground.study_schedule.presentation.response.ScheduleListResponse
 import kr.co.wground.study_schedule.presentation.response.ScheduleQueryResponse
+import kr.co.wground.study_schedule.presentation.response.ScheduleTrackCardinalsResponse
+import kr.co.wground.study_schedule.presentation.response.ScheduleTrackResolveResponse
+import kr.co.wground.study_schedule.presentation.response.ScheduleTrackTypesResponse
 import kr.co.wground.study_schedule.presentation.response.ScheduleUpdateResponse
+import kr.co.wground.track.domain.constant.TrackType
 import kr.co.wground.user.docs.UserSwaggerErrorExample
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
@@ -27,6 +31,20 @@ import org.springframework.web.bind.annotation.RequestParam
 
 @Tag(name = "Study Schedule", description = "스터디 일정(차수) 관리 API (Admin)")
 interface StudyScheduleApi {
+
+    @Operation(summary = "스터디 일정 등록용 과정 유형 조회", description = "현재 ENROLLED 상태인 과정 유형 목록을 조회합니다.")
+    fun getEnrolledTrackTypesForSchedule(): ResponseEntity<ScheduleTrackTypesResponse>
+
+    @Operation(summary = "스터디 일정 등록용 기수 조회", description = "선택한 과정 유형에서 ENROLLED 상태인 기수 목록을 조회합니다.")
+    fun getEnrolledCardinalsByTypeForSchedule(
+        @RequestParam trackType: TrackType
+    ): ResponseEntity<ScheduleTrackCardinalsResponse>
+
+    @Operation(summary = "스터디 일정 등록용 trackId 조회", description = "선택한 과정 유형/기수(ENROLLED)에 해당하는 trackId를 조회합니다.")
+    fun resolveEnrolledTrackForSchedule(
+        @RequestParam trackType: TrackType,
+        @RequestParam cardinal: Int
+    ): ResponseEntity<ScheduleTrackResolveResponse>
 
     @Operation(summary = "스터디 일정 생성", description = "새로운 스터디 일정(차수)을 생성합니다.")
     @ApiResponses(
