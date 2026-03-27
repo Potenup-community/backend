@@ -5,12 +5,18 @@ import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 import kr.co.wground.global.common.UserId
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "user_tokens")
+@Table(
+    name = "user_tokens",
+    indexes = [
+        Index(name = "idx_user_tokens_user_id", columnList = "user_id"),
+    ],
+)
 class UserToken(
     val userId: UserId,
     token: String = "",
@@ -31,6 +37,10 @@ class UserToken(
 
     @Column(name = "token_rotated_at")
     var rotatedAt: LocalDateTime? = rotatedAt
+        protected set
+
+    @Column(name = "session_id", length = 36, unique = true)
+    var sessionId: String? = null
         protected set
 
     companion object {
@@ -56,5 +66,9 @@ class UserToken(
     fun clear() {
         this.previousToken = ""
         this.token = ""
+    }
+
+    fun assignSession(sessionId: String) {
+        this.sessionId = sessionId
     }
 }
