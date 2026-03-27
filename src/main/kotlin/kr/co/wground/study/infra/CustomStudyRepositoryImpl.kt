@@ -10,6 +10,7 @@ import kr.co.wground.study.domain.QStudy.study
 import kr.co.wground.study.domain.QTag.tag
 import kr.co.wground.study.domain.enums.StudyStatus
 import kr.co.wground.track.domain.QTrack.track
+import kr.co.wground.track.domain.constant.TrackType
 import kr.co.wground.user.domain.QUser.user
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
@@ -31,6 +32,8 @@ class CustomStudyRepositoryImpl(
             .join(track).on(user.trackId.eq(track.trackId))
             .where(
                 trackIdEq(condition.trackId),
+                trackTypeEq(condition.trackType),
+                cardinalEq(condition.cardinal),
                 statusEq(condition.status),
             )
             .offset(pageable.offset)
@@ -49,6 +52,14 @@ class CustomStudyRepositoryImpl(
 
     private fun trackIdEq(trackId: Long?): BooleanExpression? {
         return trackId?.let { study.trackId.eq(it) }
+    }
+
+    private fun trackTypeEq(trackType: TrackType?): BooleanExpression? {
+        return trackType?.let { track.trackType.eq(it) }
+    }
+
+    private fun cardinalEq(cardinal: Int?): BooleanExpression? {
+        return cardinal?.let { track.cardinal.eq(it) }
     }
 
     private fun statusEq(status: StudyStatus?): BooleanExpression? {
