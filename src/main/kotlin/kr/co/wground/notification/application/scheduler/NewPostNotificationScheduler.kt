@@ -44,7 +44,7 @@ class NewPostNotificationScheduler(
 
         val postsByAudience = recentPosts.groupBy { post ->
             val writer = usersById[post.writerId]
-            val trackName = writer?.let { tracksById[it.trackId]?.trackName }
+            val trackName = writer?.let { tracksById[it.trackId]?.displayName() }
             trackName?.let { NotificationAudience.fromTrackName(it) } ?: NotificationAudience.ALL
         }
 
