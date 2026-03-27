@@ -5,6 +5,7 @@ import kr.co.wground.gallery.domain.model.Project
 import kr.co.wground.global.common.ProjectId
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.track.domain.constant.TrackType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import java.time.LocalDateTime
@@ -12,7 +13,13 @@ import java.time.LocalDateTime
 interface ProjectRepository {
     fun save(project: Project): Project
     fun findById(id: ProjectId): Project?
-    fun findPagedSummaries(trackId: TrackId?, keyword: String?, pageable: Pageable): Page<SummaryRow>
+    fun findPagedSummaries(
+        trackId: TrackId?,
+        trackType: TrackType?,
+        cardinal: Int?,
+        keyword: String?,
+        pageable: Pageable
+    ): Page<SummaryRow>
     fun findDetailById(projectId: ProjectId): DetailRow?
     fun incrementViewCount(projectId: ProjectId)
     fun findUsedTrackFilters(): List<TrackItem>
