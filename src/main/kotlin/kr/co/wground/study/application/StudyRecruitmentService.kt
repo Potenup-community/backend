@@ -127,8 +127,9 @@ class StudyRecruitmentService(
         }
         val user = findUserOrThrows(userId)
         val track = findTrackByIdOrThrows(user.trackId)
+        val trackName = track.displayName()
         return recruitments.map { recruitment ->
-            StudyRecruitmentResponse.of(recruitment, user.name, track.trackName)
+            StudyRecruitmentResponse.of(recruitment, user.name, trackName)
         }
     }
 
@@ -144,6 +145,7 @@ class StudyRecruitmentService(
         val userIds = recruitments.map { it.userId }.toSet()
         val users = userRepository.findAllById(userIds).associateBy { it.userId }
         val track = findTrackByIdOrThrows(study.trackId)
+        val trackName = track.displayName()
 
         return recruitments.map { recruitment ->
             val applicant = users[recruitment.userId]
@@ -152,7 +154,7 @@ class StudyRecruitmentService(
             StudyRecruitmentResponse.of(
                 recruitment,
                 applicant.name,
-                track.trackName,
+                trackName,
             )
         }
     }
