@@ -53,6 +53,7 @@ class OpenApiConfig(
         val excludedPaths = listOf(
             "/api/v1/auth/login",
             "/api/v1/users/signup",
+            "/api/v1/tracks/signup/**",
             "${actuatorPolicy.basePath}/**"
         )
         val pathMatcher = AntPathMatcher()
