@@ -32,7 +32,7 @@ class AdminServiceTest {
 
     @BeforeEach
     fun setUp() {
-        adminService = AdminServiceImpl(signupRepository, userRepository,  eventPublisher)
+        adminService = AdminServiceImpl(signupRepository, userRepository, trackRepository, eventPublisher)
     }
 
     @Test
