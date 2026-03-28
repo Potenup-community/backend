@@ -8,7 +8,11 @@ import kr.co.wground.study_schedule.presentation.request.ScheduleUpdateRequest
 import kr.co.wground.study_schedule.presentation.response.ScheduleCreateResponse
 import kr.co.wground.study_schedule.presentation.response.ScheduleListResponse
 import kr.co.wground.study_schedule.presentation.response.ScheduleQueryResponse
+import kr.co.wground.study_schedule.presentation.response.ScheduleTrackCardinalsResponse
+import kr.co.wground.study_schedule.presentation.response.ScheduleTrackResolveResponse
+import kr.co.wground.study_schedule.presentation.response.ScheduleTrackTypesResponse
 import kr.co.wground.study_schedule.presentation.response.ScheduleUpdateResponse
+import kr.co.wground.track.domain.constant.TrackType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -26,6 +30,43 @@ import org.springframework.web.bind.annotation.RestController
 class StudyScheduleController(
     private val studyScheduleService: StudyScheduleService
 ): StudyScheduleApi {
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/tracks/types")
+    override fun getEnrolledTrackTypesForSchedule(): ResponseEntity<ScheduleTrackTypesResponse> {
+        val trackTypes = studyScheduleService.getEnrolledTrackTypes()
+        return ResponseEntity.ok(ScheduleTrackTypesResponse.from(trackTypes))
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/tracks/cardinals")
+    override fun getEnrolledCardinalsByTypeForSchedule(
+        @RequestParam trackType: TrackType
+    ): ResponseEntity<ScheduleTrackCardinalsResponse> {
+        val cardinals = studyScheduleService.getEnrolledTrackCardinals(trackType)
+        return ResponseEntity.ok(
+            ScheduleTrackCardinalsResponse(
+                trackType = trackType,
+                cardinals = cardinals
+            )
+        )
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/tracks/resolve")
+    override fun resolveEnrolledTrackForSchedule(
+        @RequestParam trackType: TrackType,
+        @RequestParam cardinal: Int
+    ): ResponseEntity<ScheduleTrackResolveResponse> {
+        val trackId = studyScheduleService.resolveEnrolledTrack(trackType, cardinal)
+        return ResponseEntity.ok(
+            ScheduleTrackResolveResponse(
+                trackType = trackType,
+                cardinal = cardinal,
+                trackId = trackId
+            )
+        )
+    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping

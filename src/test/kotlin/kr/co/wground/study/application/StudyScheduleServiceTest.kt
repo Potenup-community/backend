@@ -266,7 +266,6 @@ class StudyScheduleServiceTest {
         // given: 이미 종료된(졸업) 트랙 저장
         val today = LocalDate.now()
         val graduatedTrack = Track(
-            trackName = "졸업 트랙",
             startDate = today.minusDays(60),
             endDate = today.minusDays(1)     // 어제 끝 남 ㅂㅂ
         )
@@ -339,7 +338,6 @@ class StudyScheduleServiceTest {
 
     private fun enrolledTrack(today: LocalDate): Track {
         return Track(
-            trackName = "테스트 트랙",
             startDate = today.minusDays(30),
             endDate = today.plusDays(30)
         )

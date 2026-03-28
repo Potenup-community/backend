@@ -19,6 +19,7 @@ import kr.co.wground.global.common.ProjectId
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.response.ErrorResponse
 import kr.co.wground.global.config.resolver.CurrentUserId
+import kr.co.wground.track.domain.constant.TrackType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
@@ -74,6 +75,8 @@ interface ProjectApi {
     )
     fun getProjects(
         @RequestParam(required = false) trackId: TrackId?,
+        @RequestParam(required = false) trackType: TrackType?,
+        @RequestParam(required = false) cardinal: Int?,
         @RequestParam(required = false) keyword: String?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "12") size: Int,

@@ -173,11 +173,12 @@ class StudyService(
         val result = studyRepository.searchStudies(condition.condition, condition.pageable, condition.sortType)
 
         return result.map { result ->
+            val trackDisplayName = result.track.displayName()
             val leaderInfo = ParticipantInfo(
                 result.leader.userId,
                 result.leader.name,
                 result.track.trackId,
-                result.track.trackName,
+                trackDisplayName,
                 result.study.recruitments.first{ it.userId == result.leader.userId }.createdAt,
                 result.leader.accessProfile(),
             )
@@ -196,6 +197,7 @@ class StudyService(
         val schedule = studyScheduleService.getScheduleById(study.scheduleId)
         val track = trackRepository.findByIdOrNull(study.trackId)
             ?: throw BusinessException(StudyServiceErrorCode.TRACK_NOT_FOUND)
+        val trackDisplayName = track.displayName()
 
         val participants = userRepository.findByUserIdIn(study.recruitments.map { it.userId })
 
@@ -204,7 +206,7 @@ class StudyService(
                     id = it.userId,
                     name = it.name,
                     trackId = track.trackId,
-                    trackName = track.trackName,
+                    trackName = trackDisplayName,
                     joinedAt = study.recruitments.first{ it.userId == it.userId }.createdAt,
                     profileImageUrl = it.accessProfile(),
                 )

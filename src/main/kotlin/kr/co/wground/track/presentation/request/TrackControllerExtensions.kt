@@ -6,7 +6,8 @@ import kr.co.wground.track.application.dto.UpdateTrackDto
 
 fun CreateTrackRequest.toCreateTrackDto(): CreateTrackDto {
     return CreateTrackDto(
-        trackName = this.trackName,
+        trackType = this.trackType,
+        cardinal = this.cardinal,
         startDate = this.startDate,
         endDate = this.endDate
     )
@@ -15,7 +16,8 @@ fun CreateTrackRequest.toCreateTrackDto(): CreateTrackDto {
 fun UpdateTrackRequest.toUpdateTrackDto(trackId: TrackId): UpdateTrackDto {
     return UpdateTrackDto(
         trackId = trackId,
-        trackName = this.trackName,
+        trackType = this.trackType,
+        cardinal = this.cardinal,
         startDate = this.startDate,
         endDate = this.endDate
     )

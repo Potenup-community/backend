@@ -24,7 +24,13 @@ class ProjectQueryUseCaseImpl(
 
     @Transactional(readOnly = true)
     override fun getList(query: GetProjectListQuery): Page<ProjectSummaryResult> {
-        val page = projectRepository.findPagedSummaries(query.trackId, query.keyword, query.toPageRequest())
+        val page = projectRepository.findPagedSummaries(
+            trackId = query.trackId,
+            trackType = query.trackType,
+            cardinal = query.cardinal,
+            keyword = query.keyword,
+            pageable = query.toPageRequest()
+        )
         val likeStats = projectRepository.findReactStats(
             projectIds = page.content.map { it.projectId }.toSet(),
             userId = query.userId,

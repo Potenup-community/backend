@@ -18,6 +18,7 @@ import kr.co.wground.study_schedule.presentation.response.ScheduleCreateResponse
 import kr.co.wground.study_schedule.presentation.response.ScheduleQueryResponse
 import kr.co.wground.study_schedule.presentation.response.ScheduleUpdateResponse
 import kr.co.wground.track.domain.Track
+import kr.co.wground.track.domain.constant.TrackType
 import kr.co.wground.track.infra.TrackRepository
 import org.springframework.context.ApplicationEventPublisher
 import kr.co.wground.user.application.exception.UserServiceErrorCode
@@ -29,6 +30,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import kr.co.wground.study_schedule.domain.enums.Months
 import kr.co.wground.track.domain.constant.TrackStatus
+import kr.co.wground.track.domain.exception.TrackDomainErrorCode
 
 @Service
 @Transactional
@@ -121,6 +123,39 @@ class StudyScheduleService(
         val enrolledTracks: List<Track> = trackRepository.findAllByTrackStatus(TrackStatus.ENROLLED)
         val enrolledTrackIds = enrolledTracks.map { it.trackId }.toSet()
         return getAllSchedulesInTrackIds(enrolledTrackIds)
+    }
+
+    @Transactional(readOnly = true)
+    fun getEnrolledTrackTypes(): List<TrackType> {
+        val enrolledTypes = trackRepository.findAllByTrackStatus(TrackStatus.ENROLLED)
+            .mapNotNull { it.trackType }
+            .filterNot { it == TrackType.ADMIN }
+            .toSet()
+
+        return TrackType.entries.filter { it in enrolledTypes && it != TrackType.ADMIN }
+    }
+
+    @Transactional(readOnly = true)
+    fun getEnrolledTrackCardinals(trackType: TrackType): List<Int> {
+        validateTrackType(trackType)
+        return trackRepository.findAllByTrackStatusAndTrackType(TrackStatus.ENROLLED, trackType)
+            .mapNotNull { it.cardinal }
+            .distinct()
+            .sorted()
+    }
+
+    @Transactional(readOnly = true)
+    fun resolveEnrolledTrack(trackType: TrackType, cardinal: Int): TrackId {
+        validateTrackType(trackType)
+        if (cardinal <= 0) {
+            throw BusinessException(TrackDomainErrorCode.INVALID_TRACK_INPUT)
+        }
+
+        return trackRepository.findFirstByTrackTypeAndCardinalAndTrackStatus(
+            trackType = trackType,
+            cardinal = cardinal,
+            trackStatus = TrackStatus.ENROLLED
+        )?.trackId ?: throw BusinessException(StudyServiceErrorCode.TRACK_NOT_FOUND)
     }
 
     @Transactional(readOnly = true)
@@ -223,5 +258,11 @@ class StudyScheduleService(
                 studyScheduleEventType = eventType
             )
         )
+    }
+
+    private fun validateTrackType(trackType: TrackType) {
+        if (trackType == TrackType.ADMIN) {
+            throw BusinessException(TrackDomainErrorCode.INVALID_TRACK_INPUT)
+        }
     }
 }

@@ -1,16 +1,21 @@
 package kr.co.wground.track.application
 
 import kr.co.wground.global.common.TrackId
+import kr.co.wground.track.application.dto.TrackCardinalsDto
 import kr.co.wground.track.application.dto.CreateTrackDto
 import kr.co.wground.track.application.dto.TrackQueryDto
+import kr.co.wground.track.application.dto.TrackResolveDto
 import kr.co.wground.track.application.dto.UpdateTrackDto
-import kr.co.wground.track.presentation.response.TrackListResponse
-import org.springframework.http.ResponseEntity
+import kr.co.wground.track.domain.constant.TrackType
 
 interface TrackService {
     fun createTrack(createTrack: CreateTrackDto): List<TrackQueryDto>
     fun updateTrack(updateTrack: UpdateTrackDto)
     fun deleteTrack(trackId: TrackId)
-    fun getTracksExceptAdmin(): List<TrackQueryDto>
-    fun getAllTrackResponses(): List<TrackQueryDto>
+    fun getTracksExceptAdmin(trackType: TrackType? = null): List<TrackQueryDto>
+    fun getAllTrackResponses(trackType: TrackType? = null): List<TrackQueryDto>
+    fun getTrackTypesForRegistration(): List<TrackType>
+    fun getTrackCardinals(trackType: TrackType): TrackCardinalsDto
+    fun getSignupTrackTypes(): List<TrackType>
+    fun resolveSignupTrack(trackType: TrackType, cardinal: Int): TrackResolveDto
 }

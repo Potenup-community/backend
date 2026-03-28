@@ -97,7 +97,6 @@ class StudyRecruitmentServiceTest {
          */
         val today = LocalDate.now()
         val track = Track(
-            trackName = "졸업 트랙",
             startDate = today.minusDays(60),
             endDate = today.minusDays(1)
         )
@@ -167,14 +166,12 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val userTrack = trackRepository.save(
             Track(
-                trackName = "사용자 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
         )
         val otherTrack = trackRepository.save(
             Track(
-                trackName = "스터디 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -256,7 +253,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -351,7 +347,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -446,7 +441,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -528,7 +522,6 @@ class StudyRecruitmentServiceTest {
             val today = LocalDate.now()
             val track = trackRepository.save(
                 Track(
-                    trackName = "테스트 트랙",
                     startDate = today.minusDays(10),
                     endDate = today.plusDays(30)
                 )
@@ -626,7 +619,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -721,7 +713,6 @@ class StudyRecruitmentServiceTest {
         
         val today = LocalDate.now()
         val track = Track(
-            trackName = "졸업 트랙",
             startDate = today.minusDays(60),
             endDate = today.minusDays(1)
         )
@@ -784,14 +775,12 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val userTrack = trackRepository.save(
             Track(
-                trackName = "사용자 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
         )
         val otherTrack = trackRepository.save(
             Track(
-                trackName = "스터디 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -866,7 +855,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -955,7 +943,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -1043,7 +1030,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(30),
                 endDate = today.plusDays(30)
             )
@@ -1233,7 +1219,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -1309,7 +1294,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )
@@ -1399,7 +1383,6 @@ class StudyRecruitmentServiceTest {
         val today = LocalDate.now()
         val track = trackRepository.save(
             Track(
-                trackName = "테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30)
             )

@@ -16,6 +16,7 @@ import kr.co.wground.gallery.presentation.response.ProjectTrackFiltersResponse
 import kr.co.wground.global.common.ProjectId
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.config.resolver.CurrentUserId
+import kr.co.wground.track.domain.constant.TrackType
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -50,13 +51,26 @@ class ProjectController(
     @GetMapping
     override fun getProjects(
         @RequestParam(required = false) trackId: TrackId?,
+        @RequestParam(required = false) trackType: TrackType?,
+        @RequestParam(required = false) cardinal: Int?,
         @RequestParam(required = false) keyword: String?,
         @RequestParam(defaultValue = "0") page: Int,
         @RequestParam(defaultValue = "12") size: Int,
         @RequestParam(defaultValue = "createdAt,desc") sort: String,
         user: CurrentUserId,
     ): ResponseEntity<ProjectSummaryPageResponse> {
-        val result = projectQueryUseCase.getList(GetProjectListQuery(trackId, keyword, page, size, sort, user.value))
+        val result = projectQueryUseCase.getList(
+            GetProjectListQuery(
+                trackId = trackId,
+                trackType = trackType,
+                cardinal = cardinal,
+                keyword = keyword,
+                page = page,
+                size = size,
+                sort = sort,
+                userId = user.value
+            )
+        )
         return ResponseEntity.ok(ProjectSummaryPageResponse.from(result))
     }
 
