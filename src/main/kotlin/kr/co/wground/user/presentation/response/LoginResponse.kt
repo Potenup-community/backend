@@ -13,7 +13,8 @@ data class TokenResponse(
     val userId: UserId,
     val userRole: UserRole,
     val accessToken: String,
-    val refreshToken: String
+    val refreshToken: String,
+    val sessionId: String? = null,
 )
 
 data class RoleResponse(

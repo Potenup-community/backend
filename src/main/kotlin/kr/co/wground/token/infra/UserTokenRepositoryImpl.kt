@@ -9,9 +9,11 @@ import org.springframework.stereotype.Repository
 class UserTokenRepositoryImpl(
     private val userTokenJpaRepository: UserTokenJpaRepository
 ) : UserTokenRepository {
-    override fun findByUserId(userId: Long): UserToken? {
-        return userTokenJpaRepository.findByUserId(userId)
-    }
+    override fun findByUserId(userId: Long): UserToken? =
+        userTokenJpaRepository.findByUserId(userId)
+
+    override fun findBySessionId(sessionId: String): UserToken? =
+        userTokenJpaRepository.findBySessionId(sessionId)
 
     override fun save(userToken: UserToken) {
         userTokenJpaRepository.save(userToken)

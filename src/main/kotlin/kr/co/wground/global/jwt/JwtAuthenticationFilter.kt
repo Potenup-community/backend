@@ -8,9 +8,11 @@ import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.UserId
 import kr.co.wground.global.jwt.constant.CSRF
 import kr.co.wground.global.jwt.constant.HEADER_NAME
+import kr.co.wground.global.jwt.constant.ROLE_PREFIX
 import kr.co.wground.global.jwt.constant.SUBSTRING_INDEX
 import kr.co.wground.global.jwt.constant.TOKEN_START
 import kr.co.wground.global.jwt.constant.TokenType
+import kr.co.wground.session.application.dto.DeviceContext
 import kr.co.wground.user.application.common.LoginService
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import org.springframework.beans.factory.annotation.Value
@@ -24,7 +26,6 @@ import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.servlet.HandlerExceptionResolver
 import org.springframework.web.util.WebUtils
 import java.time.Duration
-import kr.co.wground.global.jwt.constant.ROLE_PREFIX
 
 @Component
 class JwtAuthenticationFilter(
@@ -36,12 +37,12 @@ class JwtAuthenticationFilter(
     @Value("\${jwt.refresh-expiration-ms}")
     private val refreshExpirationMs: Long,
 ) : OncePerRequestFilter() {
+
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
-        filterChain: FilterChain
+        filterChain: FilterChain,
     ) {
-
         val accessToken = resolveTokenFromHeader(request) ?: resolveTokenFromCookie(request, TokenType.ACCESS)
 
         if (accessToken == null) {
@@ -49,7 +50,7 @@ class JwtAuthenticationFilter(
 
             if (refreshToken != null) {
                 try {
-                    rePublishAndAuthenticate(refreshToken, response)
+                    rePublishAndAuthenticate(refreshToken, request, response)
                     filterChain.doFilter(request, response)
                     return
                 } catch (ex: BusinessException) {
@@ -63,13 +64,13 @@ class JwtAuthenticationFilter(
         }
 
         try {
-            val (userId, role) = jwtProvider.getUserIdAndRole(accessToken, TokenType.ACCESS)
-            setAuthentication(userId, role)
+            val claims = jwtProvider.parseTokenClaims(accessToken, TokenType.ACCESS)
+            setAuthentication(claims.userId, claims.role, claims.sessionId)
         } catch (ex: ExpiredJwtException) {
             try {
                 val refreshToken = resolveTokenFromCookie(request, TokenType.REFRESH)
                     ?: throw BusinessException(UserServiceErrorCode.REFRESH_TOKEN_NOT_FOUND)
-                rePublishAndAuthenticate(refreshToken, response)
+                rePublishAndAuthenticate(refreshToken, request, response)
             } catch (e: BusinessException) {
                 handlerExceptionResolver.resolveException(request, response, null, e)
                 return
@@ -82,8 +83,13 @@ class JwtAuthenticationFilter(
         filterChain.doFilter(request, response)
     }
 
-    private fun rePublishAndAuthenticate(refreshToken: String, response: HttpServletResponse) {
-        val tokenResponse = loginService.refreshAccessToken(refreshToken)
+    private fun rePublishAndAuthenticate(
+        refreshToken: String,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ) {
+        val deviceContext = extractDeviceContext(request)
+        val tokenResponse = loginService.refreshAccessToken(refreshToken, deviceContext)
 
         val accessCookie = createTokenCookie(tokenResponse.accessToken, TokenType.ACCESS, accessExpirationMs)
         val refreshCookie = createTokenCookie(tokenResponse.refreshToken, TokenType.REFRESH, refreshExpirationMs)
@@ -91,26 +97,36 @@ class JwtAuthenticationFilter(
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString())
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString())
 
-        setAuthentication(tokenResponse.userId, tokenResponse.userRole.name)
+        setAuthentication(tokenResponse.userId, tokenResponse.userRole.name, tokenResponse.sessionId)
     }
 
-    private fun setAuthentication(userId: UserId, role: String) {
-        val principal = UserPrincipal(userId, role)
+    private fun setAuthentication(userId: UserId, role: String, sessionId: String? = null) {
+        val principal = UserPrincipal(userId, role, sessionId)
         val authorities = listOf(SimpleGrantedAuthority("${ROLE_PREFIX}${role}"))
         val authentication = UsernamePasswordAuthenticationToken(principal, null, authorities)
-
         SecurityContextHolder.getContext().authentication = authentication
     }
 
-    private fun createTokenCookie(token: String, tokenType: TokenType, expiredMs: Long): ResponseCookie {
-        return ResponseCookie.from(tokenType.tokenType, token)
+    private fun extractDeviceContext(request: HttpServletRequest): DeviceContext {
+        val deviceId = request.getHeader("X-Device-Id")
+            ?: WebUtils.getCookie(request, "deviceId")?.value
+            ?: "unknown"
+        return DeviceContext(
+            deviceId = deviceId,
+            deviceName = request.getHeader("X-Device-Name"),
+            userAgent = request.getHeader(HttpHeaders.USER_AGENT),
+            ipAddress = request.remoteAddr,
+        )
+    }
+
+    private fun createTokenCookie(token: String, tokenType: TokenType, expiredMs: Long): ResponseCookie =
+        ResponseCookie.from(tokenType.tokenType, token)
             .httpOnly(true)
             .secure(true)
             .path("/")
             .maxAge(Duration.ofMillis(expiredMs))
             .sameSite(CSRF)
             .build()
-    }
 
     private fun resolveTokenFromHeader(request: HttpServletRequest): String? {
         val bearerToken = request.getHeader(HEADER_NAME)
@@ -123,10 +139,6 @@ class JwtAuthenticationFilter(
 
     private fun resolveTokenFromCookie(request: HttpServletRequest, tokenType: TokenType): String? {
         val cookie = WebUtils.getCookie(request, tokenType.tokenType)
-        return if (cookie != null && cookie.value.isNotBlank()) {
-            cookie.value
-        } else {
-            null
-        }
+        return if (cookie != null && cookie.value.isNotBlank()) cookie.value else null
     }
 }
