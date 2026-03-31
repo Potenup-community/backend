@@ -704,7 +704,6 @@ class StudyServiceTest {
 
     private fun createAndSaveEnrolledTrack(today: LocalDate): Track {
         val track = Track(
-            trackName = "테스트 트랙",
             startDate = today.minusDays(30),
             endDate = today.plusDays(30)
         )
@@ -713,7 +712,6 @@ class StudyServiceTest {
 
     private fun createAndSaveGraduatedTrack(today: LocalDate): Track {
         val track = Track(
-            trackName = "졸업 트랙",
             startDate = today.minusDays(60),
             endDate = today.minusDays(1)
         )

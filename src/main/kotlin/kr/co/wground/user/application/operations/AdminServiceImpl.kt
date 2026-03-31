@@ -1,6 +1,8 @@
 package kr.co.wground.user.application.operations
 
 import kr.co.wground.exception.BusinessException
+import kr.co.wground.track.domain.constant.TrackType
+import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.application.exception.UserServiceErrorCode
 import kr.co.wground.user.application.operations.constant.ELEMENT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.dto.AdminSearchUserDto
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional
 class AdminServiceImpl(
     val signupRepository: RequestSignupRepository,
     val userRepository: UserRepository,
+    private val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : AdminService {
     override fun decisionSignup(decisionDto: DecisionDto) {
@@ -40,7 +43,7 @@ class AdminServiceImpl(
             if (decisionDto.role == UserRole.ADMIN) {
                 val user = userRepository.findByIdOrNull(request.userId)
                     ?: throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
-                user.toAdmin()
+                user.toAdmin(resolveAdminTrackId())
             }
         }
 
@@ -97,6 +100,12 @@ class AdminServiceImpl(
         if (users.isEmpty()) throw BusinessException(UserServiceErrorCode.USER_NOT_FOUND)
 
         eventPublisher.publishEvent(VerificationEvent(users))
+    }
+
+    private fun resolveAdminTrackId(): Long {
+        val adminTrack = trackRepository.findFirstByTrackType(TrackType.ADMIN)
+            ?: throw BusinessException(UserServiceErrorCode.ADMIN_TRACK_NOT_FOUND)
+        return adminTrack.trackId
     }
 
     private fun validatePageBounds(userInfos: Page<UserInfoDto>, pageable: Pageable) {

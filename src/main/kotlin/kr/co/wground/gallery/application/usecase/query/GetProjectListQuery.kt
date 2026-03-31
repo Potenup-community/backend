@@ -2,11 +2,14 @@ package kr.co.wground.gallery.application.usecase.query
 
 import kr.co.wground.global.common.TrackId
 import kr.co.wground.global.common.UserId
+import kr.co.wground.track.domain.constant.TrackType
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 
 data class GetProjectListQuery(
     val trackId: TrackId? = null,
+    val trackType: TrackType? = null,
+    val cardinal: Int? = null,
     val keyword: String? = null,
     val page: Int = 0,
     val size: Int = 12,

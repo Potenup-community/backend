@@ -144,7 +144,6 @@ class StudyReportServiceTest {
 
         val track = trackRepository.save(
             Track(
-                trackName = "리포트 테스트 트랙",
                 startDate = today.minusDays(10),
                 endDate = today.plusDays(30),
             )

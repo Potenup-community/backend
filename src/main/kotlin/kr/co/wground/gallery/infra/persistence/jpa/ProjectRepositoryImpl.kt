@@ -15,6 +15,8 @@ import kr.co.wground.global.common.UserId
 import kr.co.wground.reaction.domain.QProjectReaction
 import kr.co.wground.reaction.domain.enums.ReactionType
 import kr.co.wground.track.domain.QTrack
+import kr.co.wground.track.domain.constant.TrackType
+import kr.co.wground.track.domain.constant.toDisplayName
 import kr.co.wground.user.domain.QUser
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -39,10 +41,12 @@ class ProjectRepositoryImpl(
 
     override fun findPagedSummaries(
         trackId: TrackId?,
+        trackType: TrackType?,
+        cardinal: Int?,
         keyword: String?,
         pageable: Pageable,
     ): Page<ProjectRepository.SummaryRow> {
-        val predicate = buildPredicate(trackId, keyword)
+        val predicate = buildPredicate(trackId, trackType, cardinal, keyword)
 
         val total = queryFactory
             .select(qProject.id.countDistinct())
@@ -74,7 +78,7 @@ class ProjectRepositoryImpl(
             .select(
                 qProject.id, qProject.content.title, qProject.thumbnailImagePath,
                 qProject.techStacks, qProject.viewCount, qProject.createdAt,
-                qMember.userId, qTrack.trackName,
+                qMember.userId, qTrack.trackType, qTrack.cardinal,
             )
             .from(qProject)
             .leftJoin(qMember).on(qMember.project.id.eq(qProject.id))
@@ -95,7 +99,9 @@ class ProjectRepositoryImpl(
                     viewCount = requireNotNull(first.get(qProject.viewCount)),
                     createdAt = requireNotNull(first.get(qProject.createdAt)),
                     memberCount = pidRows.mapNotNull { it.get(qMember.userId) }.distinct().size.toLong(),
-                    trackNames = pidRows.mapNotNull { it.get(qTrack.trackName) }.distinct(),
+                    trackNames = pidRows
+                        .map { TrackNameProjection(it.get(qTrack.trackType), it.get(qTrack.cardinal)).toDisplayName() }
+                        .distinct(),
                 )
             }
         }
@@ -112,7 +118,7 @@ class ProjectRepositoryImpl(
                 qProject.createdAt, qProject.modifiedAt,
                 qMember.userId, qMember.position,
                 qUser.name, qUser.userProfile.imageUrl, qUser.userProfile.currentFileName,
-                qTrack.trackName,
+                qTrack.trackType, qTrack.cardinal,
             )
             .from(qProject)
             .leftJoin(qMember).on(qMember.project.id.eq(qProject.id))
@@ -133,7 +139,7 @@ class ProjectRepositoryImpl(
                 userId = userId,
                 name = row.get(qUser.name).orEmpty(),
                 profileImageUrl = if (!fileName.isNullOrBlank()) "$imageUrl/$fileName" else imageUrl,
-                trackName = row.get(qTrack.trackName).orEmpty(),
+                trackName = TrackNameProjection(row.get(qTrack.trackType), row.get(qTrack.cardinal)).toDisplayName(),
                 position = requireNotNull(row.get(qMember.position)),
             )
         }
@@ -155,9 +161,9 @@ class ProjectRepositoryImpl(
         )
     }
 
-    override fun findUsedTrackFilters(): List<ProjectRepository.TrackItem> =
-        queryFactory
-            .select(qTrack.trackId, qTrack.trackName)
+    override fun findUsedTrackFilters(): List<ProjectRepository.TrackItem> {
+        return queryFactory
+            .select(qTrack.trackId, qTrack.trackType, qTrack.cardinal)
             .distinct()
             .from(qProject)
             .join(qMember).on(qMember.project.id.eq(qProject.id))
@@ -169,9 +175,10 @@ class ProjectRepositoryImpl(
             .map {
                 ProjectRepository.TrackItem(
                     trackId = requireNotNull(it.get(qTrack.trackId)),
-                    trackName = requireNotNull(it.get(qTrack.trackName)),
+                    trackName = TrackNameProjection(it.get(qTrack.trackType), it.get(qTrack.cardinal)).toDisplayName(),
                 )
             }
+    }
 
     override fun findReactStats(
         projectIds: Set<ProjectId>,
@@ -207,9 +214,16 @@ class ProjectRepositoryImpl(
 
     // ── 헬퍼
 
-    private fun buildPredicate(trackId: TrackId?, keyword: String?) = BooleanBuilder().apply {
+    private fun buildPredicate(
+        trackId: TrackId?,
+        trackType: TrackType?,
+        cardinal: Int?,
+        keyword: String?
+    ) = BooleanBuilder().apply {
         and(qProject.deletedAt.isNull)
         trackId?.let { and(qTrack.trackId.eq(it)) }
+        trackType?.let { and(qTrack.trackType.eq(it)) }
+        cardinal?.let { and(qTrack.cardinal.eq(it)) }
         keyword?.takeIf { it.isNotBlank() }?.let {
             and(
                 qProject.content.title.containsIgnoreCase(it)
@@ -225,5 +239,12 @@ class ProjectRepositoryImpl(
             "viewCount" -> OrderSpecifier(direction, qProject.viewCount)
             else -> OrderSpecifier(direction, qProject.createdAt)
         }
+    }
+
+    private data class TrackNameProjection(
+        val trackType: TrackType?,
+        val cardinal: Int?,
+    ) {
+        fun toDisplayName(): String = trackType.toDisplayName(cardinal)
     }
 }

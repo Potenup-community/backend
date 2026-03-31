@@ -4,6 +4,7 @@ import com.querydsl.core.types.dsl.CaseBuilder
 import com.querydsl.jpa.impl.JPAQueryFactory
 import kr.co.wground.track.domain.QTrack.track
 import kr.co.wground.track.domain.Track
+import kr.co.wground.track.domain.constant.TrackType
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -15,7 +16,7 @@ class CustomTrackRepositoryImpl(
             .selectFrom(track)
             .orderBy(
                 CaseBuilder()
-                    .`when`(track.trackId.eq(1L)).then(0)
+                    .`when`(track.trackType.eq(TrackType.ADMIN)).then(0)
                     .otherwise(1)
                     .asc(),
                 track.endDate.desc()

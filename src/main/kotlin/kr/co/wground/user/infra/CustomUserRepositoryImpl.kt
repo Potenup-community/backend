@@ -14,9 +14,9 @@ import kr.co.wground.shop.domain.QShopItem.shopItem
 import kr.co.wground.shop.domain.QUserInventory.userInventory
 import kr.co.wground.track.domain.QTrack.track
 import kr.co.wground.track.domain.constant.TrackStatus
+import kr.co.wground.track.domain.constant.toDisplayName
 import kr.co.wground.user.application.operations.constant.COUNT_DEFAULT_VALUE
 import kr.co.wground.user.application.operations.constant.ID_DEFAULT_VALUE
-import kr.co.wground.user.application.operations.constant.NOT_ASSOCIATE
 import kr.co.wground.user.application.operations.dto.AcademicCount
 import kr.co.wground.user.application.operations.dto.ConditionDto
 import kr.co.wground.user.application.operations.dto.RoleCount
@@ -57,7 +57,8 @@ class CustomUserRepositoryImpl(
                     user.email,
                     user.phoneNumber,
                     user.trackId,
-                    track.trackName,
+                    track.trackType,
+                    track.cardinal,
                     user.role,
                     user.status,
                     requestSignup.requestStatus,
@@ -205,8 +206,6 @@ class CustomUserRepositoryImpl(
     override fun findUserDisplayInfos(userIds: List<UserId>): Map<UserId, UserDisplayInfoDto> {
         if (userIds.isEmpty()) return emptyMap()
 
-        val trackNameExpr = track.trackName.coalesce(NOT_ASSOCIATE)
-
         val userResults = queryFactory
             .select(
                 Projections.constructor(
@@ -214,7 +213,8 @@ class CustomUserRepositoryImpl(
                     user.userId,
                     user.name,
                     user.userProfile,
-                    trackNameExpr,
+                    track.trackType,
+                    track.cardinal,
                 )
             )
             .from(user)
@@ -262,8 +262,6 @@ class CustomUserRepositoryImpl(
         size: Int,
         cursorId: Long?
     ): List<UserDisplayInfoDto> {
-        val trackNameExpr = track.trackName.coalesce(NOT_ASSOCIATE)
-
         val query = queryFactory
             .select(
                 Projections.constructor(
@@ -271,7 +269,8 @@ class CustomUserRepositoryImpl(
                     user.userId,
                     user.name,
                     user.userProfile,
-                    trackNameExpr,
+                    track.trackType,
+                    track.cardinal,
                 )
             )
             .from(user)
@@ -287,20 +286,27 @@ class CustomUserRepositoryImpl(
     }
 
     override fun findAllApprovalTargets(userIds: List<Long>): List<VerificationEvent.VerificationTarget> {
-        return queryFactory
+        val rows = queryFactory
             .select(
-                Projections.constructor(
-                    VerificationEvent.VerificationTarget::class.java,
-                    user.email,
-                    user.name,
-                    track.trackName.coalesce(NOT_ASSOCIATE),
-                    Expressions.constant(LocalDateTime.now())
-                )
+                user.email,
+                user.name,
+                track.trackType,
+                track.cardinal
             )
             .from(user)
             .leftJoin(track).on(user.trackId.eq(track.trackId))
             .where(user.userId.`in`(userIds))
             .fetch()
+
+        val approvedAt = LocalDateTime.now()
+        return rows.map {
+            VerificationEvent.VerificationTarget(
+                email = requireNotNull(it.get(user.email)),
+                username = requireNotNull(it.get(user.name)),
+                trackName = it.get(track.trackType).toDisplayName(it.get(track.cardinal), "소속 없음"),
+                approveAt = approvedAt
+            )
+        }
     }
 
     override fun findUserAndTrack(userId: UserId): MyPageDto? {
@@ -313,7 +319,8 @@ class CustomUserRepositoryImpl(
                         user.name,
                         user.email,
                         user.trackId,
-                        track.trackName,
+                        track.trackType,
+                        track.cardinal,
                         user.userProfile,
                         user.role,
                         user.status
@@ -372,4 +379,5 @@ class CustomUserRepositoryImpl(
             requestSignup.requestStatus.eq(it)
         }
     }
+
 }

@@ -16,9 +16,9 @@ object TrackSwaggerErrorExample {
                 "errors":[]
             }"""
 
-        const val TRACK_NAME_IS_BLANK = """{
-                "code":"T-0003",
-                "message":"트랙의 이름은 빈칸이 될 수 없습니다.",
+        const val INVALID_TRACK_INPUT = """{
+                "code":"T-0004",
+                "message":"트랙 입력값이 올바르지 않습니다.",
                 "errors":[]
             }"""
     }

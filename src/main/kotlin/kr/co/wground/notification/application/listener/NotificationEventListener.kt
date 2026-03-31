@@ -356,12 +356,13 @@ class NotificationEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleStudyRecruitStarted(event: StudyRecruitStartedEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
+        val trackDisplayName = track.displayName()
         val studyLink = "$frontendUrl/studies"
         val placeholders = mapOf(
-            "trackName" to track.trackName,
+            "trackName" to trackDisplayName,
             "months" to "${event.months.month}차",
         )
-        val audience = NotificationAudience.fromTrackName(track.trackName) ?: NotificationAudience.ALL
+        val audience = NotificationAudience.fromTrackName(trackDisplayName) ?: NotificationAudience.ALL
 
         // 인앱 알림 (트랙별 브로드캐스트)
         broadcastNotificationCommandService.create(
@@ -387,12 +388,13 @@ class NotificationEventListener(
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     fun handleStudyRecruitEnded(event: StudyRecruitEndedSoonEvent) {
         val track = trackRepository.findByIdOrNull(event.trackId) ?: return
+        val trackDisplayName = track.displayName()
         val studyLink = "$frontendUrl/studies"
         val placeholders = mapOf(
-            "trackName" to track.trackName,
+            "trackName" to trackDisplayName,
             "months" to "${event.months.month}차",
         )
-        val audience = NotificationAudience.fromTrackName(track.trackName) ?: NotificationAudience.ALL
+        val audience = NotificationAudience.fromTrackName(trackDisplayName) ?: NotificationAudience.ALL
 
         // 인앱 알림 (트랙별 브로드캐스트)
         broadcastNotificationCommandService.create(

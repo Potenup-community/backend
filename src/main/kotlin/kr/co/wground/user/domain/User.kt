@@ -94,9 +94,9 @@ class User(
         this.userProfile.imageUrl = "$DEFAULT_AVATAR_PATH/${this.userId}"
     }
 
-    fun toAdmin() {
+    fun toAdmin(adminTrackId: TrackId) {
         this.role = UserRole.ADMIN
-        this.trackId = 1
+        this.trackId = adminTrackId
     }
 
     fun toInstructor() {

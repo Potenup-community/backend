@@ -33,6 +33,7 @@ class SecurityConfig(
                     "/api/v1/users/signup",
                     "/api/v1/auth/login",
                     "/api/v1/admin/tracks",
+                    "/api/v1/tracks/signup/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/v3/api-docs/**",

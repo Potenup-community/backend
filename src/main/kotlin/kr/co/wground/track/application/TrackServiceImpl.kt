@@ -2,13 +2,17 @@ package kr.co.wground.track.application
 
 import kr.co.wground.exception.BusinessException
 import kr.co.wground.global.common.TrackId
+import kr.co.wground.track.application.dto.TrackCardinalsDto
 import kr.co.wground.track.application.dto.CreateTrackDto
 import kr.co.wground.track.application.dto.TrackQueryDto
 import kr.co.wground.track.application.dto.TrackQueryDto.Companion.toTrackQueryDto
+import kr.co.wground.track.application.dto.TrackResolveDto
 import kr.co.wground.track.application.dto.UpdateTrackDto
 import kr.co.wground.track.application.event.TrackChangedEvent
 import kr.co.wground.track.application.exception.TrackServiceErrorCode
 import kr.co.wground.track.domain.Track
+import kr.co.wground.track.domain.constant.TrackType
+import kr.co.wground.track.domain.exception.TrackDomainErrorCode
 import kr.co.wground.track.infra.TrackRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.repository.findByIdOrNull
@@ -21,11 +25,8 @@ class TrackServiceImpl(
     private val trackRepository: TrackRepository,
     private val eventPublisher: ApplicationEventPublisher
 ) : TrackService {
-    companion object {
-        private const val ADMIN_TRACK = 1L
-    }
-
     override fun createTrack(createTrack: CreateTrackDto): List<TrackQueryDto> {
+        validateNotAdminTrackType(createTrack.trackType)
         val savedTrack = trackRepository.save(createTrack.toEntity())
 
         //스케줄러 만료 변환 날짜 등록
@@ -38,10 +39,12 @@ class TrackServiceImpl(
     }
 
     override fun updateTrack(updateTrack: UpdateTrackDto) {
+        updateTrack.trackType?.let { validateNotAdminTrackType(it) }
         val track = findTrackById(updateTrack.trackId)
 
         track.updateTrack(
-            trackName = updateTrack.trackName,
+            trackType = updateTrack.trackType,
+            cardinal = updateTrack.cardinal,
             startDate = updateTrack.startDate,
             endDate = updateTrack.endDate
         )
@@ -73,11 +76,67 @@ class TrackServiceImpl(
             ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
     }
 
-    override fun getAllTrackResponses(): List<TrackQueryDto> {
-        return trackRepository.findAllTracks().map { it.toTrackQueryDto() }
+    override fun getAllTrackResponses(trackType: TrackType?): List<TrackQueryDto> {
+        return trackRepository.findAllTracks()
+            .asSequence()
+            .filter { trackType == null || it.trackType == trackType }
+            .map { it.toTrackQueryDto() }
+            .toList()
     }
 
-    override fun getTracksExceptAdmin(): List<TrackQueryDto> {
-        return trackRepository.findAllByTrackIdNotOrderByEndDateDesc(ADMIN_TRACK).map { it.toTrackQueryDto() }
+    override fun getTracksExceptAdmin(trackType: TrackType?): List<TrackQueryDto> {
+        return trackRepository.findAllTracks()
+            .asSequence()
+            .filter { trackType == null || it.trackType == trackType }
+            .filterNot { it.isAdminTrack() }
+            .map { it.toTrackQueryDto() }
+            .toList()
+    }
+
+    @Transactional(readOnly = true)
+    override fun getTrackTypesForRegistration(): List<TrackType> {
+        return TrackType.entries
+            .filterNot { it == TrackType.ADMIN }
+    }
+
+    @Transactional(readOnly = true)
+    override fun getTrackCardinals(trackType: TrackType): TrackCardinalsDto {
+        val cardinals = trackRepository.findAllByTrackType(trackType)
+            .mapNotNull { it.cardinal }
+            .distinct()
+            .sorted()
+
+        return TrackCardinalsDto(
+            trackType = trackType,
+            cardinals = cardinals
+        )
+    }
+
+    @Transactional(readOnly = true)
+    override fun getSignupTrackTypes(): List<TrackType> {
+        return TrackType.entries
+            .filterNot { it == TrackType.ADMIN }
+    }
+
+    @Transactional(readOnly = true)
+    override fun resolveSignupTrack(trackType: TrackType, cardinal: Int): TrackResolveDto {
+        if (trackType == TrackType.ADMIN || cardinal <= 0) {
+            throw BusinessException(TrackDomainErrorCode.INVALID_TRACK_INPUT)
+        }
+
+        val track = trackRepository.findFirstByTrackTypeAndCardinal(trackType, cardinal)
+            ?: throw BusinessException(TrackServiceErrorCode.TRACK_NOT_FOUND)
+
+        return TrackResolveDto(
+            trackType = trackType,
+            cardinal = cardinal,
+            trackId = track.trackId
+        )
+    }
+
+    private fun validateNotAdminTrackType(trackType: TrackType) {
+        if (trackType == TrackType.ADMIN) {
+            throw BusinessException(TrackDomainErrorCode.INVALID_TRACK_INPUT)
+        }
     }
 }
