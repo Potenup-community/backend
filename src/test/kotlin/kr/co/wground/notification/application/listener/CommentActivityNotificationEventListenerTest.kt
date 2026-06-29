@@ -1,21 +1,17 @@
 package kr.co.wground.notification.application.listener
 
-import java.time.LocalDateTime
 import kr.co.wground.common.event.CommentCreatedEvent
 import kr.co.wground.common.event.CommentReactionCreatedEvent
 import kr.co.wground.common.event.MentionCreatedEvent
 import kr.co.wground.common.event.PostReactionCreatedEvent
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.domain.enums.NotificationType
-import kr.co.wground.notification.domain.vo.NotificationReference
 import kr.co.wground.user.infra.UserRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
@@ -23,33 +19,12 @@ import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 
-class CommentActivityNotificationEventListenerTest {
+class CommentActivityNotificationEventListenerTest : NotificationListenerTestSupport() {
     @Mock
     private lateinit var notificationCommandService: NotificationCommandService
 
     @Mock
     private lateinit var userRepository: UserRepository
-
-    @Captor
-    private lateinit var recipientCaptor: ArgumentCaptor<Long>
-
-    @Captor
-    private lateinit var actorCaptor: ArgumentCaptor<Long?>
-
-    @Captor
-    private lateinit var typeCaptor: ArgumentCaptor<NotificationType>
-
-    @Captor
-    private lateinit var titleCaptor: ArgumentCaptor<String>
-
-    @Captor
-    private lateinit var referenceCaptor: ArgumentCaptor<NotificationReference?>
-
-    @Captor
-    private lateinit var placeholdersCaptor: ArgumentCaptor<Map<String, String>>
-
-    @Captor
-    private lateinit var expiresAtCaptor: ArgumentCaptor<LocalDateTime?>
 
     private lateinit var listener: CommentActivityNotificationEventListener
 
@@ -281,6 +256,4 @@ class CommentActivityNotificationEventListenerTest {
             verifyNoInteractions(notificationCommandService)
         }
     }
-
-    private fun <T> capture(captor: ArgumentCaptor<T>): T = captor.capture()
 }

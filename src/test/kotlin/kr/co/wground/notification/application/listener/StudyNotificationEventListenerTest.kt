@@ -1,6 +1,5 @@
 package kr.co.wground.notification.application.listener
 
-import java.time.LocalDateTime
 import kr.co.wground.common.event.StudyDeletedEvent
 import kr.co.wground.common.event.StudyRecruitEvent
 import kr.co.wground.common.event.StudyReportApprovedEvent
@@ -11,7 +10,6 @@ import kr.co.wground.notification.application.command.BroadcastNotificationComma
 import kr.co.wground.notification.application.command.NotificationCommandService
 import kr.co.wground.notification.application.port.NotificationSender
 import kr.co.wground.notification.domain.enums.NotificationType
-import kr.co.wground.notification.domain.vo.NotificationReference
 import kr.co.wground.track.infra.TrackRepository
 import kr.co.wground.user.domain.User
 import kr.co.wground.user.domain.constant.UserRole
@@ -22,8 +20,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -31,7 +27,7 @@ import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 
-class StudyNotificationEventListenerTest {
+class StudyNotificationEventListenerTest : NotificationListenerTestSupport() {
     @Mock
     private lateinit var notificationCommandService: NotificationCommandService
 
@@ -46,27 +42,6 @@ class StudyNotificationEventListenerTest {
 
     @Mock
     private lateinit var userRepository: UserRepository
-
-    @Captor
-    private lateinit var recipientCaptor: ArgumentCaptor<Long>
-
-    @Captor
-    private lateinit var actorCaptor: ArgumentCaptor<Long?>
-
-    @Captor
-    private lateinit var typeCaptor: ArgumentCaptor<NotificationType>
-
-    @Captor
-    private lateinit var titleCaptor: ArgumentCaptor<String>
-
-    @Captor
-    private lateinit var referenceCaptor: ArgumentCaptor<NotificationReference?>
-
-    @Captor
-    private lateinit var placeholdersCaptor: ArgumentCaptor<Map<String, String>>
-
-    @Captor
-    private lateinit var expiresAtCaptor: ArgumentCaptor<LocalDateTime?>
 
     private lateinit var listener: StudyNotificationEventListener
 
@@ -317,6 +292,4 @@ class StudyNotificationEventListenerTest {
             status = UserStatus.ACTIVE,
         )
     }
-
-    private fun <T> capture(captor: ArgumentCaptor<T>): T = captor.capture()
 }
